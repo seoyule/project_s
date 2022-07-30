@@ -1,0 +1,57 @@
+1654707675330	geckodriver	INFO	Listening on 127.0.0.1:55009
+1654707675859	mozrunner::runner	INFO	Running command: "/Applications/Firefox.app/Contents/MacOS/firefox-bin" "--marionette" "--remote-debugging-port" "55010" "--remote-allow-hosts" "localhost" "-foreground" "-no-remote" "-profile" "/var/folders/9q/zw3s8jnn25q5f1kr4sdzx53m0000gn/T/rust_mozprofileTAX5tC"
+1654707677021	Marionette	INFO	Marionette enabled
+WebDriver BiDi listening on ws://localhost:55010
+2022-06-09 02:01:17.107 plugin-container[68393:21779081] nil host used in call to allowsSpecificHTTPSCertificateForHost
+2022-06-09 02:01:17.107 plugin-container[68393:21779081] nil host used in call to allowsAnyHTTPSCertificateForHost:
+2022-06-09 02:01:17.232 plugin-container[68393:21779081] nil host used in call to allowsSpecificHTTPSCertificateForHost
+2022-06-09 02:01:17.232 plugin-container[68393:21779081] nil host used in call to allowsAnyHTTPSCertificateForHost:
+2022-06-09 02:01:17.233 plugin-container[68393:21779117] nil host used in call to allowsSpecificHTTPSCertificateForHost
+2022-06-09 02:01:17.233 plugin-container[68393:21779117] nil host used in call to allowsAnyHTTPSCertificateForHost:
+2022-06-09 02:01:18.076 firefox-bin[68391:21778976] Warning: Expected min height of view: (<NSButton: 0x12f6f1400>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+2022-06-09 02:01:18.076 firefox-bin[68391:21778976] Warning: Expected min height of view: (<NSButton: 0x12f757800>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+2022-06-09 02:01:18.077 firefox-bin[68391:21778976] Warning: Expected min height of view: (<NSButton: 0x12f755400>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+2022-06-09 02:01:18.077 firefox-bin[68391:21778976] Warning: Expected min height of view: (<NSButton: 0x12f755800>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+2022-06-09 02:01:18.078 firefox-bin[68391:21778976] Warning: Expected min height of view: (<NSButton: 0x12f75b800>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+2022-06-09 02:01:18.079 firefox-bin[68391:21778976] Warning: Expected min height of view: (<NSPopoverTouchBarItemButton: 0x12f75b400>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+2022-06-09 02:01:18.079 firefox-bin[68391:21778976] Warning: Expected min height of view: (<NSPopoverTouchBarItemButton: 0x11ea64000>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at /var/folders/9q/zw3s8jnn25q5f1kr4sdzx53m0000gn/T/rust_mozprofileTAX5tC/search.json.mozlz4", (void 0)))
+console.error: BackgroundUpdate: 
+  _reasonsToNotScheduleUpdates: Failed to check for Maintenance Service Registry Key: [Exception... "Component returned failure code: 0x80004001 (NS_ERROR_NOT_IMPLEMENTED) [nsIUpdateProcessor.getServiceRegKeyExists]"  nsresult: "0x80004001 (NS_ERROR_NOT_IMPLEMENTED)"  location: "JS frame :: resource://gre/modules/BackgroundUpdate.jsm :: _reasonsToNotScheduleUpdates :: line 241"  data: no]
+1654707679694	Marionette	INFO	Listening on port 55043
+DevTools listening on ws://localhost:55010/devtools/browser/8101fc5a-6c4f-4ec0-baf8-a2f9a32cce8e
+Read port: 55043
+1654707679775	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+2022-06-09 02:01:38.007 firefox-bin[68391:21778976] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+console.warn: LoginRecipes: "getRecipes: falling back to a synchronous message for:" "https://sinsangmarket.kr"
+1654707914146	geckodriver	INFO	Listening on 127.0.0.1:56091
+1654707914670	mozrunner::runner	INFO	Running command: "/Applications/Firefox.app/Contents/MacOS/firefox-bin" "--marionette" "--remote-debugging-port" "56092" "--remote-allow-hosts" "localhost" "-foreground" "-no-remote" "-profile" "/var/folders/9q/zw3s8jnn25q5f1kr4sdzx53m0000gn/T/rust_mozprofile0Qwh2F"
+2022-06-09 02:05:15.336 plugin-container[68456:21782178] nil host used in call to allowsSpecificHTTPSCertificateForHost
+2022-06-09 02:05:15.336 plugin-container[68456:21782178] nil host used in call to allowsAnyHTTPSCertificateForHost:
+2022-06-09 02:05:15.358 plugin-container[68456:21782178] nil host used in call to allowsSpecificHTTPSCertificateForHost
+2022-06-09 02:05:15.358 plugin-container[68456:21782178] nil host used in call to allowsAnyHTTPSCertificateForHost:
+2022-06-09 02:05:15.359 plugin-container[68456:21782207] nil host used in call to allowsSpecificHTTPSCertificateForHost
+2022-06-09 02:05:15.359 plugin-container[68456:21782207] nil host used in call to allowsAnyHTTPSCertificateForHost:
+1654707915362	Marionette	INFO	Marionette enabled
+WebDriver BiDi listening on ws://localhost:56092
+2022-06-09 02:05:16.319 firefox-bin[68454:21782084] Warning: Expected min height of view: (<NSButton: 0x122b1d400>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+2022-06-09 02:05:16.319 firefox-bin[68454:21782084] Warning: Expected min height of view: (<NSButton: 0x122b85000>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+2022-06-09 02:05:16.320 firefox-bin[68454:21782084] Warning: Expected min height of view: (<NSButton: 0x122b85c00>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+2022-06-09 02:05:16.320 firefox-bin[68454:21782084] Warning: Expected min height of view: (<NSButton: 0x122b82000>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+2022-06-09 02:05:16.321 firefox-bin[68454:21782084] Warning: Expected min height of view: (<NSButton: 0x122b82c00>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+2022-06-09 02:05:16.322 firefox-bin[68454:21782084] Warning: Expected min height of view: (<NSPopoverTouchBarItemButton: 0x122b81400>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+2022-06-09 02:05:16.322 firefox-bin[68454:21782084] Warning: Expected min height of view: (<NSPopoverTouchBarItemButton: 0x112167000>) to be less than or equal to 30 but got a height of 32.000000. This error will be logged once per view in violation.
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at /var/folders/9q/zw3s8jnn25q5f1kr4sdzx53m0000gn/T/rust_mozprofile0Qwh2F/search.json.mozlz4", (void 0)))
+console.error: BackgroundUpdate: 
+  _reasonsToNotScheduleUpdates: Failed to check for Maintenance Service Registry Key: [Exception... "Component returned failure code: 0x80004001 (NS_ERROR_NOT_IMPLEMENTED) [nsIUpdateProcessor.getServiceRegKeyExists]"  nsresult: "0x80004001 (NS_ERROR_NOT_IMPLEMENTED)"  location: "JS frame :: resource://gre/modules/BackgroundUpdate.jsm :: _reasonsToNotScheduleUpdates :: line 241"  data: no]
+1654707917823	Marionette	INFO	Listening on port 56121
+Read port: 56121
+1654707917847	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://localhost:56092/devtools/browser/d1703830-b053-49ae-b9e8-d573c72751e7
+2022-06-09 02:05:53.302 firefox-bin[68454:21782084] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+console.warn: LoginRecipes: "getRecipes: falling back to a synchronous message for:" "https://sinsangmarket.kr"
+console.warn: LoginRecipes: "getRecipes: falling back to a synchronous message for:" "https://sinsangmarket.kr"
+JavaScript error: resource://gre/modules/LoginManagerParent.jsm, line 136: TypeError: gRecipeManager is null
+1654708071652	Marionette	INFO	Stopped listening on port 55043
+1654708074957	Marionette	INFO	Stopped listening on port 56121
+console.warn: TopSitesFeed: Failed to fetch data from Contile server: NetworkError when attempting to fetch resource.
