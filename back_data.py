@@ -1,3 +1,9 @@
+"""작업한 내용을 원격 저장소에 저장하는 순서 간단 정리
+프로그램 변경 작업하기
+git add <파일명> 또는 git add * 명령 수행하기
+git commit -m "변경사항 요약" 명령 수행하기
+git push 명령 수행하기"""
+
 category_list = {
     '신상품': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[1]'],
     '원피스': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[2]'],
@@ -62,3 +68,4 @@ category_list = {
     '백팩': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[9]',
            '//*[@id="eCategoryTbody"]/tr/td[2]/div/ul/li[6]'],
     '남성의류': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[10]']}
+
