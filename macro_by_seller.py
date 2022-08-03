@@ -209,38 +209,36 @@ for k in range(len(urls)):
             subject_keywords = [subject_keyword[0:18] for subject_keyword in subject_keywords]
             subject_keywords = ",".join(subject_keywords)
 
-            # 중복확인, 품절여부 확인
+            # 중복확인, 품절여부, 가품여부 확인
             if subject_ in subject_list:
                 print("동일상품 skip")
                 driver.close()  # 창닫기
                 driver.switch_to.window(driver.window_handles[0])
                 action.send_keys(Keys.ESCAPE).perform() # 찜목록으로 재진입
                 continue
-            elif soup.find("div", attrs={'class': 'sold-out'}):
+            if soup.find("div", attrs={'class': 'sold-out'}):
                 print("품절상품 skip")
                 driver.close()  # 창닫기
                 driver.switch_to.window(driver.window_handles[0])
                 action.send_keys(Keys.ESCAPE).perform() # 찜목록으로 재진입
                 continue
-            else:
-                subject_list.append(subject_)
 
-            for fake in fakes:
-                if fake in subject:
-                    print("가품 skip: ", fake, ";",subject)
-                    driver.close()  # 창닫기
-                    driver.switch_to.window(driver.window_handles[0])
-                    action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
-                continue
-
+            fake = False
+            for f in back_data.fakes:
+                if f in subject:
+                    fake = True
+                    print("가품 skip: ", f, ";", subject)
+                    break
             if "x" in subject.lower():
                 if "xl" in subject.lower():
                     pass
                 else:
-                    print("가품 skip: x 포함", subject)
-                    driver.close()  # 창닫기
-                    driver.switch_to.window(driver.window_handles[0])
-                    action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+                    fake = True
+            if fake:
+                driver.close()  # 창닫기
+                driver.switch_to.window(driver.window_handles[0])
+                action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+                continue
 
             """
             # 제품 상세설명 따기

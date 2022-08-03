@@ -18,15 +18,12 @@ import back_data
 from selenium.webdriver.support.ui import Select
 import math
 
-
-fakes = ['디옷','디올','디오르','디욜','샤x','샤널','에르','에르메스','샤','구구','GC','구c','CHA','루이','베네','타이틀','PXG','탐브',
-         '프라','MI','몽끌','에트로','베르체']
 ################################여기 입력해 주기###################################
 
-urls = [('https://sinsangmarket.kr/store/25101?isPublic=1',"스튜디오W 3층 43호 퍼프","yes","no"),]
+urls = back_data.urls
 
 start = [0] # 샵 중간부터 시작 시
-number_d = 200 # 0일 경우 모든 상품, 지정하려면 숫자 입력
+number_d = 100 # 0일 경우 모든 상품, 지정하려면 숫자 입력
 
 margin = .2
 delivery_fee = 4000 #from 구매처:3000, to 고객:1000 (고객 부담 3000 -2000)
@@ -41,7 +38,7 @@ options.headless = True
 options.add_argument("window-size=1920x1080")
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36")
 
-driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, options=options
+driver = webdriver.Chrome("/Users/seoyulejo/chromedriver") #, options=options
 driver.maximize_window()
 driver.implicitly_wait(15)
 driver.get('https://sinsangmarket.kr/login')
@@ -95,8 +92,15 @@ driver.find_element_by_xpath('//*[@id="userpasswd"]').click()
 action.send_keys('crosscd123').perform()
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="frm_user"]/div/div[3]/button').click()
-time.sleep(.5)
-driver.find_element_by_class_name('newPromodeArea').click()# new 관리자 화면 진입 'newPromodeArea
+time.sleep(1)
+# 광고 있으면 close
+try:
+    driver.find_element_by_class_name("btnClose.eClose").click()
+    time.sleep(.3)
+except:
+    pass
+wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'btnPromodeView')))
+driver.find_element_by_class_name('btnPromodeView').click()# new 관리자 화면 진입 'newPromodeArea
 time.sleep(.5)
 print("cafe24 진입")
 
@@ -131,7 +135,7 @@ for k in range(len(urls)):
     else:
         location = 2
 
-    # 찜순 선택순
+    # 찜순/선택순
     if urls[k][2].lower() == "yes":
         url = url.split("?")
         url = url[0] + "?sort=likes&" + url[1]
@@ -155,7 +159,7 @@ for k in range(len(urls)):
     print("루핑 횟수: ", number)
 
     # 페이지 아래까지 한번 갔다오기
-    for i in range(round(number / 6)):
+    for i in range(round(number*3 / 5)):
         action.send_keys(Keys.PAGE_DOWN).perform()
         time.sleep(.2)
     action.send_keys(Keys.HOME).perform()
@@ -165,9 +169,20 @@ for k in range(len(urls)):
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
     goods_title = []
-    goods_title_s = soup.find_all("p", attrs={"class": "post-content__title"})
-    for good in goods_title_s:
-        goods_title.append(good.get_text().strip())
+    goods_title_s = soup.find_all("div", attrs={"class": "ssm-image-detail-post goods-post"})
+
+    if number*3 >= number_:
+        num = number_
+    else:
+        num = number*3
+
+    for i in range(num):
+        if goods_title_s[i].find("div", attrs={"class": "sold-out"}):
+            goods_title.append("sold-out")
+        else:
+            temp_name = goods_title_s[i].find("p", attrs = {"class":"post-content__title"}).get_text().strip()
+            temp_name = back_data.name_change(temp_name)
+            goods_title.append(temp_name)
     time.sleep(.5)
     print(f"신상-거래선 전체상품 list 완료: {len(goods_title)}개") # 거래처 전체 상품 목록 땀
 
@@ -234,7 +249,7 @@ for k in range(len(urls)):
         for i in range(page):
             temp = [e - (i*100) for e in expired_ if e <(i+1)*100 and e > (i*100)-1]
             expired.append(temp) # [[0-99][100-199]...] -> [[0-99][00-99]...] 형식으로 나열
-            print(f"expired 목록 작성 완료: 총{len(expired_)}개")
+        print(f"expired 목록 작성 완료: 총{len(expired_)}개")
 
         # 뒷페이지부터 제거
         for i in reversed(range(page)):
@@ -242,11 +257,11 @@ for k in range(len(urls)):
             if len(expired[i]) == 0:
                 continue
             driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{i+1}]').click()
-            time.sleep(1)
+            time.sleep(1.5)
             # expired 틱
             for e in expired[i]:
                 driver.find_element_by_xpath(f'//*[@id="product-list"]/tr[{e+1}]/td[1]/input').click()
-                time.sleep(.3)
+                time.sleep(.2)
             # 삭제
             driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[5]/div[1]/a[6]').click()
             time.sleep(.3)
@@ -259,17 +274,18 @@ for k in range(len(urls)):
         print(f"expired 상품 제거 완료: {len(expired_)}개")
     else:
         print("expired 상품 없음")
-################### Cafe24에 없는 상품 업데이트 ####################
+##################### Cafe24에 없는 상품 업데이트 ####################
 
     driver.switch_to.window(driver.window_handles[0])
-
     subject_list = [] #중복상품 스크린
-    error_=[]
-    for j in range(len(goods_title)):  # len(goods_title)로 재설정 하기
+    error_ = []
+
+    for j in range(len(goods_title[:5])):  # len(goods_title[:number])로 재설정 하기
 
         if goods_title[j] in goods_list:
             continue
-
+        if goods_title[j].lower() == "sold-out":
+            continue
         try:
             j += 1
             print(k,"-",j, "번째아이템 시작")
@@ -295,13 +311,7 @@ for k in range(len(urls)):
             # 제목따기
             subject_ = driver.find_element_by_xpath('// *[ @ id = "goods-detail"] / div / div[2] / div[2] / div[1] / p').text
             subject = subject_.strip()
-            subject = subject.lower().replace("ops"," 원피스")
-            subject = subject.lower().replace("ope", " 원피스")
-            subject = subject.lower().replace("jk", " 자켓")
-            subject = subject.lower().replace("set", " 세트")
-            subject = subject.lower().replace("tee", " 티셔츠")
-            if re.search("bl$|BL$", subject):
-                subject = subject.lower().replace("bl", " 블라우스")
+            subject = back_data.name_change(subject) #ops등 제목 수정
             print("품명: ", subject_, subject)
 
             #검색어
@@ -310,38 +320,38 @@ for k in range(len(urls)):
             subject_keywords = [subject_keyword[0:18] for subject_keyword in subject_keywords]
             subject_keywords = ",".join(subject_keywords)
 
-            # 중복확인, 품절여부 확인
+            # 중복확인, 품절여부, 가품여부 확인
             if subject_ in subject_list:
                 print("동일상품 skip")
                 driver.close()  # 창닫기
                 driver.switch_to.window(driver.window_handles[0])
                 action.send_keys(Keys.ESCAPE).perform() # 찜목록으로 재진입
                 continue
-            elif soup.find("div", attrs={'class': 'sold-out'}):
+            if soup.find("div", attrs={'class': 'sold-out'}):
                 print("품절상품 skip")
                 driver.close()  # 창닫기
                 driver.switch_to.window(driver.window_handles[0])
                 action.send_keys(Keys.ESCAPE).perform() # 찜목록으로 재진입
                 continue
-            else:
-                subject_list.append(subject_)
 
-            for fake in fakes:
-                if fake in subject:
-                    print("가품 skip: ", fake, ";",subject)
-                    driver.close()  # 창닫기
-                    driver.switch_to.window(driver.window_handles[0])
-                    action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
-                continue
-
+            fake = False
+            for f in back_data.fakes:
+                if f in subject:
+                    fake = True
+                    print("가품 skip: ", f, ";", subject)
+                    break
             if "x" in subject.lower():
                 if "xl" in subject.lower():
                     pass
                 else:
-                    print("가품 skip: x 포함", subject)
-                    driver.close()  # 창닫기
-                    driver.switch_to.window(driver.window_handles[0])
-                    action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+                    fake = True
+            if fake:
+                driver.close()  # 창닫기
+                driver.switch_to.window(driver.window_handles[0])
+                action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+                continue
+
+            subject_list.append(subject_)
 
             """
             # 제품 상세설명 따기
@@ -415,7 +425,7 @@ for k in range(len(urls)):
             #세번째 창 닫기
             driver.close() #창닫기
 
-############################# 입력 시작 ###################################3
+            ############################# 입력 시작 ###################################3
 
             # cafe24 상품등록으로 가기 (일반등록)
             driver.switch_to.window(driver.window_handles[1])
@@ -440,14 +450,16 @@ for k in range(len(urls)):
                 except:
                     driver.find_element_by_xpath(
                         '//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[11]').click()
-            driver.find_element_by_xpath('//*[@id="eCategoryTbody"]/tr/td[5]/div').click()
+            driver.find_element_by_xpath('//*[@id="eCategoryTbody"]/tr/td[5]/div').click() #등록
 
             # 상품명 입력
             time.sleep(.3)
             driver.find_element_by_xpath('//*[@id="product_name"]').click()
             action.send_keys(subject).perform()
+            time.sleep(.2)
             driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[1]/tbody/tr[2]/td/div[1]/input').click()
             action.send_keys(subject_).perform() #원래 상품명: 영문상품명에 입력
+            time.sleep(.2)
             driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[1]/tbody/tr[3]/td/input').click()
             action.send_keys(subject_[0:49]).perform()
             time.sleep(.3)
