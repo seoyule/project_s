@@ -19,7 +19,6 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
 
 ################################여기 입력해 주기###################################
-urls = back_data_mine.urls
 
 start = [1] # 샵 중간부터 시작 시작
 number_d = 100 # 0일 경우 모든 상품, 지정하려면 숫자 입력
@@ -27,10 +26,10 @@ number_d = 100 # 0일 경우 모든 상품, 지정하려면 숫자 입력
 margin = .25
 delivery_fee = 1300
 down_path = '/Users/seoyulejo/Downloads/imgs/'
-error = []
+
 ###############################################################################
 
-#기본세팅
+# 기본세팅
 warnings.filterwarnings("ignore")
 
 options = webdriver.ChromeOptions()
@@ -46,7 +45,7 @@ wait = WebDriverWait(driver, 10)
 
 category_list = back_data_mine.category_list # 분류설정
 
-#신상: 신상마켓 로그인
+# 신상: 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
 try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
@@ -62,7 +61,7 @@ time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[3]/div[2]/div/button').click()
 print("신상 로그인 성공")
 
-#신상: 광고 있으면 close
+# 신상: 광고 있으면 close
 time.sleep(.5)
 try:
     driver.find_element_by_class_name("button.close-button").click()
@@ -70,23 +69,23 @@ try:
 except:
     pass
 
-#신상: 한글로 바꾸기
+# 신상: 한글로 바꾸기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/ul/li[1]/label').click()
 time.sleep(.5)
 
-#신상: 광고 있으면 close
+# 신상: 광고 있으면 close
 try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
     pass
 
-#신상: 신상초이스 진입
+# 신상: 신상초이스 진입
 driver.get('https://sinsangmarket.kr/sinsangChoice')
 
-#cafe24: 열기
+# cafe24: 열기
 driver.execute_script('window.open("https://eclogin.cafe24.com/Shop/");')
 driver.switch_to.window(driver.window_handles[1])
 time.sleep(.5)
@@ -98,7 +97,7 @@ action.send_keys('!QAZwsx123').perform()
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="frm_user"]/div/div[3]/button').click()
 time.sleep(1)
-#cafe24: 광고 있으면 close
+# cafe24: 광고 있으면 close
 try:
     driver.find_element_by_class_name("btnClose.eClose").click()
     time.sleep(.3)
@@ -109,24 +108,24 @@ driver.find_element_by_class_name('btnPromodeView').click()# new 관리자 화�
 time.sleep(.5)
 print("cafe24 진입")
 
-#cafe24: 상품목록 진입
+# cafe24: 상품목록 진입
 driver.get('https://soyool.cafe24.com/disp/admin/shop1/product/productmanage')
 time.sleep(1)
 driver.find_element_by_xpath('//*[@id="eBtnSearch"]').click()  # 조회버튼 클릭
 time.sleep(1)
 
-#cafe24: 상품 목록 출력
+# cafe24: 상품 목록 출력
 num_goods = driver.find_element_by_xpath('//*[@id="QA_list2"]/div[2]/div[1]/p').text
 num_goods = int(num_goods.split(" ")[1].split("개")[0])
 looping_num = num_goods / 100
 looping_num = math.ceil(looping_num)
 
-#cafe24: 100개씩 보이게
+# cafe24: 100개씩 보이게
 select = Select(driver.find_element_by_xpath('//*[@id="QA_list2"]/div[2]/div[2]/select[2]'))  # 검색종류
 select.select_by_visible_text('100개씩보기')
 time.sleep(1)
 
-#cafe24: 공급사 보이게
+# cafe24: 공급사 보이게
 driver.find_element_by_xpath('//*[@id="QA_list2"]/div[3]/div[3]/div/a/span').click()
 time.sleep(.2)
 driver.find_element_by_xpath('//*[@id="listSubject"]/div[1]/ul/li[15]/label').click()
@@ -134,7 +133,7 @@ time.sleep(.2)
 driver.find_element_by_xpath('//*[@id="eColumnApply"]/span').click()
 time.sleep(1)
 
-#cafe24: 목록 뽑기
+# cafe24: 목록 뽑기 (goods_list)
 goods_list = []
 for loop in range(looping_num):
     if loop != 0:
@@ -152,74 +151,117 @@ for loop in range(looping_num):
         goods_list.append((t_name, t_company))
 
 print(f"cafe24-거래선 전체상품 list 완료: {len(goods_list)}개")
+# cafe24: 상품 등록 창으로 가기
+# driver.get('https://soyool.cafe24.com/disp/admin/shop1/product/productregister')
+
 
 ##################### Cafe24에 없는 상품 업데이트 ####################
 
 driver.switch_to.window(driver.window_handles[0])
-subject_list = [] #중복상품 스크린
+subject_list = [] # 중복상품 체크
 error_ = []
 
-for j in range(len(goods_title[:3])):  # len(goods_title[:number])로 재설정 하기
-
-    # 이미 업데이트 유무/ 품절여부 확인
-    if goods_title[j] in goods_list:
-        continue
-    if goods_title[j].lower() == "sold-out":
-        continue
-    # 가품 확인
-    fake = False
-    for f in back_data.fakes:
-        if f in goods_title[j]:
-            fake = True
-            break
-    if "x" in goods_title[j].lower():
-        if "xl" in goods_title[j].lower():
-            pass
-        else:
-            fake = True
-    if fake:
-        print("가품 skip: ", goods_title[j])
-        continue
-    # 중복확인
-    if goods_title[j] in subject_list:
-        print("동일상품 skip")
-        continue
+for j in range(100):  # 설정하기
 
     try:
         j += 1
-        print(k,"-",j, "번째아이템 시작")
+        print(j, "번째아이템 시작")
 
-        # 첫번째 창에서 아이템 클릭
+        # 신상: 첫번째 창에서 아이템 클릭
         time.sleep(.5)
-        driver.find_element_by_xpath(
-            f'//*[@id="{id}"]/div/div[{location}]/div/div[2]/div/div/div[1]/div[{j}]/div[1]').click()
+        driver.find_element_by_xpath(f'//*[@id="app"]/div[1]/div[2]/div/div[5]/div/div/div[1]/div[{j}]/div[1]').click()
         time.sleep(1)
+        driver.find_element_by_xpath('//*[@id="goods-detail-modal"]/div/div/div[1]/div/div[2]/div[2]/div[1]/button').click()
+        time.sleep(.5)
         addr = driver.current_url
 
-        # 아이템화면 진입 (새창- 3번째 창)
+        # 신상: 아이템화면 진입 (새창- 3번째 창)
         driver.switch_to.new_window('tab')
         driver.switch_to.window(driver.window_handles[2])
         driver.get(addr)
         time.sleep(1)
         wait.until(EC.presence_of_element_located((By.XPATH, '// *[ @ id = "goods-detail"] / div / div[2] / div[2] / div[1] / p')))
 
-        # 소스 수집
+        # 신상: 소스 수집 (새창- 3번째 창)
         html = driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
 
-        # 제목따기
+        # 신상: 제목따기 (새창- 3번째 창)
         subject_ = driver.find_element_by_xpath('// *[ @ id = "goods-detail"] / div / div[2] / div[2] / div[1] / p').text
         subject = subject_.strip()
-        subject = back_data.name_change(subject) #ops등 제목 수정
-        print("품명: ", subject_, subject)
+        subject = back_data_mine.name_change(subject) #ops등 제목 수정
+        print("품명: ", subject_,";", subject)
 
-        #검색어
-        subject_keywords = subject.replace(" ", ",")
-        subject_keywords = subject_keywords.split(",")
-        subject_keywords = [subject_keyword[0:18] for subject_keyword in subject_keywords]
-        subject_keywords = ",".join(subject_keywords)
+        # 신상: 거래처따기 (새창- 3번째 창)
+        seller = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').text.strip()
+        print("거래처: ", seller)
 
-        # 품절 다시한번 확인
+        # 신상: 기본정보 따기 (새창- 3번째 창)
+        table = {}
+        datas = soup.find_all("div", attrs={'class': re.compile('w-full flex border-b border-gray-30')})
+        for data in datas:
+            t_key = data.find("div", attrs={'class': 'w-[120px] py-[20px] pl-[12px] text-gray-80 border-r border-gray-30 flex items-center'}).get_text().strip()
+            t_value = data.find("div", attrs={'class': 'information-row__content flex items-center text-gray-100 py-[20px] px-[24px]'})
+            if len(t_value)>1:
+                t_val = []
+                for i in t_value:
+                    t_val.append(i.get_text().strip())
+            else:
+                t_val = t_value.get_text().strip()
+            table[t_key] = t_val
+
+        table['색상'] = table['색상'].replace(" ", "").split(',')
+        for i in range(len(table['색상'])):
+            if table['색상'][i] in back_data_mine.color_:
+                table['색상'][i] = back_data_mine.color_[table['색상'][i]]
+
+        table['사이즈'] = table['사이즈'].replace(" ", "").split(',')
+        table['상품등록정보'] = table['상품등록정보'].replace(" ", "").split("등록")[0]
+        registered = table['상품등록정보']
+
+        # 신상: 낱장여부 확인 (새창- 3번째 창)
+        if table['낱장 여부'] != '낱장 가능':
+            print("낱장 안됨 skip: ", subject)
+            driver.close()  # 창닫기
+            driver.switch_to.window(driver.window_handles[0])
+            action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+            continue
+
+        # 신상: 기존 cafe24업로드 여부 확인 (새창- 3번째 창)
+        if (subject,seller) in goods_list:
+            print("cafe24에 이미있음 skip: ", subject)
+            driver.close()  # 창닫기
+            driver.switch_to.window(driver.window_handles[0])
+            action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+            continue
+
+        # 신상: 가품 확인 (새창- 3번째 창)
+        fake = False
+        for f in back_data_mine.fakes:
+            if f in subject:
+                fake = True
+                break
+        if "x" in subject.lower():
+            if "xl" in subject.lower():
+                pass
+            else:
+                fake = True
+        if fake:
+            print("가품 skip: ", subject)
+            driver.close()  # 창닫기
+            driver.switch_to.window(driver.window_handles[0])
+            action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+            continue
+
+        # 신상: 중복업데이트확인 (새창- 3번째 창)
+        if (subject,seller) in subject_list:
+            print("중복상품 업로드 skip")
+            driver.close()  # 창닫기
+            driver.switch_to.window(driver.window_handles[0])
+            action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+            continue
+
+        # 신상: 품절 확인
         if soup.find("div", attrs={'class': 'sold-out'}):
             print("품절상품 skip")
             driver.close()  # 창닫기
@@ -227,19 +269,21 @@ for j in range(len(goods_title[:3])):  # len(goods_title[:number])로 재설정 
             action.send_keys(Keys.ESCAPE).perform() # 찜목록으로 재진입
             continue
 
-        """
+        # 신상: 검색어
+        subject_keywords = subject.replace(" ", ",")
+        subject_keywords = subject_keywords.split(",")
+        subject_keywords = [subject_keyword[0:18] for subject_keyword in subject_keywords]
+        subject_keywords = ",".join(subject_keywords)
+
         # 제품 상세설명 따기
         try:
             r = soup.find("div", attrs={"class": "row__content"}).get_text()
-            r = r.replace("\n", "<br>")
-            comment = r.split(dividor)[0]
+            p = re.compile('.*모델정보[^\n]*\n', re.DOTALL)
+            m = p.search(r)
+            comment = m.group()
         except:
             comment = ""
-        """
 
-        # 거래처따기
-        seller = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').text.strip()
-        print("거래처: ", seller)
 
         # 가격따기
         price = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[3]/div[1]/span').text
@@ -253,14 +297,6 @@ for j in range(len(goods_title[:3])):  # len(goods_title[:number])로 재설정 
         category = driver.find_element_by_xpath(
             '//*[@id="goods-detail"]/div/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[2]/div[2]').text
         print("분류: ", category)
-
-        # 등록일자
-        try:
-            registered = soup.find("div", string=" 상품등록정보 ").next_sibling.get_text()
-            registered = registered.replace(" ","").split("등록")[0]
-        except:
-            registered = ""
-        print("등록일자: ", registered)
 
         # 칼라따기 (리스트)
         color = driver.find_element_by_xpath(
@@ -478,7 +514,7 @@ for j in range(len(goods_title[:3])):  # len(goods_title[:number])로 재설정 
         action.send_keys(Keys.ESCAPE).perform() # 찜목록으로 재진입
         pyautogui.press('ctrl') # sleep 방지
         print(k, "-", j, "번째아이템 완료")
-        subject_list.append(subject)
+        subject_list.append((subject,seller))
     except:
         print(k,"-",j, "번째아이템 오류")
         error_.append(j-1)#index로 표시

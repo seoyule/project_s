@@ -62,10 +62,10 @@ category_list = {
            '//*[@id="eCategoryTbody"]/tr/td[2]/div/ul/li[7]'],
 }
 
-urls = [("https://sinsangmarket.kr/store/16892?isPublic=1","디오트 2층 C01 1STAR 원스타","no","no"),("https://sinsangmarket.kr/store/9466?isPublic=1","디오트 1층 C23 andante 안단테","no","no"),("https://sinsangmarket.kr/store/17944?isPublic=1","테크노 별관 9호 Bough 보우","no","no"),("https://sinsangmarket.kr/store/1429?isPublic=1","디오트 5층 E-05호 BUSTLING 버슬링","no","no"),("https://sinsangmarket.kr/store/21015?isPublic=1","디오트 2층 i-09 Byme바이미","no","no"),("https://sinsangmarket.kr/store/21781?isPublic=1","누죤 지하2층 213호 CC하니","no","no"),("https://sinsangmarket.kr/store/12007?isPublic=1","디오트 2층 C13 COMMASHOP(콤마샵)","no","no")]
-
 fakes = ['디옷','디올','디오르','디욜','샤x','샤널','에르','에르메스','샤','구구','GC','구c','CHA','루이','베네','타이틀','PXG','탐브',
          '프라','MI','몽끌','에트로','베르체','coco','COCO','CD','cd','헤지','TB']
+
+color_ = {'베':'베이지','검':'검은색'}
 
 def name_change(subject):
     subject = subject.lower().replace("ops"," 원피스")
