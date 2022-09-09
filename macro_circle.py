@@ -1,8 +1,5 @@
 # for 변수: k,j,i
 from bs4 import BeautifulSoup  # 파싱된 데이터를 python에서 사용하기 좋게 변환
-from selenium import webdriver  # webdriver를 통해 파싱하기 위함
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
 import os
 import re
 import time
@@ -11,12 +8,15 @@ import pyautogui
 import warnings
 import shutil
 from PIL import Image
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-import back_data
-from selenium.webdriver.support.ui import Select
 import math
+import back_data
+from selenium import webdriver  # webdriver를 통해 파싱하기 위함
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support.ui import WebDriverWait
 
 ################################여기 입력해 주기###################################
 urls = back_data.urls
