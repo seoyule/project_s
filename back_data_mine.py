@@ -67,6 +67,8 @@ fakes = ['디옷','디올','디오르','디욜','샤x','샤널','에르','에르
 
 color_ = {'베':'베이지','검':'검은색'}
 
+image_check = ['이미지 사용 불가','이미지 공유가 불가','이미지 사용이 금지']
+
 def name_change(subject):
     subject = subject.lower().replace("ops"," 원피스")
     subject = subject.lower().replace("ope", " 원피스")

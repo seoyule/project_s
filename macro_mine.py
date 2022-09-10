@@ -18,18 +18,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
 
-################################여기 입력해 주기###################################
-
-start = [1] # 샵 중간부터 시작 시작
-number_d = 100 # 0일 경우 모든 상품, 지정하려면 숫자 입력
-
-margin = .25
-delivery_fee = 1300
-down_path = '/Users/seoyulejo/Downloads/imgs/'
-
-###############################################################################
 
 # 기본세팅
+start = 5 # 샵 중간부터 시작 시작
+number = 100 # 아이템 검색 개수
+down_path = '/Users/seoyulejo/Downloads/imgs/'
+error = []
+n = 0 #완료된 상품 개수
+subject_list = [] # 중복상품 체크
+
 warnings.filterwarnings("ignore")
 
 options = webdriver.ChromeOptions()
@@ -38,14 +35,14 @@ options.add_argument("window-size=1920x1080")
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 
 driver = webdriver.Chrome("/Users/seoyulejo/chromedriver") #, options=options
-driver.maximize_window()
+#driver.maximize_window()
 driver.implicitly_wait(15)
 action = ActionChains(driver)
 wait = WebDriverWait(driver, 10)
 
 category_list = back_data_mine.category_list # 분류설정
 
-# 신상: 신상마켓 로그인
+# 기본-신상: 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
 try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
@@ -61,7 +58,7 @@ time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[3]/div[2]/div/button').click()
 print("신상 로그인 성공")
 
-# 신상: 광고 있으면 close
+# 기본-신상: 광고 있으면 close
 time.sleep(.5)
 try:
     driver.find_element_by_class_name("button.close-button").click()
@@ -69,23 +66,23 @@ try:
 except:
     pass
 
-# 신상: 한글로 바꾸기
+# 기본-신상: 한글로 바꾸기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/ul/li[1]/label').click()
 time.sleep(.5)
 
-# 신상: 광고 있으면 close
+# 기본-신상: 광고 있으면 close
 try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
     pass
 
-# 신상: 신상초이스 진입
+# 기본-신상: 신상초이스 진입
 driver.get('https://sinsangmarket.kr/sinsangChoice')
 
-# cafe24: 열기
+# 기본-cafe24: 열기
 driver.execute_script('window.open("https://eclogin.cafe24.com/Shop/");')
 driver.switch_to.window(driver.window_handles[1])
 time.sleep(.5)
@@ -97,7 +94,7 @@ action.send_keys('!QAZwsx123').perform()
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="frm_user"]/div/div[3]/button').click()
 time.sleep(1)
-# cafe24: 광고 있으면 close
+# 기본-cafe24: 광고 있으면 close
 try:
     driver.find_element_by_class_name("btnClose.eClose").click()
     time.sleep(.3)
@@ -108,24 +105,24 @@ driver.find_element_by_class_name('btnPromodeView').click()# new 관리자 화�
 time.sleep(.5)
 print("cafe24 진입")
 
-# cafe24: 상품목록 진입
+# 기본-cafe24: 상품목록 진입
 driver.get('https://soyool.cafe24.com/disp/admin/shop1/product/productmanage')
 time.sleep(1)
 driver.find_element_by_xpath('//*[@id="eBtnSearch"]').click()  # 조회버튼 클릭
 time.sleep(1)
 
-# cafe24: 상품 목록 출력
+# 기본-cafe24: 상품 목록 출력
 num_goods = driver.find_element_by_xpath('//*[@id="QA_list2"]/div[2]/div[1]/p').text
 num_goods = int(num_goods.split(" ")[1].split("개")[0])
 looping_num = num_goods / 100
 looping_num = math.ceil(looping_num)
 
-# cafe24: 100개씩 보이게
+# 기본-cafe24: 100개씩 보이게
 select = Select(driver.find_element_by_xpath('//*[@id="QA_list2"]/div[2]/div[2]/select[2]'))  # 검색종류
 select.select_by_visible_text('100개씩보기')
 time.sleep(1)
 
-# cafe24: 공급사 보이게
+# 기본-cafe24: 공급사 보이게
 driver.find_element_by_xpath('//*[@id="QA_list2"]/div[3]/div[3]/div/a/span').click()
 time.sleep(.2)
 driver.find_element_by_xpath('//*[@id="listSubject"]/div[1]/ul/li[15]/label').click()
@@ -133,7 +130,7 @@ time.sleep(.2)
 driver.find_element_by_xpath('//*[@id="eColumnApply"]/span').click()
 time.sleep(1)
 
-# cafe24: 목록 뽑기 (goods_list)
+# 기본-cafe24: 목록 뽑기 (goods_list)
 goods_list = []
 for loop in range(looping_num):
     if loop != 0:
@@ -151,25 +148,20 @@ for loop in range(looping_num):
         goods_list.append((t_name, t_company))
 
 print(f"cafe24-거래선 전체상품 list 완료: {len(goods_list)}개")
-# cafe24: 상품 등록 창으로 가기
-# driver.get('https://soyool.cafe24.com/disp/admin/shop1/product/productregister')
-
-
-##################### Cafe24에 없는 상품 업데이트 ####################
-
 driver.switch_to.window(driver.window_handles[0])
-subject_list = [] # 중복상품 체크
-error_ = []
 
-for j in range(100):  # 설정하기
+################## 아이템별 스크린 시작 ####################
 
+for j in range(start,number):  # 설정하기
     try:
         j += 1
         print(j, "번째아이템 시작")
 
-        # 신상: 첫번째 창에서 아이템 클릭
+        # 신상: 아이템 클릭 (첫번째 창)
         time.sleep(.5)
-        driver.find_element_by_xpath(f'//*[@id="app"]/div[1]/div[2]/div/div[5]/div/div/div[1]/div[{j}]/div[1]').click()
+        element = driver.find_element_by_xpath(f'//*[@id="app"]/div[1]/div[2]/div/div[5]/div/div/div[1]/div[{j}]/div[1]')
+        action.move_to_element(element).perform()
+        element.click()
         time.sleep(1)
         driver.find_element_by_xpath('//*[@id="goods-detail-modal"]/div/div/div[1]/div/div[2]/div[2]/div[1]/button').click()
         time.sleep(.5)
@@ -210,14 +202,21 @@ for j in range(100):  # 설정하기
                 t_val = t_value.get_text().strip()
             table[t_key] = t_val
 
+        color = table['색상']
         table['색상'] = table['색상'].replace(" ", "").split(',')
         for i in range(len(table['색상'])):
             if table['색상'][i] in back_data_mine.color_:
                 table['색상'][i] = back_data_mine.color_[table['색상'][i]]
-
+        size = table['사이즈']
         table['사이즈'] = table['사이즈'].replace(" ", "").split(',')
+        if table['사이즈'][0] == 'F':
+            table['사이즈'][0] = 'Free'
         table['상품등록정보'] = table['상품등록정보'].replace(" ", "").split("등록")[0]
+
         registered = table['상품등록정보']
+        category = table['카테고리'][1]
+        color_ = table['색상']
+        size_ = table['사이즈']
 
         # 신상: 낱장여부 확인 (새창- 3번째 창)
         if table['낱장 여부'] != '낱장 가능':
@@ -270,12 +269,15 @@ for j in range(100):  # 설정하기
             continue
 
         # 신상: 검색어
-        subject_keywords = subject.replace(" ", ",")
+        subject_keywords = subject.replace(", ", ",")
+        subject_keywords = subject_keywords.replace(" ", ",")
+        subject_keywords = subject_keywords.replace("(", ",")
+        subject_keywords = subject_keywords.replace(")", ",")
         subject_keywords = subject_keywords.split(",")
         subject_keywords = [subject_keyword[0:18] for subject_keyword in subject_keywords]
         subject_keywords = ",".join(subject_keywords)
 
-        # 제품 상세설명 따기
+        # 신상: 제품 상세설명 따기
         try:
             r = soup.find("div", attrs={"class": "row__content"}).get_text()
             p = re.compile('.*모델정보[^\n]*\n', re.DOTALL)
@@ -284,33 +286,26 @@ for j in range(100):  # 설정하기
         except:
             comment = ""
 
+        # 신상: 이미지 사용가능 여부 체크
+        image_avail = ""
+        for i in back_data_mine.image_check:
+            if i in r:
+                image_avail = True
+                break
+        if image_avail == True:
+            print("이미지 사용불가 skip")
+            driver.close()  # 창닫기
+            driver.switch_to.window(driver.window_handles[0])
+            action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+            continue
 
-        # 가격따기
-        price = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[3]/div[1]/span').text
+        # 신상:가격따기
+        price = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[3]/div[1]/div/span').text
         price = int(re.sub(r'[^0-9]', '', price))
-        price_ = int(round((price+delivery_fee)/(1-(.13+margin)), -3)) #https://docs.google.com/spreadsheets/d/1ZNMG8hey03UuLasNO5dEvQo1ncBi-GZXVQn6WP5EMZQ/edit#gid=289254889
+        price_ = int(round((price*(1.033)+(300+1000))/(1-(.13+.25)), -3)) #https://docs.google.com/spreadsheets/d/1ZNMG8hey03UuLasNO5dEvQo1ncBi-GZXVQn6WP5EMZQ/edit#gid=289254889
         if price_ < 10000:
             price_ = 10000
         print("매입가/판매가: ", price, price_)
-
-        # 분류 따기
-        category = driver.find_element_by_xpath(
-            '//*[@id="goods-detail"]/div/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[2]/div[2]').text
-        print("분류: ", category)
-
-        # 칼라따기 (리스트)
-        color = driver.find_element_by_xpath(
-            '//*[@id="goods-detail"]/div/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[2]/div[2]').text
-        color.replace(" ", "")
-        color_ = color.split(',')
-        print("색상: ", color)
-
-        # 사이즈따기 (리스트)
-        size = driver.find_element_by_xpath(
-            '//*[@id="goods-detail"]/div/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[3]/div[2]').text
-        size.replace(" ", "")
-        size_ = size.split(',')
-        print("사이즈: ", size)
 
         # 이미지 다운로드
         r = soup.select_one('.swiper-wrapper')
@@ -335,12 +330,12 @@ for j in range(100):  # 설정하기
         #세번째 창 닫기
         driver.close() #창닫기
 
-        ############################# 입력 시작 ###################################3
+############################# 입력 시작 ###################################3
 
         # cafe24 상품등록으로 가기 (일반등록)
         driver.switch_to.window(driver.window_handles[1])
         time.sleep(.5)
-        driver.get("http://crosschungdam.cafe24.com/disp/admin/shop1/product/productregister") # new 관리자 - 등록
+        driver.get("http://soyool.cafe24.com/disp/admin/shop1/product/productregister") # new 관리자 - 등록
         time.sleep(1)
 
         # 진열상태, 판매상태 업데이트
@@ -350,16 +345,13 @@ for j in range(100):  # 설정하기
         time.sleep(.3)
 
         # 상품분류
-        if urls[k][3].lower() == "yes":
-            driver.find_element_by_xpath('//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[10]').click()
-        else:
-            try:
-                for i in range(len(category_list[category])):
-                    driver.find_element_by_xpath(category_list[category][i]).click()
-                    time.sleep(.3)
-            except:
-                driver.find_element_by_xpath(
-                    '//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[11]').click()
+        try:
+            for i in range(len(category_list[category])):
+                driver.find_element_by_xpath(category_list[category][i]).click()
+                time.sleep(.3)
+        except:
+            driver.find_element_by_xpath(
+                '//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[18]').click()
         driver.find_element_by_xpath('//*[@id="eCategoryTbody"]/tr/td[5]/div').click() #등록
 
         # 상품명 입력
@@ -370,9 +362,6 @@ for j in range(100):  # 설정하기
         driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[1]/tbody/tr[2]/td/div[1]/input').click()
         action.send_keys(subject_).perform() #원래 상품명: 영문상품명에 입력
         time.sleep(.2)
-        driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[1]/tbody/tr[3]/td/input').click()
-        action.send_keys(subject_[0:49]).perform()
-        time.sleep(.3)
 
         # seller 공급사 상품명에 등록
         driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[1]/tbody/tr[4]/td/input').click()
@@ -382,12 +371,11 @@ for j in range(100):  # 설정하기
         # 상세설명 입력
         html_template = f"""    
         <h2>기본정보</h2>
-        <br>
-        <table bgcolor="#D9E5FF" style="font-family: arial, sans-serif; border-collapse: collapse; font-size:120%;">
+        <table>
             <tbody>
                 <tr>
                     <td>카테고리</td>
-                    <td>{category}</td>
+                    <td>{table["카테고리"][0]} > {table["카테고리"][1]}</td>
                 </tr>
                 <tr>
                     <td>색상</td>
@@ -398,14 +386,19 @@ for j in range(100):  # 설정하기
                     <td>{size}</td>
                 </tr>
                 <tr>
+                    <td>혼용률</td>
+                    <td>{table["혼용률"]}</td>
+                </tr>
+                <tr>
                     <td>등록일자</td>
                     <td>{registered}</td>
                 </tr>
             </tbody>
         </table>
         <br>
-        <p style="font-family: arial, sans-serif; font-size:120%;">더 다양한 상품을 <a style="text-decoration-line:underline; color: green;" href="http://chungdam-cross.co.kr">청담크로스</a>에서 만나보세요 :) </p>
-        <p><a style="text-decoration-line:underline; color: green;" href="http://chungdam-cross.co.kr">http://chungdam-cross.co.kr</a></p>
+        <p>{comment}</p>
+        <p>더 다양한 상품을 soyool샵에서 만나보세요 :) </p>
+        <p>https://soyool.co.kr/</p>
         <br>
         """
         driver.find_element_by_xpath('//*[@id="eTabNnedit"]').click()
@@ -430,14 +423,15 @@ for j in range(100):  # 설정하기
         time.sleep(.5)
 
         #검색어 입력
-        wait.until(EC.element_to_be_clickable((By.XPATH,'//*[@id="QA_register2"]/div[2]/div/table[2]/tbody/tr/td/div/input'))).click()
-        driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[2]/tbody/tr/td/div/input').click()
+        element = driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[2]/tbody/tr/td/div/input')
+        action.move_to_element(element).perform()
+        element.click()
         action.send_keys(subject_keywords[:49]).perform()
 
         # 가격입력
-        action.send_keys(Keys.PAGE_DOWN).perform()
-        time.sleep(.5)
-        driver.find_element_by_xpath('//*[@id="product_price"]').click()
+        element = driver.find_element_by_xpath('//*[@id="product_price"]')
+        action.move_to_element(element).perform()
+        element.click()
         action.send_keys(price_).perform()
         time.sleep(.5)
 
@@ -468,9 +462,6 @@ for j in range(100):  # 설정하기
         action.send_keys(Keys.PAGE_DOWN).perform()
 
         # 이미지 등록
-        #driver.find_element_by_xpath('//*[@id="imgRegisterContainer"]/ul/li[1]/span[4]/a[1]').click()
-        #time.sleep(1)
-        #pyautogui.press('escape')
         time.sleep(.5)
         if len(s) > 1:
             driver.find_element_by_xpath('//*[@id="imageFiles"]').send_keys(
@@ -483,9 +474,6 @@ for j in range(100):  # 설정하기
         # 추가 이미지 등록
         action.send_keys(Keys.PAGE_DOWN).perform()
         if len(s) > 1:
-            #driver.find_element_by_xpath('//*[@id="QA_register5"]/div[2]/div/table/tbody/tr[2]/td/div/div[1]/div[2]/a').click()
-            #time.sleep(.5)
-            #pyautogui.press('escape')
             for i in range(len(s)):
                 if i==1 or i >=20:
                     continue
@@ -513,11 +501,13 @@ for j in range(100):  # 설정하기
         driver.switch_to.window(driver.window_handles[0])
         action.send_keys(Keys.ESCAPE).perform() # 찜목록으로 재진입
         pyautogui.press('ctrl') # sleep 방지
-        print(k, "-", j, "번째아이템 완료")
-        subject_list.append((subject,seller))
+        print(j, "번째아이템 완료")
+        subject_list.append((subject, seller))
+        n+=1
+
     except:
-        print(k,"-",j, "번째아이템 오류")
-        error_.append(j-1)#index로 표시
+        print(j, "번째아이템 오류")
+        error.append(j-1) #index로 표시
         try:
             driver.switch_to.window(driver.window_handles[2])
             driver.close()  # 창닫기
@@ -534,8 +524,8 @@ for j in range(100):  # 설정하기
         except OSError as e:
             print("Error: %s : %s" % (down_path + f"{j}_{subject}", e.strerror))
 
-error.append(error_)
 
+print("완료된 상품 개수:", n)
 print("error list: ", error)
 print("finished")
 
