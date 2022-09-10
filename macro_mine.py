@@ -20,8 +20,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 # 기본세팅
-start = 5 # 샵 중간부터 시작 시작
-number = 100 # 아이템 검색 개수
+start = 78 # 샵 중간부터 시작 시작 - 개수 번째
+number = 1000 # 아이템 검색 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 n = 0 #완료된 상품 개수
@@ -34,8 +34,8 @@ options.headless = True
 options.add_argument("window-size=1920x1080")
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 
-driver = webdriver.Chrome("/Users/seoyulejo/chromedriver") #, options=options
-#driver.maximize_window()
+driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, options=options
+driver.maximize_window()
 driver.implicitly_wait(15)
 action = ActionChains(driver)
 wait = WebDriverWait(driver, 10)
@@ -152,48 +152,38 @@ driver.switch_to.window(driver.window_handles[0])
 
 ################## 아이템별 스크린 시작 ####################
 
-for j in range(start,number):  # 설정하기
+for j in range(start-1,number):  # 설정하기
     try:
         j += 1
         print(j, "번째아이템 시작")
 
         # 신상: 아이템 클릭 (첫번째 창)
-        time.sleep(.5)
+        time.sleep(1)
         element = driver.find_element_by_xpath(f'//*[@id="app"]/div[1]/div[2]/div/div[5]/div/div/div[1]/div[{j}]/div[1]')
         action.move_to_element(element).perform()
         element.click()
         time.sleep(1)
         driver.find_element_by_xpath('//*[@id="goods-detail-modal"]/div/div/div[1]/div/div[2]/div[2]/div[1]/button').click()
-        time.sleep(.5)
+        time.sleep(1)
         addr = driver.current_url
 
         # 신상: 아이템화면 진입 (새창- 3번째 창)
         driver.switch_to.new_window('tab')
+        time.sleep(1)
         driver.switch_to.window(driver.window_handles[2])
         driver.get(addr)
-        time.sleep(1)
-        wait.until(EC.presence_of_element_located((By.XPATH, '// *[ @ id = "goods-detail"] / div / div[2] / div[2] / div[1] / p')))
+        time.sleep(2)
 
         # 신상: 소스 수집 (새창- 3번째 창)
         html = driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
 
-        # 신상: 제목따기 (새창- 3번째 창)
-        subject_ = driver.find_element_by_xpath('// *[ @ id = "goods-detail"] / div / div[2] / div[2] / div[1] / p').text
-        subject = subject_.strip()
-        subject = back_data_mine.name_change(subject) #ops등 제목 수정
-        print("품명: ", subject_,";", subject)
-
-        # 신상: 거래처따기 (새창- 3번째 창)
-        seller = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').text.strip()
-        print("거래처: ", seller)
-
         # 신상: 기본정보 따기 (새창- 3번째 창)
         table = {}
         datas = soup.find_all("div", attrs={'class': re.compile('w-full flex border-b border-gray-30')})
         for data in datas:
-            t_key = data.find("div", attrs={'class': 'w-[120px] py-[20px] pl-[12px] text-gray-80 border-r border-gray-30 flex items-center'}).get_text().strip()
-            t_value = data.find("div", attrs={'class': 'information-row__content flex items-center text-gray-100 py-[20px] px-[24px]'})
+            t_key = data.find("div", attrs={'class': re.compile('text-gray-80 border-r border-gray-30')}).get_text().strip()
+            t_value = data.find("div", attrs={'class': re.compile('text-gray-100')})
             if len(t_value)>1:
                 t_val = []
                 for i in t_value:
@@ -217,6 +207,17 @@ for j in range(start,number):  # 설정하기
         category = table['카테고리'][1]
         color_ = table['색상']
         size_ = table['사이즈']
+
+        # 신상: 제목따기 (새창- 3번째 창)
+        subject_ = driver.find_element_by_xpath('// *[ @ id = "goods-detail"] / div / div[2] / div[2] / div[1] / p').text
+        subject = subject_.strip()
+        subject = back_data_mine.name_change(subject) #ops등 제목 수정
+        subject = category + " " + subject
+        print("품명: ", subject_,";", subject)
+
+        # 신상: 거래처따기 (새창- 3번째 창)
+        seller = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').text.strip()
+        print("거래처: ", seller)
 
         # 신상: 낱장여부 확인 (새창- 3번째 창)
         if table['낱장 여부'] != '낱장 가능':
@@ -363,47 +364,32 @@ for j in range(start,number):  # 설정하기
         action.send_keys(subject_).perform() #원래 상품명: 영문상품명에 입력
         time.sleep(.2)
 
+        # 등록일 입력 - 상품명(관리용)에..
+        driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[1]/tbody/tr[3]/td/input').click()
+        action.send_keys(table.get('상품등록정보')).perform()
+        time.sleep(.3)
+
         # seller 공급사 상품명에 등록
         driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[1]/tbody/tr[4]/td/input').click()
         action.send_keys(seller[:240]).perform()
         time.sleep(.3)
 
+        #url 모델명에 등록
+        driver.find_element_by_xpath('//*[@id="eProductModelName"]').click()
+        action.send_keys(addr).perform()
+        time.sleep(.3)
+
         # 상세설명 입력
-        html_template = f"""    
-        <h2>기본정보</h2>
-        <table>
-            <tbody>
-                <tr>
-                    <td>카테고리</td>
-                    <td>{table["카테고리"][0]} > {table["카테고리"][1]}</td>
-                </tr>
-                <tr>
-                    <td>색상</td>
-                    <td>{color}</td>
-                </tr>
-                <tr>
-                    <td>사이즈</td>
-                    <td>{size}</td>
-                </tr>
-                <tr>
-                    <td>혼용률</td>
-                    <td>{table["혼용률"]}</td>
-                </tr>
-                <tr>
-                    <td>등록일자</td>
-                    <td>{registered}</td>
-                </tr>
-            </tbody>
-        </table>
-        <br>
-        <p>{comment}</p>
-        <p>더 다양한 상품을 soyool샵에서 만나보세요 :) </p>
-        <p>https://soyool.co.kr/</p>
-        <br>
-        """
+        html_template_ = "<h2>기본정보</h2><table><tbody>"
+        for i in table.keys():
+            if i == '낱장 여부':
+                continue
+            html_template_ = html_template_ +f"<tr><td>{i}</td><td>{table[i]}</td></tr>"
+        html_template_ = html_template_ + f"</table></tbody><br><p>{comment}</p><p>더 다양한 상품을 soyool샵에서 만나보세요 :) </p><p>https://soyool.co.kr/</p><br>"
+
         driver.find_element_by_xpath('//*[@id="eTabNnedit"]').click()
         driver.find_element_by_xpath('//*[@id="html-1"]').click()
-        action.send_keys(html_template).perform()
+        action.send_keys(html_template_).perform()
         driver.find_element_by_xpath('//*[@id="html-1"]').click()
         driver.find_element_by_xpath('//*[@id="tabCont1_2"]/div/div/div[2]').click()
         for i in range(30):
