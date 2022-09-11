@@ -20,8 +20,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 # 기본세팅
-start = 86 # 샵 중간부터 시작 시작 - 개수 번째
-number = 1000 # 아이템 검색 개수
+start = 440 # 샵 중간부터 시작 시작 - 개수 번째
+number = 10000 # 아이템 검색 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 n = 0 #완료된 상품 개수
@@ -185,9 +185,9 @@ for j in range(start-1,number):  # 설정하기
         soup = BeautifulSoup(html, 'html.parser')
 
         # 신상: 제목따기 (새창- 3번째 창)
-        subject_ = driver.find_element_by_xpath('// *[ @ id = "goods-detail"] / div / div[2] / div[2] / div[1] / p').text
-        subject = subject_.strip()
-        subject = back_data_mine.name_change(subject) #ops등 제목 수정
+        subject_ = driver.find_element_by_xpath('// *[ @ id = "goods-detail"] / div / div[2] / div[2] / div[1] / p').text.strip()
+        subject_4f = subject_.replace("/", "-")
+        subject = back_data_mine.name_change(subject_) #ops등 제목 수정
 
         # 신상: 거래처따기 (새창- 3번째 창)
         seller = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').text.strip()
@@ -235,7 +235,7 @@ for j in range(start-1,number):  # 설정하기
             continue
 
         # 신상: 기존 cafe24업로드 여부 확인 (새창- 3번째 창)
-        if (subject,seller) in goods_list:
+        if (subject, seller) in goods_list:
             print("cafe24에 이미있음 skip: ", subject)
             driver.close()  # 창닫기
             driver.switch_to.window(driver.window_handles[0])
@@ -261,7 +261,7 @@ for j in range(start-1,number):  # 설정하기
             continue
 
         # 신상: 중복업데이트확인 (새창- 3번째 창)
-        if (subject,seller) in subject_list:
+        if (subject, seller) in subject_list:
             print("중복상품 업로드 skip")
             driver.close()  # 창닫기
             driver.switch_to.window(driver.window_handles[0])
@@ -288,7 +288,7 @@ for j in range(start-1,number):  # 설정하기
         # 신상: 제품 상세설명 따기
         try:
             r = soup.find("div", attrs={"class": "row__content"}).get_text()
-            p = re.compile('.*모델정보[^\n]*\n', re.DOTALL)
+            p = re.compile('.*모델정보[^\n]*', re.DOTALL)
             m = p.search(r)
             comment = m.group()
         except:
@@ -319,13 +319,13 @@ for j in range(start-1,number):  # 설정하기
         r = soup.select_one('.swiper-wrapper')
         s = r.find_all("img")
         count = 0
-        os.mkdir(down_path+f"{j}_{subject}")
+        os.mkdir(down_path+f"{j}_{subject_4f}")
         for i in s:
             link = i.attrs['src']
             #print(link)
             res = requests.get(link)
             if res.status_code == 200 and count < 20:
-                file_ = down_path+f"{j}_{subject}/{subject}_{count + 1}.jpg"
+                file_ = down_path+f"{j}_{subject_4f}/{subject_4f}_{count + 1}.jpg"
                 with open(file_, "wb") as file:
                     file.write(res.content)
                 if os.path.getsize(file_) > 2000000:
@@ -392,7 +392,7 @@ for j in range(start-1,number):  # 설정하기
             if i == '낱장 여부':
                 continue
             html_template_ = html_template_ +f"<tr><td>{i}</td><td>{table[i]}</td></tr>"
-        html_template_ = html_template_ + f"</table></tbody><br><p>{comment}</p><p>더 다양한 상품을 soyool샵에서 만나보세요 :) </p><p>https://soyool.co.kr/</p><br>"
+        html_template_ = html_template_ + f"</table></tbody><br><p>{comment}</p><br><p>더 다양한 상품을 soyool샵에서 만나보세요 :) </p><p>https://soyool.co.kr/</p><br>"
 
         driver.find_element_by_xpath('//*[@id="eTabNnedit"]').click()
         driver.find_element_by_xpath('//*[@id="html-1"]').click()
@@ -405,7 +405,7 @@ for j in range(start-1,number):  # 설정하기
         files = [] #파일선택
         for i in range(len(s)):
             if i<20:
-                files.append(down_path+f"{j}_{subject}/{subject}_{i + 1}.jpg")
+                files.append(down_path+f"{j}_{subject_4f}/{subject_4f}_{i + 1}.jpg")
         list_file = '\n'.join(files)
         time.sleep(.5)
         driver.find_element_by_xpath('//*[@id="fr-files-upload-layer-1"]/div/div[2]/input').send_keys(list_file)
@@ -458,10 +458,10 @@ for j in range(start-1,number):  # 설정하기
         time.sleep(.5)
         if len(s) > 1:
             driver.find_element_by_xpath('//*[@id="imageFiles"]').send_keys(
-                down_path+fr"{j}_{subject}/{subject}_2.jpg")
+                down_path+fr"{j}_{subject_4f}/{subject_4f}_2.jpg")
         else:
             driver.find_element_by_xpath('//*[@id="imageFiles"]').send_keys(
-                down_path+fr"{j}_{subject}/{subject}_1.jpg")
+                down_path+fr"{j}_{subject_4f}/{subject_4f}_1.jpg")
         time.sleep(.5)
 
         # 추가 이미지 등록
@@ -470,7 +470,7 @@ for j in range(start-1,number):  # 설정하기
             for i in range(len(s)):
                 if i==1 or i >=20:
                     continue
-                driver.find_element_by_xpath('//*[@id="eOptionAddImageUpload"]').send_keys(down_path+fr"{j}_{subject}/{subject}_{i+1}.jpg")
+                driver.find_element_by_xpath('//*[@id="eOptionAddImageUpload"]').send_keys(down_path+fr"{j}_{subject_4f}/{subject_4f}_{i+1}.jpg")
                 time.sleep(.3)
 
         # 최종 상품등록
@@ -513,9 +513,9 @@ for j in range(start-1,number):  # 설정하기
     finally:
         # 이미지 폴더 삭제
         try:
-            shutil.rmtree(down_path + f"{j}_{subject}")
+            shutil.rmtree(down_path + f"{j}_{subject_4f}")
         except OSError as e:
-            print("Error: %s : %s" % (down_path + f"{j}_{subject}", e.strerror))
+            print("Error: %s : %s" % (down_path + f"{j}_{subject_4f}", e.strerror))
 
 
 print("완료된 상품 개수:", n)
