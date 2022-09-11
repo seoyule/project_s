@@ -20,7 +20,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 # 기본세팅
-start = 78 # 샵 중간부터 시작 시작 - 개수 번째
+start = 86 # 샵 중간부터 시작 시작 - 개수 번째
 number = 1000 # 아이템 검색 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
@@ -152,6 +152,12 @@ driver.switch_to.window(driver.window_handles[0])
 
 ################## 아이템별 스크린 시작 ####################
 
+for i in range(round(start / 6)):
+    action.send_keys(Keys.PAGE_DOWN).perform()
+    time.sleep(.3)
+action.send_keys(Keys.HOME).perform()
+print("스크롤 완료")
+
 for j in range(start-1,number):  # 설정하기
     try:
         j += 1
@@ -162,14 +168,14 @@ for j in range(start-1,number):  # 설정하기
         element = driver.find_element_by_xpath(f'//*[@id="app"]/div[1]/div[2]/div/div[5]/div/div/div[1]/div[{j}]/div[1]')
         action.move_to_element(element).perform()
         element.click()
-        time.sleep(1)
+        time.sleep(.5)
         driver.find_element_by_xpath('//*[@id="goods-detail-modal"]/div/div/div[1]/div/div[2]/div[2]/div[1]/button').click()
         time.sleep(1)
         addr = driver.current_url
 
         # 신상: 아이템화면 진입 (새창- 3번째 창)
         driver.switch_to.new_window('tab')
-        time.sleep(1)
+        time.sleep(.5)
         driver.switch_to.window(driver.window_handles[2])
         driver.get(addr)
         time.sleep(2)
@@ -177,6 +183,15 @@ for j in range(start-1,number):  # 설정하기
         # 신상: 소스 수집 (새창- 3번째 창)
         html = driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
+
+        # 신상: 제목따기 (새창- 3번째 창)
+        subject_ = driver.find_element_by_xpath('// *[ @ id = "goods-detail"] / div / div[2] / div[2] / div[1] / p').text
+        subject = subject_.strip()
+        subject = back_data_mine.name_change(subject) #ops등 제목 수정
+
+        # 신상: 거래처따기 (새창- 3번째 창)
+        seller = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').text.strip()
+        print("거래처: ", seller)
 
         # 신상: 기본정보 따기 (새창- 3번째 창)
         table = {}
@@ -207,17 +222,9 @@ for j in range(start-1,number):  # 설정하기
         category = table['카테고리'][1]
         color_ = table['색상']
         size_ = table['사이즈']
-
-        # 신상: 제목따기 (새창- 3번째 창)
-        subject_ = driver.find_element_by_xpath('// *[ @ id = "goods-detail"] / div / div[2] / div[2] / div[1] / p').text
-        subject = subject_.strip()
-        subject = back_data_mine.name_change(subject) #ops등 제목 수정
         subject = category + " " + subject
-        print("품명: ", subject_,";", subject)
-
-        # 신상: 거래처따기 (새창- 3번째 창)
-        seller = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').text.strip()
-        print("거래처: ", seller)
+        print("품명: ", subject)
+        print("table: ", table)
 
         # 신상: 낱장여부 확인 (새창- 3번째 창)
         if table['낱장 여부'] != '낱장 가능':
@@ -487,9 +494,9 @@ for j in range(start-1,number):  # 설정하기
         driver.switch_to.window(driver.window_handles[0])
         action.send_keys(Keys.ESCAPE).perform() # 찜목록으로 재진입
         pyautogui.press('ctrl') # sleep 방지
-        print(j, "번째아이템 완료")
         subject_list.append((subject, seller))
         n+=1
+        print(f"{j}번째아이템 완료 ({n}개 업로드)")
 
     except:
         print(j, "번째아이템 오류")
