@@ -20,8 +20,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 # 기본세팅
-start = 440 # 샵 중간부터 시작 시작 - 개수 번째
-number = 10000 # 아이템 검색 개수
+start = 4238 # 샵 중간부터 시작 시작 - 개수 번째
+number = 50000 # 아이템 검색 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 n = 0 #완료된 상품 개수
@@ -169,7 +169,7 @@ for j in range(start-1,number):  # 설정하기
         action.move_to_element(element).perform()
         element.click()
         time.sleep(.5)
-        driver.find_element_by_xpath('//*[@id="goods-detail-modal"]/div/div/div[1]/div/div[2]/div[2]/div[1]/button').click()
+        driver.find_element_by_xpath('//*[@id="goods-detail-modal"]/div/div/div[1]/div/div[2]/div[2]/div[1]/button').click() # 거래선으로 가기.. 없는 경우도 있다.
         time.sleep(1)
         addr = driver.current_url
 
@@ -199,13 +199,14 @@ for j in range(start-1,number):  # 설정하기
         for data in datas:
             t_key = data.find("div", attrs={'class': re.compile('text-gray-80 border-r border-gray-30')}).get_text().strip()
             t_value = data.find("div", attrs={'class': re.compile('text-gray-100')})
-            if len(t_value)>1:
-                t_val = []
-                for i in t_value:
-                    t_val.append(i.get_text().strip())
-            else:
-                t_val = t_value.get_text().strip()
-            table[t_key] = t_val
+            if t_value:
+                if len(t_value)>1:
+                    t_val = []
+                    for i in t_value:
+                        t_val.append(i.get_text().strip())
+                else:
+                    t_val = t_value.get_text().strip()
+                table[t_key] = t_val
 
         color = table['색상']
         table['색상'] = table['색상'].replace(" ", "").split(',')
@@ -213,6 +214,7 @@ for j in range(start-1,number):  # 설정하기
             if table['색상'][i] in back_data_mine.color_:
                 table['색상'][i] = back_data_mine.color_[table['색상'][i]]
         size = table['사이즈']
+        table['사이즈'] = table['사이즈'].lower().replace("sml","S,M,L")
         table['사이즈'] = table['사이즈'].replace(" ", "").split(',')
         if table['사이즈'][0] == 'F':
             table['사이즈'][0] = 'Free'
@@ -335,7 +337,13 @@ for j in range(start-1,number):  # 설정하기
             count += 1
         print("이미지저장 완료")
 
-        #세번째 창 닫기
+        # 하트 클릭
+        element = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[3]/div[2]/div[2]/button')
+        action.move_to_element(element).perform()
+        element.click()
+        time.sleep(.3)
+
+        # 세번째 창 닫기
         driver.close() #창닫기
 
 ############################# 입력 시작 ###################################3
@@ -493,10 +501,10 @@ for j in range(start-1,number):  # 설정하기
 
         driver.switch_to.window(driver.window_handles[0])
         action.send_keys(Keys.ESCAPE).perform() # 찜목록으로 재진입
-        pyautogui.press('ctrl') # sleep 방지
         subject_list.append((subject, seller))
         n+=1
         print(f"{j}번째아이템 완료 ({n}개 업로드)")
+        pyautogui.press('ctrl')  # sleep 방지
 
     except:
         print(j, "번째아이템 오류")
