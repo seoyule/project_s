@@ -54,6 +54,8 @@ def name_change(subject):
     subject = subject.lower().replace("jk", " 자켓")
     subject = subject.lower().replace("set", " 세트")
     subject = subject.lower().replace("tee", " 티셔츠")
+    subject = subject.lower().replace("판매1위", "")
+    subject = subject.lower().replace("  ", " ")
     if re.search("bl$|BL$", subject):
         subject = subject.lower().replace("bl", " 블라우스")
     return subject

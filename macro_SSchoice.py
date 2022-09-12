@@ -20,12 +20,13 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 # 기본세팅
-start = 4238 # 샵 중간부터 시작 시작 - 개수 번째
+start = 4318 # 샵 중간부터 시작 시작 - 개수 번째
 number = 50000 # 아이템 검색 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 n = 0 #완료된 상품 개수
 subject_list = [] # 중복상품 체크
+subject_4f = ""
 
 warnings.filterwarnings("ignore")
 
@@ -152,11 +153,11 @@ driver.switch_to.window(driver.window_handles[0])
 
 ################## 아이템별 스크린 시작 ####################
 
-for i in range(round(start / 6)):
+for i in range(round(start / 8)):
     action.send_keys(Keys.PAGE_DOWN).perform()
     time.sleep(.3)
-action.send_keys(Keys.HOME).perform()
 print("스크롤 완료")
+time.sleep(5)
 
 for j in range(start-1,number):  # 설정하기
     try:
@@ -164,6 +165,7 @@ for j in range(start-1,number):  # 설정하기
         print(j, "번째아이템 시작")
 
         # 신상: 아이템 클릭 (첫번째 창)
+        pyautogui.press('ctrl')  # sleep 방지
         time.sleep(1)
         element = driver.find_element_by_xpath(f'//*[@id="app"]/div[1]/div[2]/div/div[5]/div/div/div[1]/div[{j}]/div[1]')
         action.move_to_element(element).perform()
@@ -504,7 +506,6 @@ for j in range(start-1,number):  # 설정하기
         subject_list.append((subject, seller))
         n+=1
         print(f"{j}번째아이템 완료 ({n}개 업로드)")
-        pyautogui.press('ctrl')  # sleep 방지
 
     except:
         print(j, "번째아이템 오류")
@@ -523,7 +524,7 @@ for j in range(start-1,number):  # 설정하기
         try:
             shutil.rmtree(down_path + f"{j}_{subject_4f}")
         except OSError as e:
-            print("Error: %s : %s" % (down_path + f"{j}_{subject_4f}", e.strerror))
+            print(e.strerror)
 
 
 print("완료된 상품 개수:", n)
