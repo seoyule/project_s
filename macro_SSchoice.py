@@ -9,6 +9,7 @@ import warnings
 import shutil
 import math
 import back_data_mine
+import pickle
 from PIL import Image
 from selenium import webdriver  # webdriver를 통해 파싱하기 위함
 from selenium.webdriver.common.keys import Keys
@@ -20,8 +21,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 # 기본세팅
-start = 1 # 샵 중간부터 시작 시작 - 개수 번째
-number = 300 # 아이템 검색 개수
+start = 24 # 샵 중간부터 시작 시작 - 개수 번째
+number = 150 # 아이템 검색 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 n = 0 #완료된 상품 개수
@@ -42,6 +43,8 @@ action = ActionChains(driver)
 wait = WebDriverWait(driver, 10)
 
 category_list = back_data_mine.category_list # 분류설정
+with open('listfile', 'rb') as fp: # url 리스트 불러오기
+    urls = pickle.load(fp)
 
 # 기본-신상: 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
@@ -230,6 +233,14 @@ for j in range(start-1,number):  # 설정하기
         print("품명: ", subject)
         print("table: ", table)
 
+        # 신상: 기존 cafe24업로드 여부 확인 (새창- 3번째 창)
+        if (subject, seller) in goods_list:
+            print("cafe24에 이미있음 skip: ", subject)
+            driver.close()  # 창닫기
+            driver.switch_to.window(driver.window_handles[0])
+            action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+            continue
+
         # 신상: 낱장여부 확인 (새창- 3번째 창)
         if table['낱장 여부'] != '낱장 가능':
             print("낱장 안됨 skip: ", subject)
@@ -238,13 +249,17 @@ for j in range(start-1,number):  # 설정하기
             action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
             continue
 
-        # 신상: 기존 cafe24업로드 여부 확인 (새창- 3번째 창)
-        if (subject, seller) in goods_list:
-            print("cafe24에 이미있음 skip: ", subject)
+        # 낱장 셀러 등록
+        if seller not in [i[0] for i in urls]:
+            driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').click()
+            time.sleep(1)
+            driver.switch_to.window(driver.window_handles[3])
+            addr_ = driver.current_url
+            urls.append((addr_, seller, "no"))
+            with open('listfile', 'wb') as fp:
+                pickle.dump(urls, fp)
             driver.close()  # 창닫기
-            driver.switch_to.window(driver.window_handles[0])
-            action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
-            continue
+            driver.switch_to.window(driver.window_handles[2])
 
         # 신상: 가품 확인 (새창- 3번째 창)
         fake = False

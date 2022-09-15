@@ -9,7 +9,8 @@ import warnings
 import shutil
 from PIL import Image
 import math
-import back_data
+import back_data_mine
+import pickle
 from selenium import webdriver  # webdriver를 통해 파싱하기 위함
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
@@ -18,18 +19,16 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 
-################################여기 입력해 주기###################################
-urls = back_data.urls
 
+# 기본세팅
 start = [1] # 샵 중간부터 시작 시
 number_d = 100 # 0일 경우 모든 상품, 지정하려면 숫자 입력
-
+down_path = '/Users/seoyulejo/Downloads/imgs/'
+error = []
 margin = .2
 delivery_fee = 4000 #from 구매처:3000, to 고객:1000 (고객 부담 3000 -2000)
-down_path = '/Users/seoyulejo/Downloads/imgs/'
-###############################################################################
 
-#기본세팅
+
 warnings.filterwarnings("ignore")
 
 options = webdriver.ChromeOptions()
@@ -40,21 +39,25 @@ options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)
 driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, options=options
 driver.maximize_window()
 driver.implicitly_wait(15)
-driver.get('https://sinsangmarket.kr/login')
 action = ActionChains(driver)
 wait = WebDriverWait(driver, 10)
 
+category_list = back_data_mine.category_list # 분류설정
+with open('listfile', 'rb') as fp: # url 리스트 불러오기
+    urls = pickle.load(fp)
+
 # 신상마켓 로그인
+driver.get('https://sinsangmarket.kr/login')
 try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
 except:
     pass
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[1]/input').click()
-action.send_keys('chanelj77').perform()
+action.send_keys('protestt').perform()
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[2]/input').click()
-action.send_keys('crosscd123!').perform()
+action.send_keys('!QAZwsx123').perform()
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[3]/div[2]/div/button').click()
 print("신상 로그인 성공")
@@ -86,9 +89,9 @@ driver.switch_to.window(driver.window_handles[1])
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="mall_id"]').click()
 time.sleep(.5)
-action.send_keys('crosschungdam').perform()
+action.send_keys('soyool').perform()
 driver.find_element_by_xpath('//*[@id="userpasswd"]').click()
-action.send_keys('crosscd123').perform()
+action.send_keys('!QAZwsx123').perform()
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="frm_user"]/div/div[3]/button').click()
 time.sleep(1)
@@ -104,11 +107,10 @@ time.sleep(.5)
 print("cafe24 진입")
 
 # 분류설정
-category_list = back_data.category_list
 driver.switch_to.window(driver.window_handles[0])
 
 ####################### 각 거래선 리뷰 시작 ##########################
-error = []
+
 for k in range(len(urls)):
     if start[0]>k:
         continue
