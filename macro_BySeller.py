@@ -22,7 +22,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 # 기본세팅
 start = 0 # 샵 중간부터 시작 시
-number_d = 150 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
+number_d = 100 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 subject_4f = ""
@@ -36,7 +36,7 @@ options.headless = True
 options.add_argument("window-size=1920x1080")
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36")
 
-driver = webdriver.Chrome("/Users/seoyulejo/chromedriver") #, options=options
+driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, options=options
 driver.maximize_window()
 driver.implicitly_wait(15)
 action = ActionChains(driver)
@@ -110,7 +110,7 @@ driver.switch_to.window(driver.window_handles[0])
 
 ####################### 각 거래선 리뷰 시작 ##########################
 
-for k in range(3): #len(urls)로 변경
+for k in range(len(urls)): #len(urls)로 변경
     if start > k:
         continue
     # 신상마켓 리뷰 시작
@@ -201,8 +201,7 @@ for k in range(3): #len(urls)로 변경
 
         for i in range(num):
             t_name = driver.find_element_by_xpath(f'//*[@id="product-list"]/tr[{i + 1}]/td[5]/div/p/a').text
-            t_company: str = driver.find_element_by_xpath(f'//*[@id="product-list"]/tr[{i + 1}]/td[10]').text
-            goods_list.append((t_name, t_company))
+            goods_list.append(t_name)
 
     print(f"cafe24-거래선 전체상품 list 완료: {len(goods_list)}개")
 
