@@ -347,6 +347,17 @@ for j in range(start-1,number):  # 설정하기
                 file_ = down_path+f"{j}_{subject_4f}/{subject_4f}_{count + 1}.jpg"
                 with open(file_, "wb") as file:
                     file.write(res.content)
+                img = Image.open(file_)  # 이미지 불러오기
+                img_size = img.size  # 이미지의 크기 측정
+                x = img_size[0]  # 넓이값
+                y = img_size[1]  # 높이값
+                if x != y:
+                    size = max(x, y)
+                    resized_img = Image.new(mode='RGB', size=(size, size), color="white")
+                    offset = (round((abs(x - size)) / 2), round((abs(y - size)) / 2))
+                    resized_img.paste(img, offset)
+                    resized_img.save(file_)
+
                 if os.path.getsize(file_) > 2000000:
                     img = Image.open(file_)
                     img = img.convert('RGB')

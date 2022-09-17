@@ -22,7 +22,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 # 기본세팅
 start = [1] # 샵 중간부터 시작 시
-number_d = 100 # 0일 경우 모든 상품, 지정하려면 숫자 입력
+number_d = 500 # 0일 경우 모든 상품, 지정하려면 숫자 입력
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 margin = .2
@@ -43,7 +43,7 @@ action = ActionChains(driver)
 wait = WebDriverWait(driver, 10)
 
 category_list = back_data_mine.category_list # 분류설정
-with open('listfile', 'rb') as fp: # url 리스트 불러오기
+with open('../listfile', 'rb') as fp: # url 리스트 불러오기
     urls = pickle.load(fp)
 
 # 신상마켓 로그인
@@ -106,7 +106,6 @@ driver.find_element_by_class_name('btnPromodeView').click()# new 관리자 화�
 time.sleep(.5)
 print("cafe24 진입")
 
-# 분류설정
 driver.switch_to.window(driver.window_handles[0])
 
 ####################### 각 거래선 리뷰 시작 ##########################
@@ -158,13 +157,6 @@ for k in range(len(urls)):
 
     print("상품 개수: ", number_)
     print("루핑 횟수: ", number)
-
-    # 페이지 아래까지 한번 갔다오기
-    for i in range(round(number*3 / 5)):
-        action.send_keys(Keys.PAGE_DOWN).perform()
-        time.sleep(.2)
-    action.send_keys(Keys.HOME).perform()
-    print("스크롤 완료")
 
 ################# 신상마켓 거래선 총 상품목록 수집 ####################
     html = driver.page_source
