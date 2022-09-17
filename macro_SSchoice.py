@@ -329,9 +329,8 @@ for j in range(start-1,number):  # 설정하기
         # 신상:가격따기
         price = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[3]/div[1]/div/span').text
         price = int(re.sub(r'[^0-9]', '', price))
-        price_ = int(round((price*(1.033)+(300+1000))/(1-(.13+.25)), -3)) #https://docs.google.com/spreadsheets/d/1ZNMG8hey03UuLasNO5dEvQo1ncBi-GZXVQn6WP5EMZQ/edit#gid=289254889
-        if price_ < 10000:
-            price_ = 10000
+        price_ = int(round((price * (1.133) + (300 + 1000)) / (1 - (.13 + .23)), -3))
+        # https://docs.google.com/spreadsheets/d/1ZNMG8hey03UuLasNO5dEvQo1ncBi-GZXVQn6WP5EMZQ/edit#gid=289254889
         print("매입가/판매가: ", price, price_)
 
         # 이미지 다운로드
