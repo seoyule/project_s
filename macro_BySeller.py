@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup  # 파싱된 데이터를 python에서 사용하�
 import os
 import re
 import time
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import requests
 import pyautogui
 import warnings
@@ -21,8 +23,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 # 기본세팅
-start = 9 # 샵 중간부터 시작 시
-number_d = 100 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
+start = 12 # 샵 중간부터 시작 시
+number_d = 80 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 subject_4f = ""
@@ -290,6 +292,17 @@ for k in range(len(urls)): #len(urls)로 변경
             if subject in goods_list:
                 existing += 1
                 print("cafe24에 이미있음 skip: ", subject)
+                driver.close()  # 창닫기
+                driver.switch_to.window(driver.window_handles[0])
+                action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+                continue
+
+            # 신상: 등록일자 비교
+            x = table['상품등록정보']
+            first = datetime(int(x[:4]), int(x[5:7]), int(x[8:]))
+            dt_now = datetime.now()
+            second = dt_now + relativedelta(months=-6)
+            if second >= first:
                 driver.close()  # 창닫기
                 driver.switch_to.window(driver.window_handles[0])
                 action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입

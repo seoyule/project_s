@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup  # 파싱된 데이터를 python에서 사용하�
 import os
 import re
 import time
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import requests
 import pyautogui
 import warnings
@@ -236,6 +238,17 @@ for j in range(start-1,number):  # 설정하기
         # 신상: 기존 cafe24업로드 여부 확인 (새창- 3번째 창)
         if (subject, seller) in goods_list:
             print("cafe24에 이미있음 skip: ", subject)
+            driver.close()  # 창닫기
+            driver.switch_to.window(driver.window_handles[0])
+            action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+            continue
+
+        # 신상: 등록일자 비교
+        x = table['상품등록정보']
+        first = datetime(int(x[:4]), int(x[5:7]), int(x[8:]))
+        dt_now = datetime.now()
+        second = dt_now + relativedelta(months=-6)
+        if second >= first:
             driver.close()  # 창닫기
             driver.switch_to.window(driver.window_handles[0])
             action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
