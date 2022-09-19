@@ -30,6 +30,7 @@ error = []
 n = 0 #완료된 상품 개수
 subject_list = [] # 중복상품 체크
 subject_4f = ""
+existing = 0
 
 warnings.filterwarnings("ignore")
 
@@ -165,6 +166,10 @@ print("스크롤 완료")
 time.sleep(5)
 
 for j in range(start-1,number):  # 설정하기
+    if existing > 10:
+        print("cafe24 - 이전 업데이트 포인트 도달")
+        break
+
     try:
         j += 1
         print(j, "번째아이템 시작")
@@ -237,6 +242,7 @@ for j in range(start-1,number):  # 설정하기
 
         # 신상: 기존 cafe24업로드 여부 확인 (새창- 3번째 창)
         if (subject, seller) in goods_list:
+            existing += 1
             print("cafe24에 이미있음 skip: ", subject)
             driver.close()  # 창닫기
             driver.switch_to.window(driver.window_handles[0])
