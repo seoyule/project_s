@@ -23,8 +23,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 # 기본세팅
-start = 12 # 샵 중간부터 시작 시
-number_d = 80 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
+start = 0 # 샵 중간부터 시작 시
+number_d = 50 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 subject_4f = ""
@@ -215,9 +215,9 @@ for k in range(len(urls)): #len(urls)로 변경
     n = 0  # 완료된 상품 개수
 
     for j in range(number):
-        """if existing >=3:
+        if existing > 5:
             print("cafe24 - 이전 업데이트 포인트 도달")
-            break"""
+            break
         try:
             j += 1
             print(k,"-",j, "번째아이템 시작")
@@ -303,6 +303,7 @@ for k in range(len(urls)): #len(urls)로 변경
             dt_now = datetime.now()
             second = dt_now + relativedelta(months=-6)
             if second >= first:
+                print("6개월이상 지난상품 skip: ", x)
                 driver.close()  # 창닫기
                 driver.switch_to.window(driver.window_handles[0])
                 action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
@@ -396,8 +397,15 @@ for k in range(len(urls)): #len(urls)로 변경
                 res = requests.get(link)
                 if res.status_code == 200 and count < 20:
                     file_ = down_path + f"{j}_{subject_4f}/{subject_4f}_{count + 1}.jpg"
+                    file_rs = down_path + f"{j}_{subject_4f}/{subject_4f}_{count + 1}_rs.jpg"
                     with open(file_, "wb") as file:
                         file.write(res.content)
+
+                    if os.path.getsize(file_) > 2000000:
+                        img = Image.open(file_)
+                        img = img.convert('RGB')
+                        img.save(file_, 'JPEG', qualty=85)
+
                     img = Image.open(file_)  # 이미지 불러오기
                     img_size = img.size  # 이미지의 크기 측정
                     x = img_size[0]  # 넓이값
@@ -407,13 +415,7 @@ for k in range(len(urls)): #len(urls)로 변경
                         resized_img = Image.new(mode='RGB', size=(size, size),color = "white")
                         offset = (round((abs(x - size)) / 2), round((abs(y - size)) / 2))
                         resized_img.paste(img, offset)
-                        resized_img.save(file_)
-
-                    if os.path.getsize(file_) > 2000000:
-                        img = Image.open(file_)
-                        img = img.convert('RGB')
-                        img.save(file_, 'JPEG', qualty=85)
-
+                        resized_img.save(file_rs)
                 count += 1
             print("이미지저장 완료")
 
@@ -540,10 +542,10 @@ for k in range(len(urls)): #len(urls)로 변경
             time.sleep(.5)
             if len(s) > 1:
                 driver.find_element_by_xpath('//*[@id="imageFiles"]').send_keys(
-                    down_path + fr"{j}_{subject_4f}/{subject_4f}_2.jpg")
+                    down_path + fr"{j}_{subject_4f}/{subject_4f}_2_rs.jpg")
             else:
                 driver.find_element_by_xpath('//*[@id="imageFiles"]').send_keys(
-                    down_path + fr"{j}_{subject_4f}/{subject_4f}_1.jpg")
+                    down_path + fr"{j}_{subject_4f}/{subject_4f}_1_rs.jpg")
             time.sleep(.5)
 
             # 추가 이미지 등록
@@ -553,7 +555,7 @@ for k in range(len(urls)): #len(urls)로 변경
                     if i == 1 or i >= 20:
                         continue
                     driver.find_element_by_xpath('//*[@id="eOptionAddImageUpload"]').send_keys(
-                        down_path + fr"{j}_{subject_4f}/{subject_4f}_{i + 1}.jpg")
+                        down_path + fr"{j}_{subject_4f}/{subject_4f}_{i + 1}_rs.jpg")
                     time.sleep(.3)
 
             # 최종 상품등록
@@ -599,7 +601,6 @@ for k in range(len(urls)): #len(urls)로 변경
             except OSError as e:
                 print(e.strerror)
 
-    print(k,urls[k][1],"완료")
     error.append(error_)
 
 print("error list: ", error)

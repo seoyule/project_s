@@ -350,15 +350,22 @@ for j in range(start-1,number):  # 설정하기
         r = soup.select_one('.swiper-wrapper')
         s = r.find_all("img")
         count = 0
-        os.mkdir(down_path+f"{j}_{subject_4f}")
+        os.mkdir(down_path + f"{j}_{subject_4f}")
         for i in s:
             link = i.attrs['src']
-            #print(link)
+            # print(link)
             res = requests.get(link)
             if res.status_code == 200 and count < 20:
-                file_ = down_path+f"{j}_{subject_4f}/{subject_4f}_{count + 1}.jpg"
+                file_ = down_path + f"{j}_{subject_4f}/{subject_4f}_{count + 1}.jpg"
+                file_rs = down_path + f"{j}_{subject_4f}/{subject_4f}_{count + 1}_rs.jpg"
                 with open(file_, "wb") as file:
                     file.write(res.content)
+
+                if os.path.getsize(file_) > 2000000:
+                    img = Image.open(file_)
+                    img = img.convert('RGB')
+                    img.save(file_, 'JPEG', qualty=85)
+
                 img = Image.open(file_)  # 이미지 불러오기
                 img_size = img.size  # 이미지의 크기 측정
                 x = img_size[0]  # 넓이값
@@ -368,12 +375,7 @@ for j in range(start-1,number):  # 설정하기
                     resized_img = Image.new(mode='RGB', size=(size, size), color="white")
                     offset = (round((abs(x - size)) / 2), round((abs(y - size)) / 2))
                     resized_img.paste(img, offset)
-                    resized_img.save(file_)
-
-                if os.path.getsize(file_) > 2000000:
-                    img = Image.open(file_)
-                    img = img.convert('RGB')
-                    img.save(file_, 'JPEG', qualty=85)
+                    resized_img.save(file_rs)
             count += 1
         print("이미지저장 완료")
 
@@ -506,10 +508,10 @@ for j in range(start-1,number):  # 설정하기
         time.sleep(.5)
         if len(s) > 1:
             driver.find_element_by_xpath('//*[@id="imageFiles"]').send_keys(
-                down_path+fr"{j}_{subject_4f}/{subject_4f}_2.jpg")
+                down_path+fr"{j}_{subject_4f}/{subject_4f}_2_rs.jpg")
         else:
             driver.find_element_by_xpath('//*[@id="imageFiles"]').send_keys(
-                down_path+fr"{j}_{subject_4f}/{subject_4f}_1.jpg")
+                down_path+fr"{j}_{subject_4f}/{subject_4f}_1_rs.jpg")
         time.sleep(.5)
 
         # 추가 이미지 등록
@@ -518,7 +520,7 @@ for j in range(start-1,number):  # 설정하기
             for i in range(len(s)):
                 if i==1 or i >=20:
                     continue
-                driver.find_element_by_xpath('//*[@id="eOptionAddImageUpload"]').send_keys(down_path+fr"{j}_{subject_4f}/{subject_4f}_{i+1}.jpg")
+                driver.find_element_by_xpath('//*[@id="eOptionAddImageUpload"]').send_keys(down_path+fr"{j}_{subject_4f}/{subject_4f}_{i+1}_rs.jpg")
                 time.sleep(.3)
 
         # 최종 상품등록
