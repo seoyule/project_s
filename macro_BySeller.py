@@ -193,8 +193,8 @@ for k in range(len(urls)): #len(urls)로 변경
     goods_list = []
     for loop in range(looping_num):
         if loop % 10 == 0:
-            driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a[2]').click()
-            time.sleep(.5)
+            driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a').click()
+            time.sleep(2)
 
         if loop != 0:
             driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop % 10 + 1}]').click()  # 조회버튼 클릭
