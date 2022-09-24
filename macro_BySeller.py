@@ -382,7 +382,7 @@ for k in range(len(urls)): #len(urls)로 변경
             price = driver.find_element_by_xpath(
                 '//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[3]/div[1]/div/span').text
             price = int(re.sub(r'[^0-9]', '', price))
-            price_ = int(round((price * (1.133) + (300 + 1000)) / (1 - (.13 + .23)),-3))
+            price_ = int(round((price * (1.133) + (300 + 1000)) / (1 - (.13 + .3)),-3))
             # https://docs.google.com/spreadsheets/d/1ZNMG8hey03UuLasNO5dEvQo1ncBi-GZXVQn6WP5EMZQ/edit#gid=289254889
             print("매입가/판매가: ", price, price_)
 

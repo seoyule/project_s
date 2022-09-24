@@ -23,8 +23,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 # 기본세팅
-start = 24 # 샵 중간부터 시작 시작 - 개수 번째
-number = 150 # 아이템 검색 개수
+start = 1 # 샵 중간부터 시작 시작 - 개수 번째
+number = 2000 # 아이템 검색 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 n = 0 #완료된 상품 개수
@@ -159,16 +159,17 @@ driver.switch_to.window(driver.window_handles[0])
 
 ################## 아이템별 스크린 시작 ####################
 
-for i in range(round(start / 8)):
-    action.send_keys(Keys.PAGE_DOWN).perform()
-    time.sleep(.3)
-print("스크롤 완료")
-time.sleep(5)
+if start > 4:
+    for i in range(round(start / 8)):
+        action.send_keys(Keys.PAGE_DOWN).perform()
+        time.sleep(.3)
+    print("스크롤 완료")
+    time.sleep(5)
 
 for j in range(start-1,number):  # 설정하기
-    if existing > 10:
+    """if existing > 10:
         print("cafe24 - 이전 업데이트 포인트 도달")
-        break
+        break"""
 
     try:
         j += 1
@@ -204,6 +205,13 @@ for j in range(start-1,number):  # 설정하기
         # 신상: 거래처따기 (새창- 3번째 창)
         seller = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').text.strip()
         print("거래처: ", seller)
+        for i in back_data_mine.block_seller:
+            if i in seller:
+                print("block seller skip: ", subject)
+                driver.close()  # 창닫기
+                driver.switch_to.window(driver.window_handles[0])
+                action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+                continue
 
         # 신상: 기본정보 따기 (새창- 3번째 창)
         table = {}
@@ -259,7 +267,7 @@ for j in range(start-1,number):  # 설정하기
             driver.switch_to.window(driver.window_handles[0])
             action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
             continue
-
+        """
         # 신상: 낱장여부 확인 (새창- 3번째 창)
         if table['낱장 여부'] != '낱장 가능':
             print("낱장 안됨 skip: ", subject)
@@ -279,7 +287,7 @@ for j in range(start-1,number):  # 설정하기
                 pickle.dump(urls, fp)
             driver.close()  # 창닫기
             driver.switch_to.window(driver.window_handles[2])
-
+        """
         # 신상: 가품 확인 (새창- 3번째 창)
         fake = False
         for f in back_data_mine.fakes:
@@ -348,7 +356,7 @@ for j in range(start-1,number):  # 설정하기
         # 신상:가격따기
         price = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[3]/div[1]/div/span').text
         price = int(re.sub(r'[^0-9]', '', price))
-        price_ = int(round((price * (1.133) + (300 + 1000)) / (1 - (.13 + .23)), -3))
+        price_ = int(round((price * (1.133) + (300 + 1000)) / (1 - (.13 + .3)), -3))
         # https://docs.google.com/spreadsheets/d/1ZNMG8hey03UuLasNO5dEvQo1ncBi-GZXVQn6WP5EMZQ/edit#gid=289254889
         print("매입가/판매가: ", price, price_)
 

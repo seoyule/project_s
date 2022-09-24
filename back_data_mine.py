@@ -2,6 +2,8 @@ import re
 
 #url info -- listfile 파일 참고
 
+block_seller = ["동평화 2층","동평화 3층","동평화 4층"]
+
 category_list = {
     '아우터': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[1]'],
     '티&탑': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[2]'],
@@ -44,7 +46,7 @@ category_list = {
 }
 
 fakes = ['디옷','디올','디오르','디욜','샤x','샤널','에르','에르메스','샤','구구','GC','구c','CHA','루이','베네','타이틀','PXG','탐브',
-         '프라','MI','몽끌','에트로','베르체','coco','COCO','CD','cd','헤지','TB']
+         '프라','MI','몽끌','에트로','베르체','coco','COCO','CD','cd','헤지','TB', '셀린', '셀린느','발먼']
 
 color_ = {'베':'베이지','검':'검은색'}
 
@@ -63,4 +65,6 @@ def name_change(subject):
         subject = subject.lower().replace("bl", " 블라우스")
     if re.search("t$|T$", subject):
         subject = subject.lower().replace("t", " 티셔츠")
+    if re.search("y$|Y$", subject):
+        subject = subject.lower().replace("t", " 가디건")
     return subject

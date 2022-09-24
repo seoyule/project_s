@@ -131,6 +131,32 @@ for j in range(num_goods):  # 설정하기
     element.click()
     time.sleep(1)
 
+    driver.find_element_by_xpath('//*[@id="checkAll"]').click()
+    time.sleep(2)
+    action.send_keys(Keys.PAGE_DOWN).perform()
+    action.send_keys(Keys.PAGE_DOWN).perform()
+    action.send_keys(Keys.PAGE_DOWN).perform()
+    action.send_keys(Keys.PAGE_DOWN).perform()
+    action.send_keys(Keys.PAGE_DOWN).perform()
+    time.sleep(1)
+    driver.find_element_by_xpath('//*[@id="productListField"]/div[2]/span[1]/button[2]').click()
+    time.sleep(30)
+    alert = driver.switch_to.alert
+    alert.accept()
+    driver.find_element_by_xpath('//*[@id="checkAll"]').click()
+
+
+
+
+
+
+
+
+
+
+
+
+    driver.find_element_by_xpath('//*[@id="productListField"]/div[2]/span[1]/button[2]').click()
     # 아이템 창으로 들어옴
     driver.switch_to.window(driver.window_handles[1])
     time.sleep(.5)
