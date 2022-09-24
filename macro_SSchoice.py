@@ -107,9 +107,9 @@ try:
     time.sleep(.3)
 except:
     pass
-wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'btnPromodeView')))
-driver.find_element_by_class_name('btnPromodeView').click()# new 관리자 화면 진입 'newPromodeArea
-time.sleep(.5)
+#wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'btnPromodeView')))
+#driver.find_element_by_class_name('btnPromodeView').click()# new 관리자 화면 진입 'newPromodeArea
+#time.sleep(.5)
 print("cafe24 진입")
 
 # 기본-cafe24: 상품목록 진입
@@ -140,9 +140,13 @@ time.sleep(1)
 # 기본-cafe24: 목록 뽑기 (goods_list)
 goods_list = []
 for loop in range(looping_num):
+    if loop%10 == 0:
+        driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a[2]').click()
+        time.sleep(.5)
+
     if loop != 0:
-        driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop + 1}]').click()  # 조회버튼 클릭
-        time.sleep(2)
+        driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop%10 + 1}]').click()  # 조회버튼 클릭
+        time.sleep(1.5)
 
     if loop == looping_num-1:
         num = num_goods - (looping_num-1)*100
@@ -238,7 +242,7 @@ for j in range(start-1,number):  # 설정하기
         table['사이즈'] = table['사이즈'].replace(" ", "").split(',')
         if table['사이즈'][0] == 'F':
             table['사이즈'][0] = 'Free'
-        table['상품등록정보'] = table['상품등록정보'].replace(" ", "").split("등록")[0]
+        #table['상품등록정보'] = table['상품등록정보'].replace(" ", "").split("등록")[0]
 
         registered = table['상품등록정보']
         category = table['카테고리'][1]
@@ -257,6 +261,7 @@ for j in range(start-1,number):  # 설정하기
             action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
             continue
 
+        """
         # 신상: 등록일자 비교
         x = table['상품등록정보']
         first = datetime(int(x[:4]), int(x[5:7]), int(x[8:]))
@@ -267,7 +272,7 @@ for j in range(start-1,number):  # 설정하기
             driver.switch_to.window(driver.window_handles[0])
             action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
             continue
-        """
+        
         # 신상: 낱장여부 확인 (새창- 3번째 창)
         if table['낱장 여부'] != '낱장 가능':
             print("낱장 안됨 skip: ", subject)

@@ -103,9 +103,9 @@ try:
     time.sleep(.3)
 except:
     pass
-wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'btnPromodeView')))
-driver.find_element_by_class_name('btnPromodeView').click()# new 관리자 화면 진입 'newPromodeArea
-time.sleep(.5)
+#wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'btnPromodeView')))
+#driver.find_element_by_class_name('btnPromodeView').click()# new 관리자 화면 진입 'newPromodeArea
+#time.sleep(.5)
 print("cafe24 진입")
 
 driver.switch_to.window(driver.window_handles[0])
@@ -192,9 +192,13 @@ for k in range(len(urls)): #len(urls)로 변경
     # 목록 뽑기
     goods_list = []
     for loop in range(looping_num):
+        if loop % 10 == 0:
+            driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a[2]').click()
+            time.sleep(.5)
+
         if loop != 0:
-            driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop + 1}]').click()  # 조회버튼 클릭
-            time.sleep(2)
+            driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop % 10 + 1}]').click()  # 조회버튼 클릭
+            time.sleep(1.5)
 
         if loop == looping_num - 1:
             num = num_goods - (looping_num - 1) * 100
