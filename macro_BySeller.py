@@ -23,8 +23,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 # 기본세팅
-start = 0 # 샵 중간부터 시작 시
-number_d = 50 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
+start = 1 # 샵 중간부터 시작 시
+number_d = 300 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 subject_4f = ""
@@ -45,9 +45,11 @@ action = ActionChains(driver)
 wait = WebDriverWait(driver, 10)
 
 category_list = back_data_mine.category_list # 분류설정
-with open('listfile', 'rb') as fp: # url 리스트 불러오기
+"""with open('listfile', 'rb') as fp: # url 리스트 불러오기
     urls = pickle.load(fp)
-
+"""
+urls = [("https://sinsangmarket.kr/store/7548?isPublic=1","스튜디오W 2층 36호 Ami 아미","no"),
+        ("https://sinsangmarket.kr/store/14751?isPublic=1","디오트 지하2층 A07 블랙번","no")]
 # 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
 try:
@@ -192,12 +194,12 @@ for k in range(len(urls)): #len(urls)로 변경
     # 목록 뽑기
     goods_list = []
     for loop in range(looping_num):
-        if loop % 10 == 0:
+        if loop % 10 == 0 and loop !=0: #next page 버튼 누르기
             driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a').click()
             time.sleep(2)
 
         if loop != 0:
-            driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop % 10 + 1}]').click()  # 조회버튼 클릭
+            driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop % 10 + 1}]').click()  # 페이지 번호버튼 클릭
             time.sleep(1.5)
 
         if loop == looping_num - 1:
@@ -313,13 +315,13 @@ for k in range(len(urls)): #len(urls)로 변경
                 action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
                 continue
 
-            # 신상: 낱장여부 확인 (새창- 3번째 창)
+            """# 신상: 낱장여부 확인 (새창- 3번째 창)
             if table['낱장 여부'] != '낱장 가능':
                 print("낱장 안됨 skip: ", subject)
                 driver.close()  # 창닫기
                 driver.switch_to.window(driver.window_handles[0])
                 action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
-                continue
+                continue"""
 
             # 낱장 셀러 등록 - 생략
 

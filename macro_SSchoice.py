@@ -140,12 +140,12 @@ time.sleep(1)
 # 기본-cafe24: 목록 뽑기 (goods_list)
 goods_list = []
 for loop in range(looping_num):
-    if loop%10 == 0:
+    if loop%10 == 0 and loop !=0: #next page 버튼 누르기
         driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a').click()
         time.sleep(2)
 
     if loop != 0:
-        driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop%10 + 1}]').click()  # 조회버튼 클릭
+        driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop%10 + 1}]').click()  # 페이지 번호버튼 클릭
         time.sleep(1.5)
 
     if loop == looping_num-1:

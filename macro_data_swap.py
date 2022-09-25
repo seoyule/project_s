@@ -1,4 +1,4 @@
-# for 변수: k,j,i
+# link에 있던 데이터를 seller에 넣고, vice versa
 from bs4 import BeautifulSoup  # 파싱된 데이터를 python에서 사용하기 좋게 변환
 import os
 import re
