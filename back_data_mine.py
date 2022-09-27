@@ -2,7 +2,7 @@ import re
 
 #url info -- listfile 파일 참고
 
-block_seller = ["동평화 2층","동평화 3층","동평화 4층"]
+block_seller = ["동평화 2층","동평화 3층","동평화 4층","신발상가 A동 2층 67호 조원",'신발상가 A동 3층 24호 패션시티','신발상가 A동 3층 20호 SEXING섹싱']
 
 category_list = {
     '아우터': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[1]'],

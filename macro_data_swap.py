@@ -1,4 +1,4 @@
-# link에 있던 데이터를 seller에 넣고, vice versa
+# for 변수: k,j,i
 from bs4 import BeautifulSoup  # 파싱된 데이터를 python에서 사용하기 좋게 변환
 import os
 import re
@@ -27,7 +27,7 @@ options.headless = True
 options.add_argument("window-size=1920x1080")
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 
-driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, options=options
+driver = webdriver.Chrome("/Users/seoyulejo/chromedriver") #, options=options
 driver.maximize_window()
 driver.implicitly_wait(15)
 action = ActionChains(driver)
@@ -72,59 +72,121 @@ time.sleep(.2)
 driver.find_element_by_xpath('//*[@id="listSubject"]/div[1]/ul/li[15]/label').click()
 time.sleep(.2)
 driver.find_element_by_xpath('//*[@id="eColumnApply"]/span').click()
-time.sleep(1)
+time.sleep(2)
 
+start_loop = 20
+start_item = 0
 
-for loop in range(1,looping_num):
-    if loop%10 == 0 and loop !=0: #next page 버튼 누르기
-        driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a').click()
-        time.sleep(2)
+if start_loop != 0:
+    a = start_loop//10 #몇번 다음페이지 그룹을 눌러야 하는지
+    if a>0:
+        for i in range(a):
+            for n in range(20):
+                action.send_keys(Keys.PAGE_DOWN).perform()
+                time.sleep(.5)
+            element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a')
+            action.move_to_element(element)
+            element.click()
+            time.sleep(2)
+            driver.refresh()
 
-    if loop != 0:
+for loop in range(start_loop,looping_num):
+    if loop%10 == 0 and loop != start_loop: #next page 그룹버튼 누르기
+        element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a')
+        action.move_to_element(element)
+        element.click()
+        time.sleep(3)
+
+    if loop != start_loop:
         driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop%10 + 1}]').click()  # 페이지 번호버튼 클릭
-        time.sleep(1.5)
+        time.sleep(3)
 
     if loop == looping_num-1:
         num = num_goods - (looping_num-1)*100
     else:
         num = 100
+    time.sleep(1)
 
-    if loop == 1:
-        start=50
+    if loop == start_loop:
+        start= start_item
     else:
         start=0
+    time.sleep(1)
+
+    if loop == start_loop:
+        action.send_keys(Keys.PAGE_DOWN).perform()
+        time.sleep(1)
+        action.send_keys(Keys.PAGE_DOWN).perform()
+        time.sleep(1)
+        action.send_keys(Keys.PAGE_DOWN).perform()
+        time.sleep(1)
+        action.send_keys(Keys.PAGE_DOWN).perform()
+        time.sleep(1)
+        action.send_keys(Keys.PAGE_DOWN).perform()
+        time.sleep(1)
 
     for i in range(start,num):
 
         #첫번째 아이템 클릭
+        time.sleep(1)
         pyautogui.press('ctrl')  # sleep 방지
         wait.until(EC.element_to_be_clickable(
             (By.XPATH, f'//*[@id="product-list"]/tr[{i+1}]/td[5]/div/p/a')))
         element = driver.find_element_by_xpath(f'//*[@id="product-list"]/tr[{i+1}]/td[5]/div/p/a')
         action.move_to_element(element).perform()
+        subject = element.text
+        print(subject)
         element.click()
         driver.switch_to.window(driver.window_handles[1])
-        time.sleep(.7)
+        time.sleep(1.5)
 
-        #정보 확보
-        element1 = driver.find_element_by_xpath('//*[@id="eProductModelName"]')
-        link = element1.get_attribute("value")
-        element2 = driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[1]/tbody/tr[4]/td/input')
-        seller = element2.get_attribute("value")
+        try:
+            #정보 확보
+            time.sleep(.5)
+            element1 = driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[1]/tbody/tr[4]/td/input')
+            ele1 = element1.get_attribute("value")
+            time.sleep(.5)
 
-        #데이터 교체
-        element1.clear()
-        element1.send_keys(seller)
-        time.sleep(.3)
-        element2.clear()
-        element2.send_keys(link)
-        time.sleep(.3)
+            element2 = driver.find_element_by_xpath('//*[@id="eProductModelName"]')
+            ele2 = element2.get_attribute("value")
+            time.sleep(.5)
 
-        driver.find_element_by_xpath('//*[@id="eProductModify"]').click() #저장
+            element3 = driver.find_element_by_xpath('//*[@id="ma_product_code"]')
+            time.sleep(.5)
 
-        time.sleep(.7)
-        alert = driver.switch_to.alert
-        alert.accept()
-        driver.switch_to.window(driver.window_handles[0])
-        time.sleep(2)
-        print(loop,"-",i+1,"번째 완료")
+            #데이터 교체
+            if "http" in ele1:
+                link = ele1
+                seller = ele2
+
+            else:
+                link = ele2
+                seller = ele1
+
+            element1.clear()
+            element1.send_keys(seller," ",link)
+            time.sleep(.5)
+
+            element2.clear()
+            element2.send_keys(link)
+            time.sleep(.5)
+
+            element3.send_keys(seller)
+            time.sleep(.5)
+
+            driver.find_element_by_xpath('//*[@id="eProductModify"]').click() #저장
+            time.sleep(1.5)
+            alert = driver.switch_to.alert
+            time.sleep(.7)
+            alert.accept()
+            time.sleep(.5)
+            driver.switch_to.window(driver.window_handles[0])
+            time.sleep(3)
+            print(loop+1,"-",i+1,"번째 완료")
+
+        except:
+            driver.close()
+            driver.switch_to.window(driver.window_handles[0])
+            print(loop + 1, "-", i + 1, "번째 실패")
+            time.sleep(2)
+

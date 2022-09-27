@@ -467,15 +467,20 @@ for k in range(len(urls)): #len(urls)로 변경
             action.send_keys(table.get('상품등록정보')).perform()
             time.sleep(.3)
 
-            # seller 공급사 상품명에 등록
+            # seller - url 공급사 상품명에 등록
             driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[1]/tbody/tr[4]/td/input').click()
-            action.send_keys(seller[:240]).perform()
+            action.send_keys(seller, " ", addr).perform()
             time.sleep(.3)
 
             # url 모델명에 등록
             driver.find_element_by_xpath('//*[@id="eProductModelName"]').click()
             action.send_keys(addr).perform()
             time.sleep(.3)
+
+            # seller 자체 상품코드에 등록
+            driver.find_element_by_xpath('//*[@id="ma_product_code"]').click()
+            action.send_keys(seller[:39]).perform()
+            time.sleep(.5)
 
             # 상세설명 입력
             html_template_ = "<h2>기본정보</h2><table><tbody>"
