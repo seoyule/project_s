@@ -58,8 +58,8 @@ html = driver.page_source
 soup = BeautifulSoup(html, 'html.parser')
 
 datas = soup.find_all("td", attrs={'class': 'w220 left'})
-links = []
-options = []
+orders = []
+
 for data in datas:
     link = data.find("p", attrs={'class': 'supply'}).get_text()
     p = re.compile(r'.*(https.*)\n', re.DOTALL)
@@ -67,10 +67,10 @@ for data in datas:
     if m == None:
         continue
     link = m.group(1)
-    links.append(link)#링크 구하기
 
     options_r = data.find("ul", attrs={'class': 'etc'})
     options_ = options_r.find_all("li")
+    options = []
     for op in options_:
         op = op.get_text()
         p = re.compile(r'.*: (.*)')
@@ -80,5 +80,12 @@ for data in datas:
         option = m.group(1)
         options.append(option)#옵션 구하기
 
+    orders.append((link,options))
+"""
+'//*[@id="goods-detail"]/div/div[2]/div[2]/div[2]/ul/li[1]/div/div[1]/div[2]/div[1]' #옵션
 
+'//*[@id="goods-detail"]/div/div[2]/div[2]/div[2]/ul/li[1]/div/div[2]/div/button[1]' #수량 -
+'//*[@id="goods-detail"]/div/div[2]/div[2]/div[2]/ul/li[1]/div/div[2]/div/button[2]' #수량 +
+'//*[@id="goods-detail"]/div/div[2]/div[2]/div[2]/ul/li[2]/div/div[2]/div/button[2]' #두번째 수량+
+"""
 

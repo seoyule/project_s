@@ -74,11 +74,11 @@ time.sleep(.2)
 driver.find_element_by_xpath('//*[@id="eColumnApply"]/span').click()
 time.sleep(2)
 
-start_loop = 0
+start_loop = 10
 start_item = 0
 
 if start_loop != 0:
-    a = start_loop//10 #몇번 다음페이지 그룹을 눌러야 하는지
+    a = start_loop//10 #몇번 다음페이지 그룹(>)을 눌러야 하는지
     if a>0:
         for i in range(a):
             if i ==0:
@@ -87,20 +87,22 @@ if start_loop != 0:
                 element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a[2]')
             action.move_to_element(element).perform()
             element.click()
+            print(" > 버튼 누름!! - 다음 페이지 그룹")
             time.sleep(2)
 
-for loop in range(start_loop,2): #looping_num 으로 교체해야함
+for loop in range(start_loop,20): #looping_num 으로 교체해야함
     if loop%10 == 0 and loop != start_loop: # > (다음 페이지그룹)버튼 누르기
         element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a[2]')
         action.move_to_element(element).perform()
         element.click()
-        time.sleep(2)
+        time.sleep(4)
+        print(" > 버튼 누름!! - 다음 페이지 그룹")
 
     element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop%10 + 1}]') # 페이지 번호버튼 클릭
     action.move_to_element(element).perform()
-    element.click()
     page = element.text
-    print(page)
+    element.click()
+    print(page,"페이지 시작!!")
     time.sleep(2)
 
     """if loop == looping_num-1:
@@ -133,7 +135,6 @@ for loop in range(start_loop,2): #looping_num 으로 교체해야함
 
         try:
             #정보 확보
-            time.sleep(.5)
             element1 = driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[1]/tbody/tr[4]/td/input')
             ele1 = element1.get_attribute("value")
             time.sleep(.5)
@@ -146,24 +147,29 @@ for loop in range(start_loop,2): #looping_num 으로 교체해야함
             time.sleep(.5)
 
             #데이터 교체
-            if "http" in ele1:
-                link = ele1
-                seller = ele2
 
-            else:
-                link = ele2
-                seller = ele1
+            p = re.compile('.*(http.*)')
+            m = p.search(ele2)
+            link = m.group(1).strip()
+
+            p = re.compile(r'\S*\b(.*)\bhttp.*')
+            m = p.search(ele1)
+            seller = m.group(1).strip()
 
             element1.clear()
             element1.send_keys(seller," ",link)
-            time.sleep(.5)
+            time.sleep(.2)
+            print(element1.get_attribute("value"))
 
             element2.clear()
             element2.send_keys(link)
-            time.sleep(.5)
+            time.sleep(.2)
+            print(element2.get_attribute("value"))
 
+            element3.clear()
             element3.send_keys(seller)
-            time.sleep(.5)
+            time.sleep(.2)
+            print(element3.get_attribute("value"))
 
             driver.find_element_by_xpath('//*[@id="eProductModify"]').click() #저장
             time.sleep(1.5)
@@ -172,7 +178,7 @@ for loop in range(start_loop,2): #looping_num 으로 교체해야함
             alert.accept()
             time.sleep(.5)
             driver.switch_to.window(driver.window_handles[0])
-            time.sleep(3)
+            time.sleep(2)
             print(loop+1,"-",i+1,"번째 완료")
 
         except:
