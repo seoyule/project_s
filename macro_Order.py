@@ -34,8 +34,46 @@ wait = WebDriverWait(driver, 20)
 
 category_list = back_data_mine.category_list # 분류설정
 
-# 기본-cafe24: 열기
-driver.get("https://eclogin.cafe24.com/Shop/")
+# 신상마켓 로그인
+driver.get('https://sinsangmarket.kr/login')
+try:
+    driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
+except:
+    pass
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[1]/input').click()
+action.send_keys('protestt').perform()
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[2]/input').click()
+action.send_keys('!QAZwsx123').perform()
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[3]/div[2]/div/button').click()
+print("신상 로그인 성공")
+
+# 광고 있으면 close
+time.sleep(.5)
+try:
+    driver.find_element_by_class_name("button.close-button").click()
+    time.sleep(.3)
+except:
+    pass
+
+# 한글로 바꾸기
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/ul/li[1]/label').click()
+time.sleep(.5)
+
+# 광고 있으면 close
+try:
+    driver.find_element_by_class_name("button.close-button").click()
+    time.sleep(.3)
+except:
+    pass
+
+# cafe24 열기
+driver.execute_script('window.open("https://eclogin.cafe24.com/Shop/");')
+driver.switch_to.window(driver.window_handles[1])
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="mall_id"]').click()
 time.sleep(.5)
@@ -61,6 +99,8 @@ datas = soup.find_all("td", attrs={'class': 'w220 left'})
 orders = []
 
 for data in datas:
+    title = data.find_all("p")[0].find_all("a")[1].get_text()
+
     link = data.find("p", attrs={'class': 'supply'}).get_text()
     p = re.compile(r'.*(https.*)\n', re.DOTALL)
     m = p.search(link)
@@ -80,7 +120,17 @@ for data in datas:
         option = m.group(1)
         options.append(option)#옵션 구하기
 
-    orders.append((link,options))
+    orders.append((title,link,options))
+
+#각 상품 열기
+print(orders[0][0])
+driver.execute_script(f'window.open("{orders[0][1]}");')
+driver.switch_to.window(driver.window_handles[2])
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="mall_id"]').click()
+time.sleep(.5)
+
+
 """
 '//*[@id="goods-detail"]/div/div[2]/div[2]/div[2]/ul/li[1]/div/div[1]/div[2]/div[1]' #옵션
 
@@ -88,4 +138,18 @@ for data in datas:
 '//*[@id="goods-detail"]/div/div[2]/div[2]/div[2]/ul/li[1]/div/div[2]/div/button[2]' #수량 +
 '//*[@id="goods-detail"]/div/div[2]/div[2]/div[2]/ul/li[2]/div/div[2]/div/button[2]' #두번째 수량+
 """
+
+'.//a[text()="TEXT A"]'
+'//*[@id="goods-detail"]/div/div[2]/div[2]/div[2]/ul/li[1]/div/div[1]/div[2]/div[1]'
+
+"//li[@class='sreading']/following-sibling::li[4]"
+'//*[@id="tocCollapse"]/div/ul[3]/li[1]'
+
+
+"//*[contains(text(),'Get started ')]"
+
+element = driver.find_element_by_xpath("//*[contains(text(),'중청')]") # 완성1
+element2 = driver.find_element_by_xpath("//*[contains(text(),'중청')]//ancestor::div") # ancestor
+element3 = driver.find_element_by_xpath("//*[contains(text(),'중청')]//ancestor::div//ancestor::div//following-sibling::div[1]")
+element4 = driver.find_element_by_xpath("//*[contains(text(),'중청')]//ancestor::div//ancestor::div//following-sibling::div[1]//descendant::div//descendant::button")
 

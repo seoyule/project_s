@@ -24,7 +24,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 # 기본세팅
 start = 1 # 샵 중간부터 시작 시작 - 개수 번째
-number = 2000 # 아이템 검색 개수
+number = 1000 # 아이템 검색 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 n = 0 #완료된 상품 개수
@@ -123,6 +123,8 @@ num_goods = driver.find_element_by_xpath('//*[@id="QA_list2"]/div[2]/div[1]/p').
 num_goods = int(num_goods.split(" ")[1].split("개")[0])
 looping_num = num_goods / 100
 looping_num = math.ceil(looping_num)
+print("총",num_goods,"개")
+print("페이지",looping_num,"개")
 
 # 기본-cafe24: 100개씩 보이게
 select = Select(driver.find_element_by_xpath('//*[@id="QA_list2"]/div[2]/div[2]/select[2]'))  # 검색종류
@@ -139,14 +141,21 @@ time.sleep(1)
 
 # 기본-cafe24: 목록 뽑기 (goods_list)
 goods_list = []
-for loop in range(looping_num):
+for loop in range(4): #looping_num
     if loop%10 == 0 and loop !=0: #next page 버튼 누르기
-        driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a').click()
-        time.sleep(2)
+        if loop == 10:
+            element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a')
+        else:
+            element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a[2]')
+        action.move_to_element(element)
+        element.click()
+        time.sleep(4)
 
-    if loop != 0:
-        driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop%10 + 1}]').click()  # 페이지 번호버튼 클릭
-        time.sleep(1.5)
+    element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop%10 + 1}]') # 페이지 번호버튼 클릭
+    page = element.text
+    element.click()
+    print(page,"페이지 시작!!")
+    time.sleep(2)
 
     if loop == looping_num-1:
         num = num_goods - (looping_num-1)*100
@@ -171,9 +180,9 @@ if start > 4:
     time.sleep(5)
 
 for j in range(start-1,number):  # 설정하기
-    """if existing > 10:
+    if existing > 50:
         print("cafe24 - 이전 업데이트 포인트 도달")
-        break"""
+        break
 
     try:
         j += 1
@@ -234,9 +243,6 @@ for j in range(start-1,number):  # 설정하기
 
         color = table['색상']
         table['색상'] = table['색상'].replace(" ", "").split(',')
-        for i in range(len(table['색상'])):
-            if table['색상'][i] in back_data_mine.color_:
-                table['색상'][i] = back_data_mine.color_[table['색상'][i]]
         size = table['사이즈']
         table['사이즈'] = table['사이즈'].lower().replace("sml","S,M,L")
         table['사이즈'] = table['사이즈'].replace(" ", "").split(',')

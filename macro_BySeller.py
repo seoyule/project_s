@@ -185,22 +185,31 @@ for k in range(len(urls)): #len(urls)로 변경
     num_goods = int(num_goods.split(" ")[1].split("개")[0])
     looping_num = num_goods / 100
     looping_num = math.ceil(looping_num)
+    print("총", num_goods, "개")
+    print("페이지", looping_num, "개")
 
     # 100개씩 보이게
     select = Select(driver.find_element_by_xpath('//*[@id="QA_list2"]/div[2]/div[2]/select[2]'))  # 검색종류
     select.select_by_visible_text('100개씩보기')
     time.sleep(1)
 
-    # 목록 뽑기
+    # 기본-cafe24: 목록 뽑기 (goods_list)
     goods_list = []
-    for loop in range(looping_num):
-        if loop % 10 == 0 and loop !=0: #next page 버튼 누르기
-            driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a').click()
-            time.sleep(2)
+    for loop in range(4): #looping_num
+        if loop % 10 == 0 and loop != 0:  # next page 버튼 누르기
+            if loop == 10:
+                element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a')
+            else:
+                element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a[2]')
+            action.move_to_element(element)
+            element.click()
+            time.sleep(4)
 
-        if loop != 0:
-            driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop % 10 + 1}]').click()  # 페이지 번호버튼 클릭
-            time.sleep(1.5)
+        element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop % 10 + 1}]')  # 페이지 번호버튼 클릭
+        page = element.text
+        element.click()
+        print(page, "페이지 시작!!")
+        time.sleep(2)
 
         if loop == looping_num - 1:
             num = num_goods - (looping_num - 1) * 100
@@ -276,9 +285,6 @@ for k in range(len(urls)): #len(urls)로 변경
 
             color = table['색상']
             table['색상'] = table['색상'].replace(" ", "").split(',')
-            for i in range(len(table['색상'])):
-                if table['색상'][i] in back_data_mine.color_:
-                    table['색상'][i] = back_data_mine.color_[table['색상'][i]]
             size = table['사이즈']
             table['사이즈'] = table['사이즈'].lower().replace("sml", "S,M,L")
             table['사이즈'] = table['사이즈'].replace(" ", "").split(',')
