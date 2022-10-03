@@ -120,7 +120,14 @@ for data in datas:
         option = m.group(1)
         options.append(option)#옵션 구하기
 
-    orders.append((title,link,options))
+    orders.append([title,link,options])
+
+quantity = soup.find_all("td", attrs={'class': 'w30 right'})
+
+for i in range(len(quantity)):
+    q = quantity[i].get_text()
+    orders[i].append(q)
+
 
 #각 상품 열기
 print(orders[0][0])

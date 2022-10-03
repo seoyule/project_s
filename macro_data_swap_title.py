@@ -19,7 +19,10 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
 
 
-# 기본세팅
+# 기본세팅 10/3 -- 23-30부터 하면됨.
+start_loop = 23 #0부터 시작
+start_item = 30 #0부터 시작
+
 warnings.filterwarnings("ignore")
 
 options = webdriver.ChromeOptions()
@@ -74,9 +77,6 @@ time.sleep(.2)
 driver.find_element_by_xpath('//*[@id="eColumnApply"]/span').click()
 time.sleep(2)
 
-start_loop = 44
-start_item = 23
-
 if start_loop != 0:
     a = start_loop//10 #몇번 다음페이지 그룹(>)을 눌러야 하는지
     if a>0:
@@ -101,11 +101,11 @@ for loop in range(start_loop,looping_num): #looping_num 으로 교체해야함
         time.sleep(4)
         print(" > 버튼 누름!! - 다음 페이지 그룹")
 
-    element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop%10 + 1}]') # 페이지 번호버튼 클릭
+    element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/ol/li[{loop%10 + 1}]') # 페이지 번호버튼
     page = element.text
     element.click()
     print(page,"페이지 시작!!")
-    time.sleep(2)
+    time.sleep(4)
 
     if loop == looping_num-1:
         num = num_goods - (looping_num-1)*100
@@ -122,59 +122,34 @@ for loop in range(start_loop,looping_num): #looping_num 으로 교체해야함
         #첫번째 아이템 클릭
         pyautogui.press('ctrl')  # sleep 방지
         time.sleep(.7)
-        element = driver.find_element_by_xpath(f'//*[@id="product-list"]/tr[{i+1}]/td[5]/div/p/a')
-        action.move_to_element(element).perform()
+        element = driver.find_element_by_xpath(f'//*[@id="product-list"]/tr[{i+1}]/td[5]/div/p/a') #아이템번
+        #action.move_to_element(element).perform()
         subject = element.text
         print(page, subject)
-        element.click()
-        driver.switch_to.window(driver.window_handles[1])
-        time.sleep(1.5)
+        if "티&탑" not in subject:
+            print(i+1,"대상 아님")
+            continue
+        try:
+            element.click()
+            driver.switch_to.window(driver.window_handles[1])
+            time.sleep(1.5)
+        except:
+            print("오류!!!!!!")
+            continue
 
         try:
             #정보 확보
-            element1 = driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[1]/tbody/tr[4]/td/input')
-            ele1 = element1.get_attribute("value")
-            time.sleep(.5)
-
-            element2 = driver.find_element_by_xpath('//*[@id="eProductModelName"]')
-            ele2 = element2.get_attribute("value")
-            time.sleep(.5)
-
-            element3 = driver.find_element_by_xpath('//*[@id="ma_product_code"]')
+            element1 = driver.find_element_by_xpath('//*[@id="product_name"]')
+            subject = element1.get_attribute("value")
             time.sleep(.5)
 
             #데이터 교체
-
-            """p = re.compile('.*(http.*)')
-            m = p.search(ele2)
-            link = m.group(1).strip()
-
-            p = re.compile(r'\S*\b(.*)\bhttp.*')
-            m = p.search(ele1)
-            seller = m.group(1).strip()"""
-
-            if "http" in ele1:
-                link = ele1
-                seller = ele2
-
-            else:
-                link = ele2
-                seller = ele1
+            subject= subject.replace("티&탑","티-탑",1)
 
             element1.clear()
-            element1.send_keys(seller," ",link)
+            element1.send_keys(subject)
             time.sleep(.2)
             print(element1.get_attribute("value"))
-
-            element2.clear()
-            element2.send_keys(link)
-            time.sleep(.2)
-            print(element2.get_attribute("value"))
-
-            element3.clear()
-            element3.send_keys(seller)
-            time.sleep(.2)
-            print(element3.get_attribute("value"))
 
             driver.find_element_by_xpath('//*[@id="eProductModify"]').click() #저장
             time.sleep(1.5)

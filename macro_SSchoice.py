@@ -131,6 +131,9 @@ select = Select(driver.find_element_by_xpath('//*[@id="QA_list2"]/div[2]/div[2]/
 select.select_by_visible_text('100개씩보기')
 time.sleep(1)
 
+for i in range(12):
+    action.send_keys(Keys.DOWN).perform()
+
 # 기본-cafe24: 공급사 보이게
 driver.find_element_by_xpath('//*[@id="QA_list2"]/div[3]/div[3]/div/a/span').click()
 time.sleep(.2)
@@ -164,7 +167,8 @@ for loop in range(4): #looping_num
 
     for i in range(num):
         t_name = driver.find_element_by_xpath(f'//*[@id="product-list"]/tr[{i+1}]/td[5]/div/p/a').text
-        t_company: str = driver.find_element_by_xpath(f'//*[@id="product-list"]/tr[{i+1}]/td[10]').text
+        t_company = driver.find_element_by_xpath(f'//*[@id="product-list"]/tr[{i+1}]/td[10]').text
+        t_company = re.search('(.*)\shttp.*', t_company).group(1)
         goods_list.append((t_name, t_company))
 
 print(f"cafe24-거래선 전체상품 list 완료: {len(goods_list)}개")
@@ -218,13 +222,17 @@ for j in range(start-1,number):  # 설정하기
         # 신상: 거래처따기 (새창- 3번째 창)
         seller = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').text.strip()
         print("거래처: ", seller)
+        block_seller = ""
         for i in back_data_mine.block_seller:
             if i in seller:
-                print("block seller skip: ", subject)
-                driver.close()  # 창닫기
-                driver.switch_to.window(driver.window_handles[0])
-                action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
-                continue
+                block_seller = True
+                break
+        if block_seller == True:
+            print("block seller skip: ", subject)
+            driver.close()  # 창닫기
+            driver.switch_to.window(driver.window_handles[0])
+            action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+            continue
 
         # 신상: 기본정보 따기 (새창- 3번째 창)
         table = {}
@@ -252,9 +260,13 @@ for j in range(start-1,number):  # 설정하기
 
         registered = table['상품등록정보']
         category = table['카테고리'][1]
+        if table['카테고리'][1] == '티&탑': #상품이름 입력시.. 변환 위함.. (오픈마켓에 &안들어감)
+            category_ = '티-탑'
+        else:
+            category_ = table['카테고리'][1]
         color_ = table['색상']
         size_ = table['사이즈']
-        subject = category + " " + subject
+        subject = category_ + " " + subject
         print("품명: ", subject)
         print("table: ", table)
 
@@ -349,6 +361,7 @@ for j in range(start-1,number):  # 설정하기
             m = p.search(r)
             comment = m.group()
         except:
+            r= ""
             comment = ""
 
         # 신상: 이미지 사용가능 여부 체크
