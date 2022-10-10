@@ -14,7 +14,7 @@ import os
 from openpyxl import load_workbook
 
 #추가작업? - 몇개 추가?
-add = 2
+add = 0
 print("추가작업:",add,"개")
 
 # 기본세팅
@@ -288,12 +288,14 @@ df['shop_phone_number'] = shop_phone_number
 df['note'] = note
 
 cols = df.columns.tolist()
-cols = cols[:10]+cols[11:13]+cols[14:17]+cols[10:11]+cols[13:14]+cols[17:]
+cols = cols[:11]+cols[12:14]+cols[15:18]+cols[11:12]+cols[14:15]+cols[18:]
 df = df[cols]
-#재고와 비교위한 key값 생성
+
 df.insert(12,'key','')
 df.insert(15,'in_stock','')
 df.insert(16,'구매수량','')
+
+#재고와 비교위한 key값 생성
 df['key'] = df['title_ss']+"_"+df['option1']+"_"+df['option2']
 
 print("데이터 채우기 완료")
@@ -328,12 +330,14 @@ print("재고 list 완료")
 
 in_stock = []
 for i in range(len(df)):
-    if df['key'][i].lower() in stocks:
-        in_stock.append(1)
-        stocks.remove(df['key'][i].lower())
-    else:
-        in_stock.append(0)
-
+    num = 0
+    for j in range(df['수량'][i]):
+        if df['key'][i].lower() in stocks:
+            num += 1
+            stocks.remove(df['key'][i].lower())
+        else:
+            pass
+    in_stock.append(num)
 ############################
 #마스터 양식에 재고 반영
 
