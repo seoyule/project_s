@@ -1,28 +1,19 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from unicodedata import normalize
 from bs4 import BeautifulSoup  # 파싱된 데이터를 python에서 사용하기 좋게 변환
-import os
 import re
 import time
-import requests
-import pyautogui
 import warnings
-import shutil
-import math
 import back_data_mine
-from PIL import Image
 from selenium import webdriver  # webdriver를 통해 파싱하기 위함
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
-from selenium.webdriver.support import expected_conditions as EC
 import zipfile
 import glob
 import os
+
+#추가작업? - 몇개 추가?
+add = 2
 
 # 기본세팅
 warnings.filterwarnings("ignore")
@@ -32,7 +23,7 @@ options.headless = True
 options.add_argument("window-size=1920x1080")
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 
-driver = webdriver.Chrome("/Users/seoyulejo/chromedriver") #, options=options
+driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, options=options
 driver.maximize_window()
 driver.implicitly_wait(15)
 action = ActionChains(driver)
@@ -139,26 +130,31 @@ time.sleep(7)
 driver.close()
 driver.switch_to.window(driver.window_handles[1])
 
+print("다운로드 완료")
 #다운로드 zip 파일 이름 확인 https://stackoverflow.com/questions/168409/how-do-you-get-a-directory-listing-sorted-by-creation-date-in-python
-search_dir = "/Users/seoyulejo/Downloads/"
+search_dir = "/Users/seoyulejo/PycharmProjects/beautiful_soup/"
 files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
 files.sort(key=lambda x: os.path.getmtime(x))
 file_path = files[-1]
 
 #zip 풀기
 with zipfile.ZipFile(file_path, 'r') as zip_ref:
-    zip_ref.extractall('/Users/seoyulejo/Downloads/', pwd=b'protest123')
+    zip_ref.extractall('/Users/seoyulejo/PycharmProjects/beautiful_soup/', pwd=b'protest123')
+print("압축해제 완료")
 
 #변환 파일 이름 확인 https://stackoverflow.com/questions/168409/how-do-you-get-a-directory-listing-sorted-by-creation-date-in-python
-search_dir = "/Users/seoyulejo/Downloads/"
+search_dir = "/Users/seoyulejo/PycharmProjects/beautiful_soup/"
 files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
 files.sort(key=lambda x: os.path.getmtime(x))
 file_name = files[-1]
 
 df = pd.read_csv(file_name)
 
+print("df import 완료:",len(df),"개")
+
 df['option1'] = df['상품옵션'].replace('.*=(\S+),.*',r'\1', regex=True)
 df['option2'] = df['상품옵션'].replace('.*=.*=(.*)',r'\1', regex=True)
+
 title_ss = []
 price_ss = []
 shop_name = []
@@ -167,6 +163,7 @@ shop_location = []
 shop_phone_number = []
 note = []
 
+print("데이터 채우기 시작")
 for i in range(len(df)):
     link = df['모델명'][i]
     driver.switch_to.new_window('tab')
@@ -187,6 +184,7 @@ for i in range(len(df)):
         driver.close()
         driver.switch_to.window(driver.window_handles[1])
         time.sleep(.5)
+        print(i+1,"url 없음 skip")
         continue
     #품절확인
     html = driver.page_source
@@ -194,12 +192,11 @@ for i in range(len(df)):
     if soup.find("div", attrs={'class': 'sold-out'}):
         note.append('!! sold-out !!')
     else:
-        title_ss.append(title)
         note.append('OK')
-
     # 도매상품이름
     try:
         title = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/p').text
+        title_ss.append(title)
     except:
         note.append('!! link 이상 !!')
         title_ss.append('!! link 이상 !!')
@@ -212,9 +209,9 @@ for i in range(len(df)):
         driver.close()
         driver.switch_to.window(driver.window_handles[1])
         time.sleep(.5)
+        print(i + 1, "link 이상 skip")
         continue
 
-    title_ss.append(title)
     time.sleep(.5)
     #도매가격
     price = int(driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[3]/div[1]/div/span').text.replace(",",""))
@@ -276,9 +273,11 @@ cols = cols[:10]+cols[11:13]+cols[14:17]+cols[10:11]+cols[13:14]+cols[17:]
 df = df[cols]
 #재고와 비교위한 key값 생성
 df.insert(11,'key','')
-df.insert(15,'in_stock','')
-df.insert(16,'구매수량','')
+df.insert(14,'in_stock','')
+df.insert(15,'구매수량','')
 df['key'] = df['title_ss']+"_"+df['option1']+"_"+df['option2']
+
+print("데이터 채우기 완료")
 
 ####################
 #딜리버드에서 재고 다운받기
@@ -286,6 +285,8 @@ driver.switch_to.window(driver.window_handles[0])
 #딜리버드로 가기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[1]/div').click()
 time.sleep(.5)
+
+print("딜리버드 진입")
 #재고로 가기
 driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[7]/a').click()
 time.sleep(1)
@@ -304,6 +305,7 @@ stocks = []
 for i in range(len(stocks_)):
     for j in range(stocks_[i][1]):
         stocks.append(stocks_[i][0].lower())
+print("재고 list 완료")
 
 in_stock = []
 for i in range(len(df)):
@@ -318,22 +320,15 @@ for i in range(len(df)):
 
 df['in_stock'] = in_stock
 df['구매수량'] = df['수량']-df['in_stock']
+print("df에 재고수량 반영")
 
 timestr = time.strftime("%Y%m%d")
 df.to_excel("/Users/seoyulejo/Downloads/files/order_master_"+timestr+".xlsx")
-
-############################
-#오더 양식으로 변경
-
-df2 = df.groupby(['상품품목코드','note','title_ss','상품명(한국어 쇼핑몰)','option1','option2','price_ss','shop_name','shop_location', 'shop_phone_number','모델명'],dropna=False)[['수량','in_stock','구매수량']].sum()
-df2.to_excel("/Users/seoyulejo/Downloads/files/order_form_"+timestr+".xlsx", index=False)
-df_stock.to_excel("/Users/seoyulejo/Downloads/files/test.xlsx")
-
-
-#timestr = time.strftime("%Y%m%d-%H%M%S")
-#
-#new_file_name = "order_master_"+timestr
-#os.rename(file_name, "/Users/seoyulejo/Downloads/"+new_file_name)
-
+print("엑셀 export 완료")
+try:
+    os.remove(file_path)
+    os.remove(file_name)
+except OSError as e:
+    print(e.strerror)
 
 
