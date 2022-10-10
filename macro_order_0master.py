@@ -11,9 +11,11 @@ from selenium.webdriver.support.ui import Select
 import zipfile
 import glob
 import os
+from openpyxl import load_workbook
 
 #추가작업? - 몇개 추가?
 add = 2
+print("추가작업:",add,"개")
 
 # 기본세팅
 warnings.filterwarnings("ignore")
@@ -149,7 +151,8 @@ files.sort(key=lambda x: os.path.getmtime(x))
 file_name = files[-1]
 
 df = pd.read_csv(file_name)
-
+if add !=0:
+    df = df.drop(df.index[0:add*-1])
 print("df import 완료:",len(df),"개")
 
 df['option1'] = df['상품옵션'].replace('.*=(\S+),.*',r'\1', regex=True)
@@ -323,12 +326,25 @@ df['구매수량'] = df['수량']-df['in_stock']
 print("df에 재고수량 반영")
 
 timestr = time.strftime("%Y%m%d")
-df.to_excel("/Users/seoyulejo/Downloads/files/order_master_"+timestr+".xlsx")
-print("엑셀 export 완료")
-try:
+timestr_now = time.strftime("%Y%m%d-%H%M%S")
+
+file_name_master = "/Users/seoyulejo/Downloads/files/order_master_"+timestr+".xlsx"
+
+if add == 0:
+    df.to_excel(file_name_master)
+    print("엑셀 export 완료")
+else:
+    ExcelWorkbook = load_workbook(file_name_master)
+    writer = pd.ExcelWriter(file_name_master, engine='openpyxl')
+    writer.book = ExcelWorkbook
+    df.to_excel(writer, sheet_name=timestr_now)
+    writer.save()
+    writer.close()
+
+"""try:
     os.remove(file_path)
     os.remove(file_name)
 except OSError as e:
     print(e.strerror)
-
+"""
 
