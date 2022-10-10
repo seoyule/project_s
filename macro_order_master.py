@@ -191,14 +191,29 @@ for i in range(len(df)):
     #품절확인
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
-
-    #도매상품이름
-    title = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/p').text
     if soup.find("div", attrs={'class': 'sold-out'}):
         note.append('!! sold-out !!')
     else:
         title_ss.append(title)
         note.append('OK')
+
+    # 도매상품이름
+    try:
+        title = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/p').text
+    except:
+        note.append('!! link 이상 !!')
+        title_ss.append('!! link 이상 !!')
+        price_ss.append('!! link 이상 !!')
+        shop_name.append('!! link 이상 !!')
+        building_name.append('!! link 이상 !!')
+        shop_location.append('!! link 이상 !!')
+        shop_phone_number.append('!! link 이상 !!')
+
+        driver.close()
+        driver.switch_to.window(driver.window_handles[1])
+        time.sleep(.5)
+        continue
+
     title_ss.append(title)
     time.sleep(.5)
     #도매가격
@@ -259,16 +274,60 @@ df['note'] = note
 cols = df.columns.tolist()
 cols = cols[:10]+cols[11:13]+cols[14:17]+cols[10:11]+cols[13:14]+cols[17:]
 df = df[cols]
+#재고와 비교위한 key값 생성
+df.insert(11,'key','')
+df.insert(15,'in_stock','')
+df.insert(16,'구매수량','')
+df['key'] = df['title_ss']+"_"+df['option1']+"_"+df['option2']
+
+####################
+#딜리버드에서 재고 다운받기
+driver.switch_to.window(driver.window_handles[0])
+#딜리버드로 가기
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[1]/div').click()
+time.sleep(.5)
+#재고로 가기
+driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[7]/a').click()
+time.sleep(1)
+driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div/div/div[3]/div/div/div[2]/label/span').click()
+time.sleep(1)
+
+df_stocks = pd.read_html(driver.page_source, match = '상품번호')
+df_stock = df_stocks[1]
+df_stock.columns = df_stock.columns.get_level_values(1)
+df_stock['도매 매장명'] = df_stock['도매 매장명'].replace('도매\s매장\s변경','',regex=True)
+df_stock['key'] = df_stock['도매 상품명']+"_"+df_stock['상품옵션 1']+"_"+df_stock['상품옵션 2']
+df_stock = df_stock.groupby(['key'],dropna=False, as_index=False)[['정상재고']].sum()
+
+stocks_ = df_stock.values.tolist()
+stocks = []
+for i in range(len(stocks_)):
+    for j in range(stocks_[i][1]):
+        stocks.append(stocks_[i][0].lower())
+
+in_stock = []
+for i in range(len(df)):
+    if df['key'][i].lower() in stocks:
+        in_stock.append(1)
+        stocks.remove(df['key'][i].lower())
+    else:
+        in_stock.append(0)
+
+############################
+#마스터 양식에 재고 반영
+
+df['in_stock'] = in_stock
+df['구매수량'] = df['수량']-df['in_stock']
 
 timestr = time.strftime("%Y%m%d")
 df.to_excel("/Users/seoyulejo/Downloads/files/order_master_"+timestr+".xlsx")
 
-df2 = df.groupby(['상품품목코드','note','title_ss','상품명(한국어 쇼핑몰)','option1','option2','price_ss','shop_name','shop_location', 'shop_phone_number','모델명'],dropna=False)[['수량']].sum()
+############################
+#오더 양식으로 변경
+
+df2 = df.groupby(['상품품목코드','note','title_ss','상품명(한국어 쇼핑몰)','option1','option2','price_ss','shop_name','shop_location', 'shop_phone_number','모델명'],dropna=False)[['수량','in_stock','구매수량']].sum()
 df2.to_excel("/Users/seoyulejo/Downloads/files/order_form_"+timestr+".xlsx", index=False)
-
-
-#반품재고와 비교
-df['temp_key'] = df.apply(lambda row: row.colC + row.colE, axis=1)
+df_stock.to_excel("/Users/seoyulejo/Downloads/files/test.xlsx")
 
 
 #timestr = time.strftime("%Y%m%d-%H%M%S")
