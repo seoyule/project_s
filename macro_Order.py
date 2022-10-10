@@ -16,7 +16,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
-
+import pandas as pd
 
 # 기본세팅
 warnings.filterwarnings("ignore")
@@ -136,27 +136,4 @@ driver.switch_to.window(driver.window_handles[2])
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="mall_id"]').click()
 time.sleep(.5)
-
-
-"""
-'//*[@id="goods-detail"]/div/div[2]/div[2]/div[2]/ul/li[1]/div/div[1]/div[2]/div[1]' #옵션
-
-'//*[@id="goods-detail"]/div/div[2]/div[2]/div[2]/ul/li[1]/div/div[2]/div/button[1]' #수량 -
-'//*[@id="goods-detail"]/div/div[2]/div[2]/div[2]/ul/li[1]/div/div[2]/div/button[2]' #수량 +
-'//*[@id="goods-detail"]/div/div[2]/div[2]/div[2]/ul/li[2]/div/div[2]/div/button[2]' #두번째 수량+
-"""
-
-'.//a[text()="TEXT A"]'
-'//*[@id="goods-detail"]/div/div[2]/div[2]/div[2]/ul/li[1]/div/div[1]/div[2]/div[1]'
-
-"//li[@class='sreading']/following-sibling::li[4]"
-'//*[@id="tocCollapse"]/div/ul[3]/li[1]'
-
-
-"//*[contains(text(),'Get started ')]"
-
-element = driver.find_element_by_xpath("//*[contains(text(),'중청')]") # 완성1
-element2 = driver.find_element_by_xpath("//*[contains(text(),'중청')]//ancestor::div") # ancestor
-element3 = driver.find_element_by_xpath("//*[contains(text(),'중청')]//ancestor::div//ancestor::div//following-sibling::div[1]")
-element4 = driver.find_element_by_xpath("//*[contains(text(),'중청')]//ancestor::div//ancestor::div//following-sibling::div[1]//descendant::div//descendant::button")
 
