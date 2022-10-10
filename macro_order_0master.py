@@ -291,9 +291,9 @@ cols = df.columns.tolist()
 cols = cols[:10]+cols[11:13]+cols[14:17]+cols[10:11]+cols[13:14]+cols[17:]
 df = df[cols]
 #재고와 비교위한 key값 생성
-df.insert(11,'key','')
-df.insert(14,'in_stock','')
-df.insert(15,'구매수량','')
+df.insert(12,'key','')
+df.insert(15,'in_stock','')
+df.insert(16,'구매수량','')
 df['key'] = df['title_ss']+"_"+df['option1']+"_"+df['option2']
 
 print("데이터 채우기 완료")
@@ -309,8 +309,8 @@ print("딜리버드 진입")
 #재고로 가기
 driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[7]/a').click()
 time.sleep(1)
-driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div/div/div[3]/div/div/div[2]/label/span').click()
-time.sleep(1)
+driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div/div/div[3]/div/div/div[2]/label').click()
+time.sleep(3)
 
 df_stocks = pd.read_html(driver.page_source, match = '상품번호')
 df_stock = df_stocks[1]
