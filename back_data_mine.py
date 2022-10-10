@@ -1,5 +1,5 @@
 import re
-
+import time
 #url info -- listfile 파일 참고
 
 block_seller = ["동평화 2층","동평화 3층","동평화 4층",

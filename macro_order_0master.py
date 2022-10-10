@@ -50,12 +50,12 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div
 print("신상 로그인 성공")
 
 # 광고 있으면 close
-time.sleep(.5)
+"""time.sleep(.5)
 try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
-    pass
+    pass"""
 
 # 한글로 바꾸기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
@@ -64,11 +64,11 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/d
 time.sleep(.5)
 
 # 광고 있으면 close
-try:
+"""try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
-    pass
+    pass"""
 
 # cafe24 열기
 driver.switch_to.new_window('tab')
@@ -90,6 +90,11 @@ driver.get('https://soyool.cafe24.com/admin/php/shop1/s_new/shipped_begin_list.p
 time.sleep(2)
 driver.find_element_by_xpath('//*[@id="QA_deposit1"]/div[2]/table/tbody/tr[2]/td/a[6]').click() #지난 한달 선택
 time.sleep(1)
+
+select = Select(driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[5]/div[2]/select[2]'))  # 검색종류
+select.select_by_visible_text('100개씩보기')
+time.sleep(1)
+
 driver.find_element_by_xpath('//*[@id="search_button"]').click() #검색
 
 #엑셀 다운로드
@@ -153,10 +158,21 @@ file_name = files[-1]
 df = pd.read_csv(file_name)
 if add !=0:
     df = df.drop(df.index[0:add*-1])
+    df = df.reset_index(drop=True)
 print("df import 완료:",len(df),"개")
 
 df['option1'] = df['상품옵션'].replace('.*=(\S+),.*',r'\1', regex=True)
 df['option2'] = df['상품옵션'].replace('.*=.*=(.*)',r'\1', regex=True)
+df['수령인 우편번호'] = df['수령인 우편번호'].astype(str)
+
+zip_code = []
+for i in range(len(df)):
+    if len(df['수령인 우편번호'][i])==4:
+        z_code = '0'+df['수령인 우편번호'][i]
+    else:
+        z_code = df['수령인 우편번호'][i]
+    zip_code.append(z_code)
+df['수령인 우편번호'] = zip_code
 
 title_ss = []
 price_ss = []
