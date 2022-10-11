@@ -70,13 +70,9 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[1]/d
 time.sleep(.5)
 
 print("딜리버드 진입")
-#사입현환으로 가기
+#사입현황으로 가기
 driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').click()
 time.sleep(1)
-
-'//*[@id="purchasesList"]/tbody/tr[1]/td[1]'
-'//*[@id="purchasesList"]/tbody/tr[2]/td[1]'
-'//*[@id="purchasesList"]/tbody/tr[1]/td[2]'
 
 d = {}
 for i in range(num_try): #https://stackoverflow.com/questions/30635145/create-multiple-dataframes-in-loop
@@ -106,20 +102,70 @@ timestr_y = str(int(timestr)-1)
 
 file_name_master = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+".xlsx"
 df = pd.read_excel (file_name_master, sheet_name=0) # 0에 다 통합해 놓을꺼니까 항상 0
+df['수령인 우편번호'] = df['수령인 우편번호'].astype(str)
+
+zip_code = []
+for i in range(len(df)):
+    if len(df['수령인 우편번호'][i])==4:
+        z_code = '0'+df['수령인 우편번호'][i]
+    else:
+        z_code = df['수령인 우편번호'][i]
+    zip_code.append(z_code)
+df['수령인 우편번호'] = zip_code
+print("마스터 df import 완료")
 
 p_result = []
+p_number = []
 for i in range(len(df)):
     num = 0
-    for j in range(len(df['구매수량'][i])):
-        if df['상품품목코드'][i] in dict_:
+    if df['상품품목코드'][i] in dict_:
+       p_number.append(dict_[df['상품품목코드'][i]][0])
+       for j in range(df['구매수량'][i].item()):
             if dict_[df['상품품목코드'][i]][1]>0: #사입 재고개수 >0?
                 num +=1
                 dict_[df['상품품목코드'][i]][1] -= 1
-        else:
-            print("상품품목코드 없음",df['상품품목코드'][i])
-    p_result.append(num)
-df['사입결과'] = p_result
+       p_result.append(num)
+    else:
+        p_number.append("구매목록에 없음_"+df['상품품목코드'][i])
+        p_result.append("구매목록에 없음")
+        print("상품품목코드 없음",df['상품품목코드'][i])
 
-file_name_master_wr = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+"_wr.xlsx"
-df.to_excel(file_name_master_wr)
+df['사입번호'] = p_number
+df['사입수량'] = p_result
+
+df_deliv = df[['수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','사입수량']]
+df_deliv.insert(0,'blank1','')
+df_deliv.insert(1,'blank2','')
+df_deliv.insert(2,'temp_배송방법','일반배송')
+df_deliv.insert(7,'blank7','')
+df_deliv.insert(8,'blank8','')
+df_deliv.insert(9,'_sender','Soyool')
+df_deliv.insert(10,'_sender_phone','010-8877-5980')
+df_deliv.insert(11,'_sender_zip','03121')
+df_deliv.insert(12,'_sender_addr','서울 종로구 지봉로 19 3층 딜리버드')
+df_deliv.insert(13,'temp13','')
+df_deliv.insert(14,'temp14','')
+df_deliv.insert(15,'temp15','')
+df_deliv.insert(16,'temp16','')
+df_deliv.insert(18,'_재고구분','정상')
+
+#공백 추가
+df_deliv.loc[-1]= ""
+df_deliv.index = df_deliv.index + 1
+df_deliv = df_deliv.sort_index()
+
+#사입수량 0제거
+df_deliv = df_deliv.loc[df_deliv['사입수량'] != 0]
+
+file_deliver = "/Users/seoyulejo/Downloads/files/order_deliver_"+timestr_y+".xlsx"
+df_deliv.to_excel(file_deliver, index=False)
 print("엑셀 export 완료")
+
+
+#df_pf.to_excel("/Users/seoyulejo/Downloads/files/test.xlsx")
+
+with pd.option_context('display.max_rows', None,
+                       'display.max_columns', None,
+                       'display.precision', 3,
+                       ):
+    print(df_deliv)
