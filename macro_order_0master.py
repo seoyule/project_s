@@ -319,9 +319,8 @@ df_stock = df_stocks[1]
 df_stock.columns = df_stock.columns.get_level_values(1)
 df_stock['도매 매장명'] = df_stock['도매 매장명'].replace('도매\s매장\s변경','',regex=True)
 df_stock['key'] = df_stock['도매 상품명']+"_"+df_stock['상품옵션 1']+"_"+df_stock['상품옵션 2']
-df_stock = df_stock.groupby(['key'],dropna=False, as_index=False)[['정상재고']].sum()
-
-stocks_ = df_stock.values.tolist()
+df_stock_ = df_stock.groupby(['key'],dropna=False, as_index=False)[['정상재고']].sum()
+stocks_ = df_stock_.values.tolist()
 stocks = []
 for i in range(len(stocks_)):
     for j in range(stocks_[i][1]):
@@ -345,10 +344,11 @@ df['in_stock'] = in_stock
 df['구매수량'] = df['수량']-df['in_stock']
 print("df에 재고수량 반영")
 
-timestr = time.strftime("%Y%m%d")
 timestr_now = time.strftime("%Y%m%d-%H%M%S")
+timestr = time.strftime("%Y%m%d")
 
 file_name_master = "/Users/seoyulejo/Downloads/files/order_master_"+timestr+".xlsx"
+file_name_stock = "/Users/seoyulejo/Downloads/files/stock_"+timestr+".xlsx"
 
 if add == 0:
     df.to_excel(file_name_master)
@@ -360,6 +360,8 @@ else:
     df.to_excel(writer, sheet_name=timestr_now)
     writer.save()
     writer.close()
+
+df_stock.to_excel(file_name_stock)
 
 """try:
     os.remove(file_path)
