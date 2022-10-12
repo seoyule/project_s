@@ -23,8 +23,8 @@ warnings.filterwarnings("ignore")
 options = webdriver.ChromeOptions()
 options.headless = True
 options.add_argument("window-size=1920x1080")
-options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
-
+#options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
+options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36")
 driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, options=options
 driver.maximize_window()
 driver.implicitly_wait(15)
@@ -188,6 +188,7 @@ for i in range(len(df)):
     driver.switch_to.new_window('tab')
     time.sleep(.5)
     driver.switch_to.window(driver.window_handles[2])
+    #url 검
     try:
         driver.get(link)
         time.sleep(1.5)
@@ -205,13 +206,7 @@ for i in range(len(df)):
         time.sleep(.5)
         print(i+1,"url 없음 skip")
         continue
-    #품절확인
-    html = driver.page_source
-    soup = BeautifulSoup(html, 'html.parser')
-    if soup.find("div", attrs={'class': 'sold-out'}):
-        note.append('!! sold-out !!')
-    else:
-        note.append('OK')
+
     # 도매상품이름
     try:
         title = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/p').text
@@ -230,6 +225,14 @@ for i in range(len(df)):
         time.sleep(.5)
         print(i + 1, "link 이상 skip")
         continue
+
+    #품절확인
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    if soup.find("div", attrs={'class': 'sold-out'}):
+        note.append('!! sold-out !!')
+    else:
+        note.append('OK')
 
     time.sleep(.5)
     #도매가격

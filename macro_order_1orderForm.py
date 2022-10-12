@@ -34,7 +34,6 @@ df2.insert(16,'blank3-temp','')
 df2.insert(17,'blank4-temp','')
 df2.insert(19,'blank5-temp','')
 
-
 #공백 추가
 df2.loc[-1]= ""
 df2.index = df2.index + 1

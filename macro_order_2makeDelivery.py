@@ -7,7 +7,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 
 print("delivery요청 작성 시작")
-num_try = 2
+num_try = 1
 
 ############################
 #사입결과 가져오기
@@ -18,8 +18,8 @@ warnings.filterwarnings("ignore")
 options = webdriver.ChromeOptions()
 options.headless = True
 options.add_argument("window-size=1920x1080")
-options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
-
+#options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
+options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36")
 driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, options=options
 driver.maximize_window()
 driver.implicitly_wait(15)
@@ -164,8 +164,9 @@ print("엑셀 export 완료")
 
 #df_pf.to_excel("/Users/seoyulejo/Downloads/files/test.xlsx")
 
+"""
 with pd.option_context('display.max_rows', None,
                        'display.max_columns', None,
                        'display.precision', 3,
                        ):
-    print(df_deliv)
+    print(df_deliv)"""
