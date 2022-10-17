@@ -51,11 +51,16 @@ category_list = {
 }
 
 fakes = ['디옷','디올','디오르','디욜','샤x','샤널','에르','에르메스','샤','구구','GC','구c','CHA','루이','베네','타이틀','PXG','탐브',
-         '프라','MI','몽끌','에트로','베르체','coco','COCO','CD','cd','헤지','TB', '셀린', '셀린느','발먼']
+         '프라','MI','몽끌','에트로','베르체','coco','COCO','CD','cd','헤지','TB', '셀린', '발먼']
 
 image_check = ['이미지 사용 불가','이미지 공유가 불가','이미지 사용이 금지']
 
 def name_change(subject):
+    subject = subject.lower().replace("[", "(")
+    subject = subject.lower().replace("]", ")")
+    subject = subject.lower().replace(",", ".")
+    subject = subject.lower().replace("?", "")
+    subject = subject.lower().replace("현금", "")
     subject = subject.lower().replace("ops"," 원피스")
     subject = subject.lower().replace("ope", " 원피스")
     subject = subject.lower().replace("jk", " 자켓")

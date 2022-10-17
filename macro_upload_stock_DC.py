@@ -43,13 +43,9 @@ action = ActionChains(driver)
 wait = WebDriverWait(driver, 15)
 
 category_list = back_data_mine.category_list # 분류설정
-"""with open('listfile', 'rb') as fp: # url 리스트 불러오기
-    urls = pickle.load(fp)
-"""
-urls = [("https://sinsangmarket.kr/store/11711?isPublic=1","누죤 지하2층 706호 쵸콜릿","no"),
-        ("https://sinsangmarket.kr/store/21781?isPublic=1","누죤 지하2층 213호 CC하니","no"),
-        ("https://sinsangmarket.kr/store/7548?isPublic=1","스튜디오W 2층 36호 Ami 아미","no"),
-        ("https://sinsangmarket.kr/store/14751?isPublic=1","디오트 지하2층 A07 블랙번","no")]
+
+urls = ["https://sinsangmarket.kr/store/21952?isPublic=1&modalGid=90725214",
+        ]
 
 # 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')

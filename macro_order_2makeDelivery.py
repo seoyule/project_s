@@ -7,7 +7,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 
 print("delivery요청 작성 시작")
-num_try = 1
+num_try = 2
 
 ############################
 #사입결과 가져오기
@@ -158,7 +158,12 @@ df_deliv = df_deliv.sort_index()
 df_deliv = df_deliv.loc[df_deliv['사입수량'] != 0]
 
 file_deliver = "/Users/seoyulejo/Downloads/files/order_deliver_"+timestr_y+".xlsx"
+file_purchase = "/Users/seoyulejo/Downloads/files/purchase_"+timestr_y+".xlsx"
+file_name_master_rs = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+"_rs.xlsx"
+
 df_deliv.to_excel(file_deliver, index=False)
+df_pf.to_excel(file_purchase, index=False)
+df.to_excel(file_name_master_rs, index=False)
 print("엑셀 export 완료")
 
 

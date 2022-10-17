@@ -6,7 +6,7 @@ print("order form 작성 시작")
 # df 점검사항: 1. soldout, url 없음
 # 같은 구매자가 깔별로 구매하는지 확인 - 이런 경우 한개만 남기고 취소
 # 몇번째 탭 import 할껀지 지정 (0~)
-sheet_order = 0
+sheet_order = 2
 
 timestr = time.strftime("%Y%m%d")
 timestr_now = time.strftime("%Y%m%d-%H%M%S")
@@ -32,7 +32,7 @@ df2.insert(14,'blank1-temp','')
 df2.insert(15,'blank2-temp','')
 df2.insert(16,'blank3-temp','')
 df2.insert(17,'blank4-temp','')
-df2.insert(19,'blank5-temp','')
+df2.insert(19,'blank5-temp','서율샵')
 
 #공백 추가
 df2.loc[-1]= ""

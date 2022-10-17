@@ -23,8 +23,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 # 기본세팅
-start = 1 # 샵 중간부터 시작 시작 - 개수 번째
-number = 1000 # 아이템 검색 개수
+start = 1 # 중간부터 시작 시작 - 개수 번째
+number = 300 # 아이템 검색 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 n = 0 #완료된 상품 개수
@@ -43,7 +43,7 @@ driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, o
 driver.maximize_window()
 driver.implicitly_wait(15)
 action = ActionChains(driver)
-wait = WebDriverWait(driver, 10)
+wait = WebDriverWait(driver, 15)
 
 category_list = back_data_mine.category_list # 분류설정
 with open('listfile', 'rb') as fp: # url 리스트 불러오기
@@ -66,13 +66,13 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div
 print("신상 로그인 성공")
 
 # 기본-신상: 광고 있으면 close
-time.sleep(.5)
+"""time.sleep(.5)
 try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
     pass
-
+"""
 # 기본-신상: 한글로 바꾸기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
 time.sleep(.5)
@@ -80,12 +80,12 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/d
 time.sleep(.5)
 
 # 기본-신상: 광고 있으면 close
-try:
+"""try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
     pass
-
+"""
 # 기본-신상: 신상초이스 진입
 driver.get('https://sinsangmarket.kr/sinsangChoice')
 
@@ -144,7 +144,7 @@ time.sleep(1)
 
 # 기본-cafe24: 목록 뽑기 (goods_list)
 goods_list = []
-for loop in range(4): #looping_num
+for loop in range(looping_num): #looping_num
     if loop%10 == 0 and loop !=0: #next page 버튼 누르기
         if loop == 10:
             element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a')
@@ -168,7 +168,10 @@ for loop in range(4): #looping_num
     for i in range(num):
         t_name = driver.find_element_by_xpath(f'//*[@id="product-list"]/tr[{i+1}]/td[5]/div/p/a').text
         t_company = driver.find_element_by_xpath(f'//*[@id="product-list"]/tr[{i+1}]/td[10]').text
-        t_company = re.search('(.*)\shttp.*', t_company).group(1)
+        try:
+            t_company = re.search('(.*)\shttp.*', t_company).group(1)
+        except:
+            t_company = ""
         goods_list.append((t_name, t_company))
 
 print(f"cafe24-거래선 전체상품 list 완료: {len(goods_list)}개")
@@ -360,6 +363,7 @@ for j in range(start-1,number):  # 설정하기
             p = re.compile('.*모델정보[^\n]*', re.DOTALL)
             m = p.search(r)
             comment = m.group()
+            comment = comment.lower().replace("\n", "<br>")
         except:
             r= ""
             comment = ""
@@ -417,11 +421,11 @@ for j in range(start-1,number):  # 설정하기
             count += 1
         print("이미지저장 완료")
 
-        # 하트 클릭
+        """# 하트 클릭
         element = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[3]/div[2]/div[2]/button')
         action.move_to_element(element).perform()
         element.click()
-        time.sleep(.3)
+        time.sleep(.3)"""
 
         # 세번째 창 닫기
         driver.close() #창닫기
@@ -478,6 +482,13 @@ for j in range(start-1,number):  # 설정하기
         driver.find_element_by_xpath('//*[@id="ma_product_code"]').click()
         action.send_keys(seller[:39]).perform()
         time.sleep(.5)
+
+        """#중복 검사 (cafe24에 있는지..)
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html.parser')
+        val = soup.find("div", attrs={'class': 'tip', 'style': 'display: block;'})
+        if val:
+            raise Exception("웹상에서 중복 확인")"""
 
         # 상세설명 입력
         html_template_ = "<h2>기본정보</h2><table><tbody>"
@@ -547,6 +558,16 @@ for j in range(start-1,number):  # 설정하기
         driver.find_element_by_xpath('//*[@id="eManualOptionCombine"]').click()
         action.send_keys(Keys.PAGE_DOWN).perform()
 
+        num_op = len(color_)*len(size_)
+        time.sleep(.5)
+        if num_op > 9:
+            for op in range(num_op):
+                select = Select(driver.find_element_by_xpath(f'//*[@id="eItemList"]/table[{op+3}]/tbody/tr[1]/td[7]/select'))  # 검색종류
+                select.select_by_visible_text('사용함')
+                time.sleep(.3)
+                driver.find_element_by_xpath(f'//*[@id="eItemList"]/table[{op+3}]/tbody/tr[1]/td[10]/input').click()
+                action.send_keys("100").perform() # 0 이미 들어가 있음. 결국 1000됨.
+
         # 이미지 등록
         time.sleep(.5)
         if len(s) > 1:
@@ -576,11 +597,32 @@ for j in range(start-1,number):  # 설정하기
         driver.switch_to.window(driver.window_handles[2])
 
         try:
-            btn = driver.find_element_by_xpath('//*[@id="content"]/div/div/div/div[3]/div/button[1]') # 등록 버튼 클릭
+            driver.find_element_by_xpath('//*[@id="wrap"]/div[3]/div[3]/div[1]/span[1]/button[2]').click()
+            time.sleep(.3)
+            driver.find_element_by_xpath('//*[@id="eInputSearchSet"]').click()
+            action.send_keys(category).perform()
+
+            action.send_keys(Keys.TAB).perform()
+            action.send_keys(Keys.TAB).perform()
+            action.send_keys(Keys.TAB).perform()
+            action.send_keys(Keys.TAB).perform()
+            action.send_keys(Keys.ENTER).perform()
+            time.sleep(.5)
+
+            btn = driver.find_element_by_xpath('//*[@id="footer"]/a[2]') # 등록 버튼 클릭
             btn.click()
-            time.sleep(.7)
-            alert = driver.switch_to.alert
-            alert.accept()
+
+            try:
+                time.sleep(6)
+                alert = driver.switch_to.alert
+                alert.accept()
+            except:
+                time.sleep(6)
+                driver.find_element_by_xpath('//*[@id="layerImpossible"]/div[2]/a[1]').click()
+                time.sleep(.5)
+                alert = driver.switch_to.alert
+                alert.accept()
+
         except:
             driver.close()
 
