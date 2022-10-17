@@ -14,7 +14,7 @@ import os
 from openpyxl import load_workbook
 
 #추가작업? - 몇개 추가?
-add = 3
+add = 0
 print("추가작업:",add,"개")
 
 # 기본세팅
@@ -321,9 +321,43 @@ df_stocks = pd.read_html(driver.page_source, match = '상품번호')
 df_stock = df_stocks[1]
 df_stock.columns = df_stock.columns.get_level_values(1)
 df_stock['도매 매장명'] = df_stock['도매 매장명'].replace('도매\s매장\s변경','',regex=True)
+df_stock['상품번호'] = df_stock['상품번호'].replace('상품정보\s수정','',regex=True)
 df_stock['key'] = df_stock['도매 상품명']+"_"+df_stock['상품옵션 1']+"_"+df_stock['상품옵션 2']
-df_stock_ = df_stock.groupby(['key'],dropna=False, as_index=False)[['정상재고']].sum()
-stocks_ = df_stock_.values.tolist()
+
+df_stock_ = df_stock[['key','상품번호','정상재고']]
+list_ = df_stock_.values.tolist()
+dict_ = {}
+for i in range(len(list_)):
+    dict_[list_[i][0]] = [list_[i][1],list_[i][2]]
+print("재고 dic 완료")
+
+p_result = [] # 사입번호
+p_number = [] # stock 수량
+for i in range(len(df)):
+    result = '' #번호
+    num = 0 #수량
+    if df['key'][i] in dict_:
+        if dict_[df['key'][i]][1]>0:
+            #사입번호 넣기
+            result = dict_[df['key'][i]][0]
+            #stock 개수 넣기
+            for j in range(df['수량'][i].item()):
+                if dict_[df['key'][i]][1]>0: #재고개수 >0?
+                    num +=1
+                    dict_[df['key'][i]][1] -= 1
+    p_result.append(result)
+    p_number.append(num)
+
+#마스터 양식에 재고 반영
+df['temp_사입번호'] = p_result
+df['in_stock'] = p_number
+
+###############################################3
+#dict_ export 해서 두번째 부터 사용하게 코드 여기 삽입
+###############################################3
+
+"""df_stock_ = df_stock.groupby(['key'],dropna=False, as_index=False)[['정상재고']].sum()
+stocks_ = df_stock_.values.tolist() # stock을 한개씩 리스트로 만들어서 한개씩 빼먹기
 stocks = []
 for i in range(len(stocks_)):
     for j in range(stocks_[i][1]):
@@ -331,6 +365,7 @@ for i in range(len(stocks_)):
 print("재고 list 완료")
 
 in_stock = []
+temp_code = []
 for i in range(len(df)):
     num = 0
     for j in range(df['수량'][i]):
@@ -340,10 +375,8 @@ for i in range(len(df)):
         else:
             pass
     in_stock.append(num)
-############################
-#마스터 양식에 재고 반영
+df['in_stock'] = in_stock"""
 
-df['in_stock'] = in_stock
 df['구매수량'] = df['수량']-df['in_stock']
 print("df에 재고수량 반영")
 

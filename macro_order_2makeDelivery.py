@@ -114,26 +114,31 @@ for i in range(len(df)):
 df['수령인 우편번호'] = zip_code
 print("마스터 df import 완료")
 
-p_result = []
-p_number = []
+p_result = [] # 사입번호
+p_number = [] # stock 수량
 for i in range(len(df)):
-    num = 0
+    result = '' #번호
+    num = 0 #수량
     if df['상품품목코드'][i] in dict_:
-       p_number.append(dict_[df['상품품목코드'][i]][0])
-       for j in range(df['구매수량'][i].item()):
-            if dict_[df['상품품목코드'][i]][1]>0: #사입 재고개수 >0?
-                num +=1
-                dict_[df['상품품목코드'][i]][1] -= 1
-       p_result.append(num)
-    else:
-        p_number.append("구매목록에 없음_"+df['상품품목코드'][i])
-        p_result.append("구매목록에 없음")
-        print("상품품목코드 없음",df['상품품목코드'][i])
+        if dict_[df['상품품목코드'][i]][1]>0:
+            #사입번호 넣기
+            result = dict_[df['상품품목코드'][i]][0]
+            #stock 개수 넣기
+            for j in range(df['구매수량'][i].item()):
+                if dict_[df['상품품목코드'][i]][1]>0: #재고개수 >0?
+                    num +=1
+                    dict_[df['상품품목코드'][i]][1] -= 1
+    p_result.append(result)
+    p_number.append(num)
+else:
+    p_result.append("구매목록에 없음")
+    p_number.append(0)
 
-df['사입번호'] = p_number
-df['사입수량'] = p_result
+df['사입번호'] = p_result
+df['사입수량'] = p_number
+df['배송수량'] = df['사입수량']+df['in_stock']
 
-df_deliv = df[['수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','사입수량']]
+df_deliv = df[['수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','배송수량','','in-stock','temp_사입번호','사입수량']]
 df_deliv.insert(0,'blank1','')
 df_deliv.insert(1,'blank2','')
 df_deliv.insert(2,'temp_배송방법','일반배송')

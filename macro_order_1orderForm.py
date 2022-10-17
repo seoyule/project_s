@@ -6,7 +6,7 @@ print("order form 작성 시작")
 # df 점검사항: 1. soldout, url 없음
 # 같은 구매자가 깔별로 구매하는지 확인 - 이런 경우 한개만 남기고 취소
 # 몇번째 탭 import 할껀지 지정 (0~)
-sheet_order = 2
+sheet_order = 0
 
 timestr = time.strftime("%Y%m%d")
 timestr_now = time.strftime("%Y%m%d-%H%M%S")
