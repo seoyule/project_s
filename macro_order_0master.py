@@ -337,9 +337,9 @@ for i in range(len(df)):
     result = '' #번호
     num = 0 #수량
     if df['key'][i] in dict_:
+        # 사입번호 넣기
+        result = dict_[df['key'][i]][0]
         if dict_[df['key'][i]][1]>0:
-            #사입번호 넣기
-            result = dict_[df['key'][i]][0]
             #stock 개수 넣기
             for j in range(df['수량'][i].item()):
                 if dict_[df['key'][i]][1]>0: #재고개수 >0?

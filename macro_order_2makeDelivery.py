@@ -7,7 +7,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 
 print("delivery요청 작성 시작")
-num_try = 2
+num_try = 1 #몇개 1개부터
 
 ############################
 #사입결과 가져오기
@@ -89,11 +89,11 @@ for i in range(num_try): #https://stackoverflow.com/questions/30635145/create-mu
 
 df_pf = pd.concat(d.values(), ignore_index=True)
 
-df_pfs = df_pf[['기타메모1','상품 번호','사입 성공 수량']]
+df_pfs = df_pf[['기타메모1','상품 번호','사입 성공 수량','사입사 메모','사입 입고 예정일']]
 list_ = df_pfs.values.tolist()
 dict_ = {}
 for i in range(len(list_)):
-    dict_[list_[i][0]] = [list_[i][1],list_[i][2]]
+    dict_[list_[i][0]] = [list_[i][1],list_[i][2],list_[i][3],list_[i][4]]
 print("사입 딕셔너리 완성")
 
 #master 가져오기
@@ -114,31 +114,44 @@ for i in range(len(df)):
 df['수령인 우편번호'] = zip_code
 print("마스터 df import 완료")
 
+# 사입결과 df에 입력하기
 p_result = [] # 사입번호
 p_number = [] # stock 수량
+p_info_1 = []
+p_info_2 = []
 for i in range(len(df)):
     result = '' #번호
     num = 0 #수량
+    info1 = '처음값'
+    info2 = '처음값'
     if df['상품품목코드'][i] in dict_:
+        # 사입사 메모 입력,사입번호 넣기
+        info1 = dict_[df['상품품목코드'][i]][2]
+        info2 = dict_[df['상품품목코드'][i]][3]
+        result = dict_[df['상품품목코드'][i]][0]
         if dict_[df['상품품목코드'][i]][1]>0:
-            #사입번호 넣기
-            result = dict_[df['상품품목코드'][i]][0]
             #stock 개수 넣기
             for j in range(df['구매수량'][i].item()):
                 if dict_[df['상품품목코드'][i]][1]>0: #재고개수 >0?
                     num +=1
                     dict_[df['상품품목코드'][i]][1] -= 1
-    p_result.append(result)
-    p_number.append(num)
-else:
-    p_result.append("구매목록에 없음")
-    p_number.append(0)
+        p_result.append(result)
+        p_number.append(num)
+        p_info_1.append(info1)
+        p_info_2.append(info2)
+    else:
+        p_result.append("구매목록에 없음")
+        p_number.append(0)
+        p_info_1.append('구매목록에 없음')
+        p_info_2.append('구매목록에 없음')
 
 df['사입번호'] = p_result
 df['사입수량'] = p_number
 df['배송수량'] = df['사입수량']+df['in_stock']
+df['info_1'] = p_info_1
+df['info_2'] = p_info_2
 
-df_deliv = df[['수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','배송수량','','in-stock','temp_사입번호','사입수량']]
+df_deliv = df[['수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','배송수량']]
 df_deliv.insert(0,'blank1','')
 df_deliv.insert(1,'blank2','')
 df_deliv.insert(2,'temp_배송방법','일반배송')
@@ -160,7 +173,7 @@ df_deliv.index = df_deliv.index + 1
 df_deliv = df_deliv.sort_index()
 
 #사입수량 0제거
-df_deliv = df_deliv.loc[df_deliv['사입수량'] != 0]
+df_deliv = df_deliv.loc[df_deliv['배송수량'] != 0]
 
 file_deliver = "/Users/seoyulejo/Downloads/files/order_deliver_"+timestr_y+".xlsx"
 file_purchase = "/Users/seoyulejo/Downloads/files/purchase_"+timestr_y+".xlsx"
@@ -179,4 +192,5 @@ with pd.option_context('display.max_rows', None,
                        'display.max_columns', None,
                        'display.precision', 3,
                        ):
-    print(df_deliv)"""
+    print(df_deliv)
+"""
