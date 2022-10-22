@@ -7,7 +7,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 
 print("delivery요청 작성 시작")
-num_try = 1 #몇개 1개부터
+num_try = 2 #몇개 1개부터
 
 ############################
 #사입결과 가져오기

@@ -14,7 +14,7 @@ import os
 from openpyxl import load_workbook
 
 #추가작업? - 몇개 추가?
-add = 0
+add = 3
 print("추가작업:",add,"개")
 
 # 기본세팅
@@ -323,6 +323,7 @@ df_stock.columns = df_stock.columns.get_level_values(1)
 df_stock['도매 매장명'] = df_stock['도매 매장명'].replace('도매\s매장\s변경','',regex=True)
 df_stock['상품번호'] = df_stock['상품번호'].replace('상품정보\s수정','',regex=True)
 df_stock['key'] = df_stock['도매 상품명']+"_"+df_stock['상품옵션 1']+"_"+df_stock['상품옵션 2']
+df_stock['key'] = df_stock['key'].str.lower()
 
 df_stock_ = df_stock[['key','상품번호','정상재고']]
 list_ = df_stock_.values.tolist()
@@ -336,15 +337,15 @@ p_number = [] # stock 수량
 for i in range(len(df)):
     result = '' #번호
     num = 0 #수량
-    if df['key'][i] in dict_:
+    if df['key'][i].lower() in dict_:
         # 사입번호 넣기
-        result = dict_[df['key'][i]][0]
-        if dict_[df['key'][i]][1]>0:
+        result = dict_[df['key'][i].lower()][0]
+        if dict_[df['key'][i].lower()][1]>0:
             #stock 개수 넣기
             for j in range(df['수량'][i].item()):
-                if dict_[df['key'][i]][1]>0: #재고개수 >0?
+                if dict_[df['key'][i].lower()][1]>0: #재고개수 >0?
                     num +=1
-                    dict_[df['key'][i]][1] -= 1
+                    dict_[df['key'][i].lower()][1] -= 1
     p_result.append(result)
     p_number.append(num)
 
