@@ -14,7 +14,7 @@ import os
 from openpyxl import load_workbook
 
 #추가작업? - 몇개 추가?
-add = 3
+add = 0
 print("추가작업:",add,"개")
 
 # 기본세팅
@@ -23,6 +23,9 @@ warnings.filterwarnings("ignore")
 options = webdriver.ChromeOptions()
 options.headless = True
 options.add_argument("window-size=1920x1080")
+search_dir = "/Users/seoyulejo/Downloads/shopping_raw/" # 필요한 경우 편집
+prefs = {'download.default_directory' : search_dir}
+options.add_experimental_option('prefs', prefs)
 #options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36")
 driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, options=options
@@ -139,18 +142,16 @@ driver.switch_to.window(driver.window_handles[1])
 
 print("다운로드 완료")
 #다운로드 zip 파일 이름 확인 https://stackoverflow.com/questions/168409/how-do-you-get-a-directory-listing-sorted-by-creation-date-in-python
-search_dir = "/Users/seoyulejo/PycharmProjects/beautiful_soup/"
 files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
 files.sort(key=lambda x: os.path.getmtime(x))
 file_path = files[-1]
 
 #zip 풀기
 with zipfile.ZipFile(file_path, 'r') as zip_ref:
-    zip_ref.extractall('/Users/seoyulejo/PycharmProjects/beautiful_soup/', pwd=b'protest123')
+    zip_ref.extractall(search_dir, pwd=b'protest123')
 print("압축해제 완료")
 
 #변환 파일 이름 확인 https://stackoverflow.com/questions/168409/how-do-you-get-a-directory-listing-sorted-by-creation-date-in-python
-search_dir = "/Users/seoyulejo/PycharmProjects/beautiful_soup/"
 files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
 files.sort(key=lambda x: os.path.getmtime(x))
 file_name = files[-1]
@@ -400,10 +401,10 @@ else:
 
 df_stock.to_excel(file_name_stock)
 
-"""try:
+try:
     os.remove(file_path)
     os.remove(file_name)
 except OSError as e:
     print(e.strerror)
-"""
+
 

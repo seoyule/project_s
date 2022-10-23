@@ -6,11 +6,8 @@ from selenium import webdriver  # webdriver를 통해 파싱하기 위함
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 
-print("delivery요청 작성 시작")
-num_try = 2 #몇개 1개부터
-
-############################
-#사입결과 가져오기
+print("delivery요청 작성 시작 - delivery form, master_rs 작성")
+num_try = 1 #사입요청 몇개? 1개부터
 
 # 기본세팅
 warnings.filterwarnings("ignore")
@@ -18,7 +15,6 @@ warnings.filterwarnings("ignore")
 options = webdriver.ChromeOptions()
 options.headless = True
 options.add_argument("window-size=1920x1080")
-#options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36")
 driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, options=options
 driver.maximize_window()
@@ -148,12 +144,12 @@ for i in range(len(df)):
 df['사입번호'] = p_result
 df['사입수량'] = p_number
 df['배송수량'] = df['사입수량']+df['in_stock']
+df['수량check'] = df['수량']==df['배송수량']
 df['info_1'] = p_info_1
 df['info_2'] = p_info_2
 
-df_deliv = df[['수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','배송수량']]
-df_deliv.insert(0,'blank1','')
-df_deliv.insert(1,'blank2','')
+df_deliv = df[['주문번호','수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','배송수량']]
+df_deliv.insert(1,'temp_2nd','')
 df_deliv.insert(2,'temp_배송방법','일반배송')
 df_deliv.insert(7,'blank7','')
 df_deliv.insert(8,'blank8','')
@@ -173,7 +169,9 @@ df_deliv.index = df_deliv.index + 1
 df_deliv = df_deliv.sort_index()
 
 #사입수량 0제거
-df_deliv = df_deliv.loc[df_deliv['배송수량'] != 0]
+#df_deliv = df_deliv.loc[df_deliv['배송수량'] != 0]
+#사입수량 모자란 부분 제거
+df_deliv = df_deliv.loc[df_deliv['수량check'] == True]
 
 file_deliver = "/Users/seoyulejo/Downloads/files/order_deliver_"+timestr_y+".xlsx"
 file_purchase = "/Users/seoyulejo/Downloads/files/purchase_"+timestr_y+".xlsx"
@@ -183,9 +181,6 @@ df_deliv.to_excel(file_deliver, index=False)
 df_pf.to_excel(file_purchase, index=False)
 df.to_excel(file_name_master_rs, index=False)
 print("엑셀 export 완료")
-
-
-#df_pf.to_excel("/Users/seoyulejo/Downloads/files/test.xlsx")
 
 """
 with pd.option_context('display.max_rows', None,
