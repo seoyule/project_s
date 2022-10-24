@@ -21,10 +21,9 @@ warnings.filterwarnings("ignore")
 options = webdriver.ChromeOptions()
 options.headless = True
 options.add_argument("window-size=1920x1080")
-search_dir = "/Users/seoyulejo/Downloads/shopping_raw/" # 필요한 경우 편집
+search_dir = "/Users/seoyulejo/Downloads/files/" # 필요한 경우 편집
 prefs = {'download.default_directory' : search_dir}
 options.add_experimental_option('prefs', prefs)
-#options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36")
 driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, options=options
 driver.maximize_window()
@@ -88,7 +87,11 @@ files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
 files.sort(key=lambda x: os.path.getmtime(x))
 file_name = files[-1]
 
-df_invoice = pd.read_excel(file_name)
+df_invoice = pd.read_excel(file_name, converters={'받는 사람 연락처':str})
+df_invoice['key'] = df_invoice['받는 사람 이름'].str.strip() + "_" + df_invoice['받는 사람 연락처'].str.strip()
+df_invoice = df_invoice[['key','송장번호']] #연락처에 - 없음
+df_invoice = df_invoice.drop_duplicates()
+df_invoice = df_invoice.set_index('key')['송장번호']
 print("df_invoice import 완료:",len(df_invoice),"개")
 
 #master 파일 import 하기
@@ -99,9 +102,19 @@ file_name_master_rs = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y
 df = pd.read_excel (file_name_master_rs, sheet_name=0) # 0에 다 통합해 놓을꺼니까 항상 0
 print("마스터 df import 완료")
 
-df = df.merge(df, df_invoice[['고객사 주문번호'],['송장번호'],['배송 요청 번호']], left_on="주문번호", right_on="고객사 주문번호", how="left")
+df['수령인 전화번호'] = df['수령인 전화번호'].str.replace('-','').strip()
+df['수령인'] = df['수령인'].str.strip()
+df['key2']= df['수령인']+"_"+df['수령인 전화번호']
 
-# 송장번호 입력
+df['송장번호']= df['key2'].map(df_invoice)
+df.loc[df['수량check'] == False, '송장번호'] = "해당없음"
+print("마스터 df 송장번호 update")
+
+file_name_master_rsi = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+"_rsi.xlsx"
+df.to_excel(file_name_master_rsi, index=False)
+print("df export 완료")
+
+## 송장번호 입력 - 여기서부터...
 # cafe24 열기
 driver.switch_to.new_window('tab')
 time.sleep(.5)
@@ -133,10 +146,14 @@ num_goods = driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[3]/di
 num_goods = int(num_goods)
 
 for i in range(num_goods):
-    order_num = driver.find_element_by_xpath(f'//*[@id="copyarea_{i}"]').text
-    product = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/p[1]/a[2]').text
-    product =product.split("\n")[0]
-    option1 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/ul/li[1]').text
+    element = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[3]')
+    val = int(element.get_attribute("rowspan"))
+    loop = val -1
+    for j in range(loop):
+        order_num = driver.find_element_by_xpath(f'//*[@id="copyarea_{i}"]').text
+        product = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/p[1]/a[2]').text
+        product =product.split("\n")[0]
+        option1 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/ul/li[1]').text
     option1 = option1.split(" : ")[1]
     option2 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/ul/li[2]').text
     option2 = option2.split(" : ")[1]

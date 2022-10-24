@@ -7,7 +7,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 
 print("delivery요청 작성 시작 - delivery form, master_rs 작성")
-num_try = 1 #사입요청 몇개? 1개부터
+num_try = 2 #사입요청 몇개? 1개부터
 
 # 기본세팅
 warnings.filterwarnings("ignore")
@@ -148,8 +148,9 @@ df['수량check'] = df['수량']==df['배송수량']
 df['info_1'] = p_info_1
 df['info_2'] = p_info_2
 
-df_deliv = df[['주문번호','수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','배송수량']]
-df_deliv.insert(1,'temp_2nd','')
+df_deliv = df[['수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','배송수량','수량check']]
+df_deliv.insert(0,'balnk0','')
+df_deliv.insert(1,'blank1','')
 df_deliv.insert(2,'temp_배송방법','일반배송')
 df_deliv.insert(7,'blank7','')
 df_deliv.insert(8,'blank8','')
@@ -163,15 +164,14 @@ df_deliv.insert(15,'temp15','')
 df_deliv.insert(16,'temp16','')
 df_deliv.insert(18,'_재고구분','정상')
 
+#사입수량 모자란 부분 제거
+
+df_deliv = df_deliv.loc[df_deliv['수량check'] == True]
+
 #공백 추가
 df_deliv.loc[-1]= ""
 df_deliv.index = df_deliv.index + 1
 df_deliv = df_deliv.sort_index()
-
-#사입수량 0제거
-#df_deliv = df_deliv.loc[df_deliv['배송수량'] != 0]
-#사입수량 모자란 부분 제거
-df_deliv = df_deliv.loc[df_deliv['수량check'] == True]
 
 file_deliver = "/Users/seoyulejo/Downloads/files/order_deliver_"+timestr_y+".xlsx"
 file_purchase = "/Users/seoyulejo/Downloads/files/purchase_"+timestr_y+".xlsx"
