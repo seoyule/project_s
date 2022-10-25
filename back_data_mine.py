@@ -81,4 +81,6 @@ def name_change(subject):
         subject = subject.lower().replace("t", " 티셔츠")
     if re.search("y$|Y$", subject):
         subject = subject.lower().replace("y", " 가디건")
+    if re.search("y[.]$|Y[.]$", subject):
+        subject = subject.lower().replace("y.", " 가디건")
     return subject

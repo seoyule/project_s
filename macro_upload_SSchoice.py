@@ -622,11 +622,11 @@ for j in range(start-1,number):  # 설정하기
             btn.click()
 
             try:
-                time.sleep(10)
+                time.sleep(15)
                 alert = driver.switch_to.alert
                 alert.accept()
             except:
-                time.sleep(3)
+                time.sleep(5)
                 driver.find_element_by_xpath('//*[@id="layerImpossible"]/div[2]/a[1]').click()
                 time.sleep(.5)
                 alert = driver.switch_to.alert
