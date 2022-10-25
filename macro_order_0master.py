@@ -13,8 +13,8 @@ import glob
 import os
 from openpyxl import load_workbook
 
-#추가작업? - 몇개 추가?
-add = 4
+#추가작업? - 몇개 추가? 0 은 모두..
+add = 0
 print("추가작업:",add,"개")
 
 # 기본세팅
@@ -39,9 +39,15 @@ category_list = back_data_mine.category_list # 분류설정
 # 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
 try:
-    driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
+    driver.find_element_by_xpath('//*[@id="alert"]/div/div/button').click() #too many segment 버튼 클릭
 except:
     pass
+
+try:
+    driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click() #start 버튼 클릭
+except:
+    pass
+
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[1]/input').click()
 action.send_keys('protestt').perform()

@@ -297,6 +297,7 @@ for k in range(len(urls)): #len(urls)로 변경
 
             registered = table['상품등록정보']
             category = table['카테고리'][1]
+            category2 = back_data_mine.category_convert[category]
             if table['카테고리'][1] == '티&탑':  # 상품이름 입력시.. 변환 위함.. (오픈마켓에 &안들어감)
                 category_ = '티-탑'
             else:
@@ -607,7 +608,7 @@ for k in range(len(urls)): #len(urls)로 변경
                 driver.find_element_by_xpath('//*[@id="wrap"]/div[3]/div[3]/div[1]/span[1]/button[2]').click()
                 time.sleep(.3)
                 driver.find_element_by_xpath('//*[@id="eInputSearchSet"]').click()
-                action.send_keys(category).perform()
+                action.send_keys(category2).perform()
 
                 action.send_keys(Keys.TAB).perform()
                 action.send_keys(Keys.TAB).perform()
@@ -619,18 +620,20 @@ for k in range(len(urls)): #len(urls)로 변경
                 btn = driver.find_element_by_xpath('//*[@id="footer"]/a[2]')  # 등록 버튼 클릭
                 btn.click()
 
-                try:
-                    time.sleep(6)
-                    alert = driver.switch_to.alert
+                # 마켓으로 보내기
+                time.sleep(15)
+                alert = driver.switch_to.alert
+                message = alert.text
+                if message == '마켓으로 상품이 전송되었습니다.':
                     alert.accept()
-                except:
-                    time.sleep(6)
-                    driver.find_element_by_xpath('//*[@id="layerImpossible"]/div[2]/a[1]').click()
-                    time.sleep(.5)
-                    alert = driver.switch_to.alert
+                    print("마켓 전송 완료")
+                else:
                     alert.accept()
-
+                    driver.switch_to.window(driver.window_handles[2])
+                    driver.close()
+                    print("마켓 전송 실패!")
             except:
+                driver.switch_to.window(driver.window_handles[2])
                 driver.close()
 
             driver.switch_to.window(driver.window_handles[0])
