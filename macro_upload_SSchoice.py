@@ -52,6 +52,11 @@ with open('listfile', 'rb') as fp: # url 리스트 불러오기
 # 기본-신상: 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
 try:
+    driver.find_element_by_xpath('//*[@id="alert"]/div/div/button').click() #too many segment 버튼 클릭
+except:
+    pass
+
+try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
 except:
     pass
@@ -395,6 +400,8 @@ for j in range(start-1,number):  # 설정하기
         price = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[3]/div[1]/div/span').text
         price = int(re.sub(r'[^0-9]', '', price))
         price_ = int(round((price * (1.133) + (300 + 1000)) / (1 - (.13 + .3)), -3))
+        if price_%10000 ==0:
+            price_ -= 1000
         # https://docs.google.com/spreadsheets/d/1ZNMG8hey03UuLasNO5dEvQo1ncBi-GZXVQn6WP5EMZQ/edit#gid=289254889
         print("매입가/판매가: ", price, price_)
 

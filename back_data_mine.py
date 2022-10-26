@@ -108,6 +108,7 @@ def name_change(subject):
     subject = subject.lower().replace("]", ")")
     subject = subject.lower().replace(",", ".")
     subject = subject.lower().replace("?", "")
+    subject = subject.lower().replace("_", "-")
     subject = subject.lower().replace("현금", "")
     subject = subject.lower().replace("ops"," 원피스")
     subject = subject.lower().replace("ope", " 원피스")

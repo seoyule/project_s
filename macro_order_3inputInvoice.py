@@ -1,6 +1,4 @@
 import pandas as pd
-from bs4 import BeautifulSoup  # 파싱된 데이터를 python에서 사용하기 좋게 변환
-import re
 import time
 import warnings
 import back_data_mine
@@ -8,10 +6,8 @@ from selenium import webdriver  # webdriver를 통해 파싱하기 위함
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
-import zipfile
 import glob
 import os
-from openpyxl import load_workbook
 
 print("송장번호 입력 시작!")
 
@@ -36,6 +32,11 @@ category_list = back_data_mine.category_list # 분류설정
 
 # 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
+try:
+    driver.find_element_by_xpath('//*[@id="alert"]/div/div/button').click() #too many segment 버튼 클릭
+except:
+    pass
+
 try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
 except:
@@ -157,19 +158,32 @@ for i in range(num_goods):
     loop = val -1
     order_num = driver.find_element_by_xpath(f'//*[@id="copyarea_{i}"]').text
     for j in range(loop):
-        product = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/p[1]/a[2]').text
-        product =product.split("\n")[0]
-        option1 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/ul/li[1]').text
-        option1 = option1.split(" : ")[1].strip()
-        try:
-            option2 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/ul/li[2]').text
-            option2 = option2.split(" : ")[1].strip()
-        except:
-            option2 = ""
+        if j ==0:
+            product = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/p[1]/a[2]').text
+            product =product.split("\n")[0]
+            option1 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/ul/li[1]').text
+            option1 = option1.split(" : ")[1].strip()
+            try:
+                option2 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/ul/li[2]').text
+                option2 = option2.split(" : ")[1].strip()
+            except:
+                option2 = ""
+        else:
+            product = driver.find_element_by_xpath(
+                f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/p[1]/a[2]').text
+            option1 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/ul/li[1]').text
+            option1 = option1.split(" : ")[1].strip()
+            try:
+                option2 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/ul/li[2]').text
+                option2 = option2.split(" : ")[1].strip()
+            except:
+                option2 = ""
+
         key =order_num+"_"+product+"_"+option1+"_"+option2+"_True"
-        idx = df.index[df['key3'].str.lower() == key.lower].tolist()
+        idx = df.index[df['key3'].str.lower() == key.lower()].tolist()
         if len(idx) == 1:
             invoice = df['송장번호'].iloc[idx[0]]
+            invoice = int(invoice)
             df['deliver_check'].iloc[idx[0]] = "OK"
             driver.find_element_by_xpath(
                 f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[6]/input[1]').click()
@@ -183,10 +197,11 @@ for i in range(num_goods):
         else:
             print(i,"-",j,"매칭정보 없음")
 
-    if num >0:
+    if num > 0:
         driver.find_element_by_xpath(f'//*[@id="invoice_no_{i}"]').click()
         action.send_keys(invoice).perform()
 
+#보내기 버튼 만들어야 함.
 
 file_name_master_rsi = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+"_rsi.xlsx"
 df.to_excel(file_name_master_rsi, index=False)

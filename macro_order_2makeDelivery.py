@@ -7,7 +7,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 
 print("delivery요청 작성 시작 - delivery form, master_rs 작성")
-num_try = 2 #사입요청 몇개? 1개부터
+num_try = 1 #사입요청 몇개? 1개부터
 
 # 기본세팅
 warnings.filterwarnings("ignore")
@@ -26,6 +26,11 @@ category_list = back_data_mine.category_list # 분류설정
 
 # 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
+try:
+    driver.find_element_by_xpath('//*[@id="alert"]/div/div/button').click() #too many segment 버튼 클릭
+except:
+    pass
+
 try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
 except:

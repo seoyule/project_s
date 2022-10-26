@@ -14,7 +14,7 @@ import os
 from openpyxl import load_workbook
 
 #추가작업? - 몇개 추가? 0 은 모두..
-add = 0
+add = 1
 print("추가작업:",add,"개")
 
 # 기본세팅

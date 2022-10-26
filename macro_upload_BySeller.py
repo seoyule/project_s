@@ -23,8 +23,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 # 기본세팅
-start = 1 # 샵 중간부터 시작 시 (0 ~)
-number_d = 200 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
+start = 7 # 샵 중간부터 시작 시 (0 ~)
+number_d = 100 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 subject_4f = ""
@@ -54,10 +54,17 @@ urls = [("https://sinsangmarket.kr/store/11711?isPublic=1","누죤 지하2층 70
         ("https://sinsangmarket.kr/store/9765?isPublic=1","남평화 3층 127호 초이스(Choice)","no"),
         ("https://sinsangmarket.kr/store/8984?isPublic=1","누죤 지하1층 615호 오블리","no"),
         ("https://sinsangmarket.kr/store/2729?isPublic=1","디오트 2층 J06 헤르츠","no"),
+        ("https://sinsangmarket.kr/store/23248?isPublic=1","신발상가 D동 2층 10호 바이앤바이(buyandbuy)","no"),
+        ("https://sinsangmarket.kr/store/1477?isPublic=1","디오트 4층 C13 제이런 (J-run, Jrun)","no"),
         ]
 
 # 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
+try:
+    driver.find_element_by_xpath('//*[@id="alert"]/div/div/button').click() #too many segment 버튼 클릭
+except:
+    pass
+
 try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
 except:
@@ -198,7 +205,7 @@ for k in range(len(urls)): #len(urls)로 변경
 
     # 기본-cafe24: 목록 뽑기 (goods_list)
     goods_list = []
-    for loop in range(1): #looping_num
+    for loop in range(looping_num): #looping_num
         if loop % 10 == 0 and loop != 0:  # next page 버튼 누르기
             if loop == 10:
                 element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a')
@@ -233,7 +240,7 @@ for k in range(len(urls)): #len(urls)로 변경
     n = 0  # 완료된 상품 개수
 
     for j in range(number):
-        if existing > 10:
+        if existing > 50:
             print("cafe24 - 이전 업데이트 포인트 도달")
             break
         try:
@@ -304,7 +311,7 @@ for k in range(len(urls)): #len(urls)로 변경
                 category_ = table['카테고리'][1]
             color_ = table['색상']
             size_ = table['사이즈']
-            subject = category + " " + subject
+            subject = category_ + " " + subject
             print("품명: ", subject)
             print("table: ", table)
 
@@ -403,6 +410,8 @@ for k in range(len(urls)): #len(urls)로 변경
                 '//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[3]/div[1]/div/span').text
             price = int(re.sub(r'[^0-9]', '', price))
             price_ = int(round((price * (1.133) + (300 + 1000)) / (1 - (.13 + .3)),-3))
+            if price_ % 10000 == 0:
+                price_ -= 1000
             # https://docs.google.com/spreadsheets/d/1ZNMG8hey03UuLasNO5dEvQo1ncBi-GZXVQn6WP5EMZQ/edit#gid=289254889
             print("매입가/판매가: ", price, price_)
 
