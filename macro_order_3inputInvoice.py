@@ -15,7 +15,7 @@ print("송장번호 입력 시작!")
 warnings.filterwarnings("ignore")
 
 options = webdriver.ChromeOptions()
-options.headless = True
+#options.headless = True
 options.add_argument("window-size=1920x1080")
 search_dir = "/Users/seoyulejo/Downloads/files/" # 필요한 경우 편집
 prefs = {'download.default_directory' : search_dir}
