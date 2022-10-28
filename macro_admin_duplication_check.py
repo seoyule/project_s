@@ -35,7 +35,7 @@ existing = 0
 warnings.filterwarnings("ignore")
 
 options = webdriver.ChromeOptions()
-#options.headless = True
+options.headless = True
 options.add_argument("window-size=1920x1080")
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 
@@ -65,11 +65,11 @@ time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="frm_user"]/div/div[3]/button').click()
 time.sleep(1)
 # 기본-cafe24: 광고 있으면 close
-try:
+"""try:
     driver.find_element_by_class_name("btnClose.eClose").click()
     time.sleep(.3)
 except:
-    pass
+    pass"""
 #wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'btnPromodeView')))
 #driver.find_element_by_class_name('btnPromodeView').click()# new 관리자 화면 진입 'newPromodeArea
 #time.sleep(.5)
@@ -112,18 +112,19 @@ for book in range(books): #looping_num
         element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a')
     else:
         element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a[2]')
-    action.move_to_element(element)
+    action.move_to_element(element).perform()
     element.click()
-    time.sleep(2)
+    time.sleep(1)
 
 
 # 기본-cafe24: 목록 스크린 (goods_list)
 goods_list = []
 error_list = []
 for loop in reversed(range(looping_num)):  # looping_num
+    dup = 0
     if loop % 10 == 9 and loop != looping_num-1:  # next page 버튼 누르기
         element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a[1]')
-        action.move_to_element(element)
+        action.move_to_element(element).perform()
         element.click()
         time.sleep(4)
 
@@ -147,24 +148,30 @@ for loop in reversed(range(looping_num)):  # looping_num
             t_company = ""
 
         if (t_name, t_company) in goods_list:
-            try:
-                element = driver.find_element_by_xpath(f'//*[@id="product-list"]/tr[{i+1}]/td[1]/input')
-                action.move_to_element(element)
-                time.sleep(1)
-                element.click()
-                time.sleep(.5)
-                driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[5]/div[1]/a[6]').click()
-                time.sleep(1)
-                alert = driver.switch_to.alert
-                alert.accept()
-                time.sleep(1)
-                alert.accept()
-                time.sleep(.5)
-                print("중복삭제",(t_name, t_company))
-            except:
-                error_list.append((t_name, t_company))
+
+            time.sleep(.5)
+            element = driver.find_element_by_xpath(f'//*[@id="product-list"]/tr[{i+1}]/td[1]/input')
+            action.move_to_element(element).click().perform()
+            time.sleep(.5)
+            dup += 1
+            print("중복클릭",(t_name, t_company))
+
         else:
             goods_list.append((t_name, t_company))
-            print("중복아님")
+            print(i,"중복아님")
+
+    if dup > 0:
+        time.sleep(.5)
+        element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[3]/div[1]/a[6]')
+        action.move_to_element(element).click().perform()
+        time.sleep(1)
+        alert = driver.switch_to.alert
+        alert.accept()
+        time.sleep(1)
+        alert = driver.switch_to.alert
+        alert.accept()
+        time.sleep(1)
+        driver.switch_to.window(driver.window_handles[1])
+        print("중복삭제!!")
 
 print(error_list)

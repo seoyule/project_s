@@ -211,7 +211,7 @@ for k in range(len(urls)): #len(urls)로 변경
                 element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a')
             else:
                 element = driver.find_element_by_xpath(f'//*[@id="QA_list2"]/div[6]/a[2]')
-            action.move_to_element(element)
+            action.move_to_element(element).perform()
             element.click()
             time.sleep(4)
 
