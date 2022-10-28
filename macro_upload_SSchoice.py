@@ -51,11 +51,11 @@ with open('listfile', 'rb') as fp: # url 리스트 불러오기
 
 # 기본-신상: 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
-try:
+"""try:
     driver.find_element_by_xpath('//*[@id="alert"]/div/div/button').click() #too many segment 버튼 클릭
 except:
     pass
-
+"""
 try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
 except:
