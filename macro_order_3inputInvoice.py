@@ -96,7 +96,7 @@ df_invoice = df_invoice.drop_duplicates()
 df_invoice = df_invoice.set_index('key')['송장번호']
 print("df_invoice import 완료:",len(df_invoice),"개")
 
-#master 파일 import 하기
+#master 파일 import 하기..
 timestr = time.strftime("%Y%m%d")
 timestr_y = str(int(timestr)-1) #어제날짜
 
