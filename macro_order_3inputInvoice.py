@@ -90,6 +90,7 @@ file_name = files[-1]
 
 df_invoice = pd.read_excel(file_name, converters={'받는 사람 연락처':str})
 df_invoice['key'] = df_invoice['받는 사람 이름'].str.strip() + "_" + df_invoice['받는 사람 연락처'].str.strip()
+df_invoice['송장번호'] = df_invoice['송장번호'].fillna(0)
 df_invoice['송장번호'] = df_invoice['송장번호'].astype(int)
 df_invoice = df_invoice[['key','송장번호']] #연락처에 - 없음
 df_invoice = df_invoice.drop_duplicates()

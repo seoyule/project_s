@@ -170,6 +170,7 @@ print("df import 완료:",len(df),"개")
 
 df['option1'] = df['상품옵션'].replace('.*=(\S+),.*',r'\1', regex=True)
 df['option2'] = df['상품옵션'].replace('.*=.*=(.*)',r'\1', regex=True)
+df['option2'] = df['option2'].str.lower()
 df['수령인 우편번호'] = df['수령인 우편번호'].astype(str)
 
 zip_code = []

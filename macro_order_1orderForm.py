@@ -15,6 +15,9 @@ df = pd.read_excel (file_name_master, sheet_name=sheet_order)
 #오더 양식으로 변경
 
 #df2 = df.groupby(['상품품목코드','note','title_ss','상품명(한국어 쇼핑몰)','option1','option2','price_ss','shop_name','shop_location', 'shop_phone_number','모델명'],dropna=False)[['수량','in_stock','구매수량']].sum()
+
+df['option1'] = df['option1'].str.lower()
+df['option2'] = df['option2'].str.lower()
 df2 = df.groupby(['title_ss','상품명(한국어 쇼핑몰)','option1','option2','price_ss','shop_name','building_name','shop_location', 'shop_phone_number','상품품목코드','모델명','note'],dropna=False).agg({'수량': 'sum','in_stock':'sum','구매수량':'sum'})
 df2 = df2.add_suffix('').reset_index()
 
@@ -30,7 +33,7 @@ df2.insert(14,'blank1-temp','')
 df2.insert(15,'blank2-temp','')
 df2.insert(16,'blank3-temp','')
 df2.insert(17,'blank4-temp','')
-df2.insert(19,'blank5-temp','서율샵')
+df2.insert(19,'blank5-temp','')#메모2, 서율샵 자리
 
 #공백 추가
 df2.loc[-1]= ""

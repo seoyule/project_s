@@ -20,8 +20,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 # 기본세팅 10/3 -- 23-30부터 하면됨.
-start_loop = 23 #0부터 시작
-start_item = 30 #0부터 시작
+start_loop = 0 #0부터 시작
+start_item = 0 #0부터 시작
 
 warnings.filterwarnings("ignore")
 
@@ -126,7 +126,8 @@ for loop in range(start_loop,looping_num): #looping_num 으로 교체해야함
         #action.move_to_element(element).perform()
         subject = element.text
         print(page, subject)
-        if "티&탑" not in subject:
+        subject_s = back_data_mine.name_change(subject)  # ops등 제목 수정
+        if subject==subject_s:
             print(i+1,"대상 아님")
             continue
         try:
@@ -138,16 +139,9 @@ for loop in range(start_loop,looping_num): #looping_num 으로 교체해야함
             continue
 
         try:
-            #정보 확보
             element1 = driver.find_element_by_xpath('//*[@id="product_name"]')
-            subject = element1.get_attribute("value")
-            time.sleep(.5)
-
-            #데이터 교체
-            subject= subject.replace("티&탑","티-탑",1)
-
             element1.clear()
-            element1.send_keys(subject)
+            element1.send_keys(subject_s)
             time.sleep(.2)
             print(element1.get_attribute("value"))
 
