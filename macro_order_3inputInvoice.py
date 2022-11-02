@@ -8,6 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
 import glob
 import os
+from datetime import datetime, timedelta
 
 print("송장번호 입력 시작!")
 
@@ -32,10 +33,10 @@ category_list = back_data_mine.category_list # 분류설정
 
 # 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
-try:
+"""try:
     driver.find_element_by_xpath('//*[@id="alert"]/div/div/button').click() #too many segment 버튼 클릭
 except:
-    pass
+    pass"""
 
 try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
@@ -52,13 +53,13 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div
 print("신상 로그인 성공")
 
 # 광고 있으면 close
-"""time.sleep(.5)
+time.sleep(.5)
 try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
-    pass"""
-
+    pass
+"""
 # 한글로 바꾸기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
 time.sleep(.5)
@@ -66,7 +67,7 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/d
 time.sleep(.5)
 
 # 광고 있으면 close
-"""try:
+try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
@@ -99,7 +100,8 @@ print("df_invoice import 완료:",len(df_invoice),"개")
 
 #master 파일 import 하기....,
 timestr = time.strftime("%Y%m%d")
-timestr_y = str(int(timestr)-1) #어제날짜
+yesterday = datetime.now() - timedelta(1)
+timestr_y = datetime.strftime(yesterday, '%Y%m%d')
 
 file_name_master_rs = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+"_rs.xlsx"
 df = pd.read_excel (file_name_master_rs, sheet_name=0) # 0에 다 통합해 놓을꺼니까 항상 0
@@ -172,6 +174,7 @@ for i in range(num_goods):
         else:
             product = driver.find_element_by_xpath(
                 f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/p[1]/a[2]').text
+            product = product.split("\n")[0]
             option1 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/ul/li[1]').text
             option1 = option1.split(" : ")[1].strip()
             try:
@@ -186,8 +189,12 @@ for i in range(num_goods):
             invoice = df['송장번호'].iloc[idx[0]]
             invoice = int(invoice)
             df['deliver_check'].iloc[idx[0]] = "OK"
-            driver.find_element_by_xpath(
-                f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[6]/input[1]').click()
+            if j==0:
+                driver.find_element_by_xpath(
+                    f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[6]/input[1]').click()
+            else:
+                driver.find_element_by_xpath(
+                    f'//*[@id="shipedReadyList"]/table/tbody[{i + 1}]/tr[{j + 1}]/td[1]/input[1]').click()
             num += 1
             print(i,"-",j,"클릭 완료")
         elif len(idx) >1:

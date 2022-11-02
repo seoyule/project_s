@@ -26,7 +26,6 @@ options.add_argument("window-size=1920x1080")
 search_dir = "/Users/seoyulejo/Downloads/shopping_raw/" # 필요한 경우 편집
 prefs = {'download.default_directory' : search_dir}
 options.add_experimental_option('prefs', prefs)
-#options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36")
 driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, options=options
 driver.maximize_window()
@@ -59,13 +58,13 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div
 print("신상 로그인 성공")
 
 # 광고 있으면 close
-"""time.sleep(.5)
+time.sleep(.5)
 try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
-    pass"""
-
+    pass
+"""
 # 한글로 바꾸기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
 time.sleep(.5)
@@ -73,7 +72,7 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/d
 time.sleep(.5)
 
 # 광고 있으면 close
-"""try:
+try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:

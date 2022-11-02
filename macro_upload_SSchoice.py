@@ -24,7 +24,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 # 기본세팅
 start = 1 # 중간부터 시작 시작 - 개수 번째
-number = 300 # 아이템 검색 개수
+number = 800 # 아이템 검색 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 n = 0 #완료된 상품 개수

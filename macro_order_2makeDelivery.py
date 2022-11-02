@@ -5,6 +5,7 @@ import back_data_mine
 from selenium import webdriver  # webdriver를 통해 파싱하기 위함
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
+from datetime import datetime, timedelta
 
 print("delivery요청 작성 시작 - delivery form, master_rs 작성")
 num_try = 1 #사입요청 몇개? 1개부터
@@ -26,10 +27,10 @@ category_list = back_data_mine.category_list # 분류설정
 
 # 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
-try:
+"""try:
     driver.find_element_by_xpath('//*[@id="alert"]/div/div/button').click() #too many segment 버튼 클릭
 except:
-    pass
+    pass"""
 
 try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
@@ -46,13 +47,13 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div
 print("신상 로그인 성공")
 
 # 광고 있으면 close
-"""time.sleep(.5)
+time.sleep(.5)
 try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
-    pass"""
-
+    pass
+"""
 # 한글로 바꾸기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
 time.sleep(.5)
@@ -60,7 +61,7 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/d
 time.sleep(.5)
 
 # 광고 있으면 close
-"""try:
+try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
@@ -99,7 +100,8 @@ print("사입 딕셔너리 완성")
 
 #master 가져오기
 timestr = time.strftime("%Y%m%d")
-timestr_y = str(int(timestr)-1)
+yesterday = datetime.now() - timedelta(1)
+timestr_y = datetime.strftime(yesterday, '%Y%m%d')
 
 file_name_master = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+".xlsx"
 df = pd.read_excel (file_name_master, sheet_name=0) # 0에 다 통합해 놓을꺼니까 항상 0
