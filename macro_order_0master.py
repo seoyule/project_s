@@ -8,14 +8,21 @@ from selenium import webdriver  # webdriver를 통해 파싱하기 위함
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.keys import Keys
 import zipfile
 import glob
 import os
 from openpyxl import load_workbook
-
+#첫번째 시도에 문제 없는 OK건 다 올린다. (note = 'OK', 구매수량 >0)
+#두번째 시도에 수정, 추가건 마스터 2번째 탭에 작업한 후 1번 파일 돌린다.
+#참고로 두번째 시도때는 딜리버드에 사입 주문 안들어간다. (마스터 파일 추가분 작성까지만)
 #추가작업? - 몇개 추가? 0 은 모두..
 add = 0
-print("추가작업:",add,"개")
+
+if add == 0:
+    print("전체작업 (첫번째 시도, 정상상품은 딜리버드 등록까지)")
+else:
+    print("추가작업:",add,"개")
 
 # 기본세팅
 warnings.filterwarnings("ignore")
@@ -37,11 +44,11 @@ category_list = back_data_mine.category_list # 분류설정
 
 # 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
-try:
+"""try:
     driver.find_element_by_xpath('//*[@id="alert"]/div/div/button').click() #too many segment 버튼 클릭
 except:
     pass
-
+"""
 try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click() #start 버튼 클릭
 except:
@@ -64,7 +71,7 @@ try:
     time.sleep(.3)
 except:
     pass
-"""
+
 # 한글로 바꾸기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
 time.sleep(.5)
@@ -76,7 +83,7 @@ try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
-    pass"""
+    pass
 
 # cafe24 열기
 driver.switch_to.new_window('tab')
@@ -317,7 +324,7 @@ driver.switch_to.window(driver.window_handles[0])
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[1]/div').click()
 time.sleep(.5)
 
-print("딜리버드 진입")
+print("딜리버드 진입 - 반품재고 확인 (상품 및 재고 탭)")
 #재고로 가기
 driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[7]/a').click()
 time.sleep(1)
@@ -360,31 +367,6 @@ for i in range(len(df)):
 df['temp_사입번호'] = p_result
 df['in_stock'] = p_number
 
-###############################################3
-#dict_ export 해서 두번째 부터 사용하게 코드 여기 삽입
-###############################################3
-
-"""df_stock_ = df_stock.groupby(['key'],dropna=False, as_index=False)[['정상재고']].sum()
-stocks_ = df_stock_.values.tolist() # stock을 한개씩 리스트로 만들어서 한개씩 빼먹기
-stocks = []
-for i in range(len(stocks_)):
-    for j in range(stocks_[i][1]):
-        stocks.append(stocks_[i][0].lower())
-print("재고 list 완료")
-
-in_stock = []
-temp_code = []
-for i in range(len(df)):
-    num = 0
-    for j in range(df['수량'][i]):
-        if df['key'][i].lower() in stocks:
-            num += 1
-            stocks.remove(df['key'][i].lower())
-        else:
-            pass
-    in_stock.append(num)
-df['in_stock'] = in_stock"""
-
 df['구매수량'] = df['수량']-df['in_stock']
 print("df에 재고수량 반영")
 
@@ -412,5 +394,79 @@ try:
     os.remove(file_name)
 except OSError as e:
     print(e.strerror)
+
+# 여기서 부터 정상상품 자동 업로드 위해 추가 작성한 부분
+if add == 0:
+    print("order form 작성 시작")
+
+    # 오더 양식으로 변경
+    df['option1'] = df['option1'].str.lower()
+    df['option2'] = df['option2'].str.lower()
+    df2 = df.groupby(
+        ['title_ss', '상품명(한국어 쇼핑몰)', 'option1', 'option2', 'price_ss', 'shop_name', 'building_name', 'shop_location',
+         'shop_phone_number', '상품품목코드', '모델명', 'note'], dropna=False).agg(
+        {'수량': 'sum', 'in_stock': 'sum', '구매수량': 'sum'})
+    df2 = df2.add_suffix('').reset_index()
+    df2 = df2[df2['구매수량'] > 0]
+    df2 = df2[df2['note'] == "OK"]
+
+    cols = df2.columns.tolist()
+    cols = cols[:5] + cols[14:15] + cols[5:12] + cols[12:14]
+    df2 = df2[cols]
+
+    df2.insert(0, '고객사 상품코드_temp', '')
+    df2.insert(1, '일시품절시_temp', '')
+    df2.insert(6, '기타옵션-temp', '')
+    df2.insert(9, '카테고리-temp', '')
+    df2.insert(14, 'blank1-temp', '')
+    df2.insert(15, 'blank2-temp', '')
+    df2.insert(16, 'blank3temp', '')
+    df2.insert(17, 'blank4-temp', '')
+    df2.insert(19, 'blank5-temp', '')  # 메모2, 서율샵 자리
+
+    # 공백 추가
+    df2.loc[-1] = ""
+    df2.index = df2.index + 1
+    df2 = df2.sort_index()
+
+    df2.loc[-1] = ""
+    df2.index = df2.index + 1
+    df2 = df2.sort_index()
+
+    file_order_form = "/Users/seoyulejo/Downloads/files/order_form_" + timestr + ".xlsx"
+
+    df2.to_excel(file_order_form, index=False)
+    print("엑셀 export 완료")
+
+    #딜리버드에 등록
+
+    driver.switch_to.window(driver.window_handles[0])
+    time.sleep(.5)
+    driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[1]/a').click() # 사입요청 탭
+    time.sleep(.5)
+    driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div[2]/div/div/div/div/div[1]/div[2]/button[2]').click()
+    time.sleep(.5)
+    driver.find_element_by_xpath('//*[@id="excel_file"]').send_keys(file_order_form)  # 파일선택 버튼
+    time.sleep(.5)
+    driver.find_element_by_xpath('//*[@id="uploadExcelModal"]/div/div/div[2]/form/div[3]/input').click() # 보내기 버튼
+    time.sleep(.5)
+    driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]').click() # 사입요청하기 버튼
+    time.sleep(.5)
+    driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]').click()  # 네
+    time.sleep(.5)
+    driver.find_element_by_xpath('//*[@id="method_SINSANGPOINT"]').click()  # 신상캐시 선택
+    time.sleep(.5)
+    action.send_keys(Keys.PAGE_DOWN).perform()
+    driver.find_element_by_xpath('//*[@id="confirmCollapse"]/div[2]/div/label/span[2]').click()  # 동의합니다.
+    time.sleep(.5)
+    driver.find_element_by_xpath('//*[@id="payment_button"]').click()  # 결재버튼
+    time.sleep(.5)
+
+
+
+
+
+
+
 
 

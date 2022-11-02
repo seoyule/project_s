@@ -59,7 +59,7 @@ try:
     time.sleep(.3)
 except:
     pass
-"""
+
 # 한글로 바꾸기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
 time.sleep(.5)
@@ -71,7 +71,7 @@ try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
-    pass"""
+    pass
 
 #딜리버드로 가기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[1]/div').click()

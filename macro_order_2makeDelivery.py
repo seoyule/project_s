@@ -7,7 +7,9 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from datetime import datetime, timedelta
 
-print("delivery요청 작성 시작 - delivery form, master_rs 작성")
+print("배송요청 작성 시작 - delivery form, master_rs 작성")
+
+#딜리버드 사입요청 일시로 정하기
 num_try = 1 #사입요청 몇개? 1개부터
 
 # 기본세팅
@@ -33,7 +35,7 @@ except:
     pass"""
 
 try:
-    driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
+    driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click() #start 버튼 클릭
 except:
     pass
 time.sleep(.5)
@@ -53,7 +55,7 @@ try:
     time.sleep(.3)
 except:
     pass
-"""
+
 # 한글로 바꾸기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
 time.sleep(.5)
@@ -65,13 +67,13 @@ try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
-    pass"""
+    pass
 
 #딜리버드로 가기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[1]/div').click()
 time.sleep(.5)
 
-print("딜리버드 진입")
+print("딜리버드 진입 - 사입현황 다운로드")
 #사입현황으로 가기
 driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').click()
 time.sleep(1)
