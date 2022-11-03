@@ -7,10 +7,10 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from datetime import datetime, timedelta
 
-print("배송요청 작성 시작 - delivery form, master_rs 작성")
+print("딜리버드에 배송요청 시작 - delivery form, master_rs 작성")
 
 #딜리버드 사입요청 일시로 정하기
-num_try = 1 #사입요청 몇개? 1개부터
+num_try = 2 #사입요청 몇개? 1개부터 (취소 포함)
 
 # 기본세팅
 warnings.filterwarnings("ignore")
@@ -129,7 +129,7 @@ for i in range(len(df)):
     num = 0 #수량
     info1 = '처음값'
     info2 = '처음값'
-    if df['상품품목코드'][i] in dict_:
+    if df['구매수량'][i]>0 and df['상품품목코드'][i] in dict_:
         # 사입사 메모 입력,사입번호 넣기
         info1 = dict_[df['상품품목코드'][i]][2]
         info2 = dict_[df['상품품목코드'][i]][3]
@@ -144,6 +144,7 @@ for i in range(len(df)):
         p_number.append(num)
         p_info_1.append(info1)
         p_info_2.append(info2)
+
     else:
         p_result.append("구매목록에 없음")
         p_number.append(0)
@@ -156,6 +157,11 @@ df['배송수량'] = df['사입수량']+df['in_stock']
 df['수량check'] = df['수량']==df['배송수량']
 df['info_1'] = p_info_1
 df['info_2'] = p_info_2
+
+for i in range(len(df)):
+    if df['사입번호'][i] == "구매목록에 없음" and df['in_stock'][i]>0:
+        df['사입번호'][i] = df['temp_사입번호'][i]
+        df['info_1'][i] = 'temp_사입번호 -> 사입번호로 (원래 구매목록에 없음)'
 
 df_deliv = df[['수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','배송수량','수량check']]
 df_deliv.insert(0,'balnk0','')

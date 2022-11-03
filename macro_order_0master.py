@@ -17,6 +17,8 @@ from openpyxl import load_workbook
 #두번째 시도에 수정, 추가건 마스터 2번째 탭에 작업한 후 1번 파일 돌린다.
 #참고로 두번째 시도때는 딜리버드에 사입 주문 안들어간다. (마스터 파일 추가분 작성까지만)
 #추가작업? - 몇개 추가? 0 은 모두..
+#배송메시지 명령어 : skip <- 수량 0으로 처리 (오류주문, 주문 안되게), hold <- (반품 기다리는 것) 주문 안들어 가게..
+#링크 없는건 미리 배송메시지에 업데이트 해놓는다.
 add = 0
 
 if add == 0:
@@ -112,6 +114,11 @@ time.sleep(1)
 
 driver.find_element_by_xpath('//*[@id="search_button"]').click() #검색
 
+try:
+    driver.find_element_by_xpath('//*[@id="ch-plugin-core"]/div[2]/div/div/button').click()  # 광고 close
+except:
+    pass
+
 #엑셀 다운로드
 driver.find_element_by_xpath('//*[@id="eExcelDownloadBtn"]').click()
 time.sleep(1)
@@ -178,7 +185,7 @@ df['option1'] = df['상품옵션'].replace('.*=(\S+),.*',r'\1', regex=True)
 df['option2'] = df['상품옵션'].replace('.*=.*=(.*)',r'\1', regex=True)
 df['option2'] = df['option2'].str.lower()
 df['수령인 우편번호'] = df['수령인 우편번호'].astype(str)
-
+df['배송메시지'] = df['배송메시지'].astype(str)
 zip_code = []
 for i in range(len(df)):
     if len(df['수령인 우편번호'][i])==4:
@@ -198,7 +205,10 @@ note = []
 
 print("데이터 채우기 시작")
 for i in range(len(df)):
-    link = df['모델명'][i]
+    if pd.isnull(df['모델명'][i]):
+        link = df['배송메시지'][i]
+    else:
+        link = df['모델명'][i]
     driver.switch_to.new_window('tab')
     time.sleep(.5)
     driver.switch_to.window(driver.window_handles[2])
@@ -351,6 +361,10 @@ p_number = [] # stock 수량
 for i in range(len(df)):
     result = '' #번호
     num = 0 #수량
+    if df['배송메시지'][i].lower() == "skip":
+        df['수량'][i] = 0
+    if df['배송메시지'][i].lower() == "hold":
+        df['note'][i] = "hold"
     if df['key'][i].lower() in dict_:
         # 사입번호 넣기
         result = dict_[df['key'][i].lower()][0]
@@ -395,6 +409,9 @@ try:
 except OSError as e:
     print(e.strerror)
 
+
+
+"""
 # 여기서 부터 정상상품 자동 업로드 위해 추가 작성한 부분
 if add == 0:
     print("order form 작성 시작")
@@ -444,25 +461,27 @@ if add == 0:
     time.sleep(.5)
     driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[1]/a').click() # 사입요청 탭
     time.sleep(.5)
-    driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div[2]/div/div/div/div/div[1]/div[2]/button[2]').click()
+    action.send_keys(Keys.PAGE_DOWN).perform()
+    driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div[2]/div/div/div/div/div[1]/div[2]/button[2]').send_keys(Keys.ENTER)
+    #driver.find_element_by_xpath("//button[contains(text(),'엑셀 업로드')]").click()
     time.sleep(.5)
     driver.find_element_by_xpath('//*[@id="excel_file"]').send_keys(file_order_form)  # 파일선택 버튼
     time.sleep(.5)
-    driver.find_element_by_xpath('//*[@id="uploadExcelModal"]/div/div/div[2]/form/div[3]/input').click() # 보내기 버튼
+    driver.find_element_by_xpath('//*[@id="uploadExcelModal"]/div/div/div[2]/form/div[3]/input').send_keys(Keys.ENTER) # 보내기 버튼
+    time.sleep(2)
+    driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]').send_keys(Keys.ENTER) # 사입요청하기 버튼
     time.sleep(.5)
-    driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]').click() # 사입요청하기 버튼
-    time.sleep(.5)
-    driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]').click()  # 네
-    time.sleep(.5)
-    driver.find_element_by_xpath('//*[@id="method_SINSANGPOINT"]').click()  # 신상캐시 선택
+    driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]').send_keys(Keys.ENTER)  # 네
+    time.sleep(2)
+    driver.find_element_by_xpath('//*[@id="method_SINSANGPOINT"]').send_keys(Keys.ENTER)  # 신상캐시 선택
     time.sleep(.5)
     action.send_keys(Keys.PAGE_DOWN).perform()
-    driver.find_element_by_xpath('//*[@id="confirmCollapse"]/div[2]/div/label/span[2]').click()  # 동의합니다.
+    driver.find_element_by_xpath('//*[@id="confirmCollapse"]/div[2]/div/label/span[1]').click()  # 동의합니다.
     time.sleep(.5)
-    driver.find_element_by_xpath('//*[@id="payment_button"]').click()  # 결재버튼
-    time.sleep(.5)
+    #driver.find_element_by_xpath('//*[@id="payment_button"]').send_keys(Keys.ENTER)  # 결재버튼
+    #time.sleep(.5)
 
-
+"""
 
 
 

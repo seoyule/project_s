@@ -10,7 +10,7 @@ import glob
 import os
 from datetime import datetime, timedelta
 
-print("송장번호 입력 시작!")
+print("카페24에 송장번호 입력 시작!")
 
 # 기본세팅
 warnings.filterwarnings("ignore")
