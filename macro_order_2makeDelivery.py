@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 print("딜리버드에 배송요청 시작 - delivery form, master_rs 작성")
 
 #딜리버드 사입요청 일시로 정하기
-num_try = 2 #사입요청 몇개? 1개부터 (취소 포함)
+num_try = 1 #사입요청 몇개? 1개부터 (취소 포함)
 
 # 기본세팅
 warnings.filterwarnings("ignore")
