@@ -323,7 +323,9 @@ df.insert(15,'in_stock','')
 df.insert(16,'구매수량','')
 
 #재고와 비교위한 key값 생성
-df['key'] = df['title_ss']+"_"+df['option1']+"_"+df['option2']
+df['key'] = df['상품명(한국어 쇼핑몰)']+"_"+df['option1']+"_"+df['option2']
+df['key'] = df['key'].str.lower()
+df['key'] = df['key'].replace('\s','', regex=True)
 
 print("데이터 채우기 완료")
 
@@ -332,22 +334,29 @@ print("데이터 채우기 완료")
 driver.switch_to.window(driver.window_handles[0])
 #딜리버드로 가기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[1]/div').click()
-time.sleep(.5)
+time.sleep(2)
 
 print("딜리버드 진입 - 반품재고 확인 (상품 및 재고 탭)")
 #재고로 가기
-driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[7]/a').click()
-time.sleep(1)
-driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div/div/div[3]/div/div/div[2]/label').click()
+driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[7]/a').send_keys(Keys.ENTER)
 time.sleep(3)
+driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div/div/div[3]/div/div/div[2]/label').send_keys(Keys.SPACE) #재고 없음 클릭
+time.sleep(3)
+driver.find_element_by_xpath('//*[@id="productList_wrapper"]/div[1]/div[2]/div/button[1]').send_keys(Keys.ENTER)
+time.sleep(4)
 
-df_stocks = pd.read_html(driver.page_source, match = '상품번호')
-df_stock = df_stocks[1]
-df_stock.columns = df_stock.columns.get_level_values(1)
-df_stock['도매 매장명'] = df_stock['도매 매장명'].replace('도매\s매장\s변경','',regex=True)
-df_stock['상품번호'] = df_stock['상품번호'].replace('상품정보\s수정','',regex=True)
-df_stock['key'] = df_stock['도매 상품명']+"_"+df_stock['상품옵션 1']+"_"+df_stock['상품옵션 2']
+files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
+files.sort(key=lambda x: os.path.getmtime(x))
+file_name2 = files[-1]
+
+time.sleep(1)
+df_stock = pd.read_excel(file_name2)
+#df_stock.columns = df_stock.columns.get_level_values(1)
+#df_stock['도매 매장명'] = df_stock['도매 매장명'].replace('도매\s매장\s변경','',regex=True)
+#df_stock['상품번호'] = df_stock['상품번호'].replace('상품정보\s수정','',regex=True)
+df_stock['key'] = df_stock['판매 상품명']+"_"+df_stock['상품옵션 1']+"_"+df_stock['상품옵션 2']
 df_stock['key'] = df_stock['key'].str.lower()
+df_stock['key'] = df_stock['key'].replace('\s','', regex=True)
 
 df_stock_ = df_stock[['key','상품번호','정상재고']]
 list_ = df_stock_.values.tolist()
@@ -356,6 +365,7 @@ for i in range(len(list_)):
     dict_[list_[i][0]] = [list_[i][1],list_[i][2]]
 print("재고 dic 완료")
 
+# 반품 재고 매입 수량에 반영..
 p_result = [] # 사입번호
 p_number = [] # stock 수량
 for i in range(len(df)):
@@ -406,12 +416,17 @@ df_stock.to_excel(file_name_stock)
 try:
     os.remove(file_path)
     os.remove(file_name)
+    os.remove(file_name2)
 except OSError as e:
     print(e.strerror)
 
 
 
-"""
+
+
+
+
+
 # 여기서 부터 정상상품 자동 업로드 위해 추가 작성한 부분
 if add == 0:
     print("order form 작성 시작")
@@ -460,28 +475,44 @@ if add == 0:
     driver.switch_to.window(driver.window_handles[0])
     time.sleep(.5)
     driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[1]/a').click() # 사입요청 탭
+    time.sleep(1)
+
+    element = driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div[2]/div/div/div/div/div[1]/div[2]/button[2]')
+    action.move_to_element(element).perform()
     time.sleep(.5)
-    action.send_keys(Keys.PAGE_DOWN).perform()
-    driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div[2]/div/div/div/div/div[1]/div[2]/button[2]').send_keys(Keys.ENTER)
+    element.send_keys(Keys.ENTER)
+
     #driver.find_element_by_xpath("//button[contains(text(),'엑셀 업로드')]").click()
     time.sleep(.5)
     driver.find_element_by_xpath('//*[@id="excel_file"]').send_keys(file_order_form)  # 파일선택 버튼
     time.sleep(.5)
     driver.find_element_by_xpath('//*[@id="uploadExcelModal"]/div/div/div[2]/form/div[3]/input').send_keys(Keys.ENTER) # 보내기 버튼
-    time.sleep(2)
+    time.sleep(5)
     driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]').send_keys(Keys.ENTER) # 사입요청하기 버튼
     time.sleep(.5)
     driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]').send_keys(Keys.ENTER)  # 네
-    time.sleep(2)
+    time.sleep(3)
     driver.find_element_by_xpath('//*[@id="method_SINSANGPOINT"]').send_keys(Keys.ENTER)  # 신상캐시 선택
-    time.sleep(.5)
-    action.send_keys(Keys.PAGE_DOWN).perform()
-    driver.find_element_by_xpath('//*[@id="confirmCollapse"]/div[2]/div/label/span[1]').click()  # 동의합니다.
-    time.sleep(.5)
-    #driver.find_element_by_xpath('//*[@id="payment_button"]').send_keys(Keys.ENTER)  # 결재버튼
-    #time.sleep(.5)
+    time.sleep(1)
 
-"""
+    element = driver.find_element_by_xpath('//*[@id="confirmCollapse"]/div[2]/div/label/span[1]') # 동의합니다.
+    action.move_to_element(element).perform()
+    time.sleep(1)
+    try:
+        element.send_keys(Keys.SPACE)
+    except:
+        time.sleep(1)
+        element.click()
+
+    time.sleep(1)
+    element = driver.find_element_by_xpath('//*[@id="payment_button"]')
+    action.move_to_element(element).perform()
+    time.sleep(.5)
+    element.send_keys(Keys.ENTER)  # 결재버튼
+    time.sleep(5)
+    print("결재 완료")
+
+
 
 
 

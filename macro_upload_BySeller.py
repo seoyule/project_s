@@ -23,8 +23,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 # 기본세팅
-start = 7 # 샵 중간부터 시작 시 (0 ~)
-number_d = 100 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
+start = 0 # 샵 중간부터 시작 시 (처음은 0 ~)
+number_d = 40 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 subject_4f = ""
@@ -81,11 +81,11 @@ print("신상 로그인 성공")
 
 # 광고 있으면 close
 time.sleep(.5)
-"""try:
+try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
-    pass"""
+    pass
 
 # 한글로 바꾸기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
@@ -94,11 +94,11 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/d
 time.sleep(.5)
 
 # 광고 있으면 close
-"""try:
+try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
-    pass"""
+    pass
 
 # cafe24 열기
 driver.execute_script('window.open("https://eclogin.cafe24.com/Shop/");')

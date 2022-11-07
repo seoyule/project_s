@@ -24,7 +24,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 # 기본세팅
 start = 1 # 중간부터 시작 시작 - 개수 번째
-number = 800 # 아이템 검색 개수
+number = 500 # 아이템 검색 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 n = 0 #완료된 상품 개수
@@ -71,13 +71,13 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div
 print("신상 로그인 성공")
 
 # 기본-신상: 광고 있으면 close
-"""time.sleep(.5)
+time.sleep(.5)
 try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
     pass
-"""
+
 # 기본-신상: 한글로 바꾸기
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
 time.sleep(.5)
@@ -85,12 +85,12 @@ driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/d
 time.sleep(.5)
 
 # 기본-신상: 광고 있으면 close
-"""try:
+try:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(.3)
 except:
     pass
-"""
+
 # 기본-신상: 신상초이스 진입
 driver.get('https://sinsangmarket.kr/sinsangChoice')
 
