@@ -187,6 +187,9 @@ for i in range(num_goods):
         idx = df.index[df['key3'].str.lower() == key.lower()].tolist()
         if len(idx) == 1:
             invoice = df['송장번호'].iloc[idx[0]]
+            if pd.isnull(invoice): # skip으로 수량=0으로 true인 경우.
+                print(i, "-", j, "매칭정보 없음")
+                continue
             invoice = int(invoice)
             df['deliver_check'].iloc[idx[0]] = "OK"
             if j==0:

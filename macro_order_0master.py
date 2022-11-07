@@ -207,6 +207,11 @@ print("데이터 채우기 시작")
 for i in range(len(df)):
     if pd.isnull(df['모델명'][i]):
         link = df['배송메시지'][i]
+        if df['주문경로'][i]=='쿠팡':
+            option_ = df['option1'][i]
+            option_.strip()
+            df['option1'][i] = re.search(r'(\S*)\s(\S*)', option_).group(1)
+            df['option2'][i] = re.search(r'(\S*)\s(\S*)', option_).group(2)
     else:
         link = df['모델명'][i]
     driver.switch_to.new_window('tab')
@@ -315,7 +320,7 @@ df['shop_phone_number'] = shop_phone_number
 df['note'] = note
 
 cols = df.columns.tolist()
-cols = cols[:11]+cols[12:14]+cols[15:18]+cols[11:12]+cols[14:15]+cols[18:]
+cols = cols[:11]+cols[12:14]+cols[15:19]+cols[11:12]+cols[14:15]+cols[19:]
 df = df[cols]
 
 df.insert(12,'key','')
