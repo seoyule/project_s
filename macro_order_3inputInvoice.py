@@ -115,9 +115,9 @@ df['송장번호']= df['key2'].map(df_invoice)
 df.loc[df['수량check'] == False, '송장번호'] = ""
 
 df['수량check'] = df['수량check'].map({True: 'True', False: 'False'})
-df['key3'] = df['주문번호']+"_"+df['상품명(한국어 쇼핑몰)']+"_"+df['option1']+"_"+df['option2']+"_"+df['수량check']
+df['key3'] = df['주문번호']+"_"+df['상품명(한국어 쇼핑몰)']+"_"+df['상품옵션']+"_"+df['수량check']
 df['deliver_check'] = ''
-print("마스터 df 송장번호 update")
+print("마스터 df 송장번호 update") #마켓 상품은 옵션이름이 특별하니까.. 이렇게 처리
 
 ## 송장번호 입력
 # cafe24 열기
@@ -165,10 +165,12 @@ for i in range(num_goods):
             product = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/p[1]/a[2]').text
             product =product.split("\n")[0]
             option1 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/ul/li[1]').text
-            option1 = option1.split(" : ")[1].strip()
+            option1 = option1.replace(" : ","=").strip()
+            #option1 = option1.split(" : ")[1].strip()
             try:
                 option2 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/ul/li[2]').text
-                option2 = option2.split(" : ")[1].strip()
+                option2 = option2.replace(" : ","=").strip()
+                #option2 = option2.split(" : ")[1].strip()
             except:
                 option2 = ""
         else:
@@ -176,14 +178,22 @@ for i in range(num_goods):
                 f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/p[1]/a[2]').text
             product = product.split("\n")[0]
             option1 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/ul/li[1]').text
-            option1 = option1.split(" : ")[1].strip()
+            option1 = option1.replace(" : ", "=").strip()
+            #option1 = option1.split(" : ")[1].strip()
             try:
                 option2 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/ul/li[2]').text
-                option2 = option2.split(" : ")[1].strip()
+                option2 = option2.replace(" : ", "=").strip()
+                #option2 = option2.split(" : ")[1].strip()
             except:
                 option2 = ""
 
-        key =order_num+"_"+product+"_"+option1+"_"+option2+"_True"
+        option_ =""
+        if option2 == "":
+            option_ = option1
+        else:
+            option_ = option1+", "+option2
+
+        key =order_num+"_"+product+"_"+option_+"_True"
         idx = df.index[df['key3'].str.lower() == key.lower()].tolist()
         if len(idx) == 1:
             invoice = df['송장번호'].iloc[idx[0]]

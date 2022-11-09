@@ -8,11 +8,14 @@ from selenium import webdriver  # webdriver를 통해 파싱하기 위함
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
 import zipfile
 import glob
 import os
 from openpyxl import load_workbook
+
 #첫번째 시도에 문제 없는 OK건 다 올린다. (note = 'OK', 구매수량 >0)
 #두번째 시도에 수정, 추가건 마스터 2번째 탭에 작업한 후 1번 파일 돌린다.
 #참고로 두번째 시도때는 딜리버드에 사입 주문 안들어간다. (마스터 파일 추가분 작성까지만)
@@ -207,11 +210,12 @@ print("데이터 채우기 시작")
 for i in range(len(df)):
     if pd.isnull(df['모델명'][i]):
         link = df['배송메시지'][i]
+        df['모델명'][i] = df['배송메시지'][i]
         if df['주문경로'][i]=='쿠팡':
-            option_ = df['option1'][i]
+            option_ = df['상품옵션'][i]
             option_.strip()
-            df['option1'][i] = re.search(r'(\S*)\s(\S*)', option_).group(1)
-            df['option2'][i] = re.search(r'(\S*)\s(\S*)', option_).group(2)
+            df['option1'][i] = re.search(r'옵션=(\S*)\s(\S*)', option_).group(1)
+            df['option2'][i] = re.search(r'옵션=(\S*)\s(\S*)', option_).group(2)
     else:
         link = df['모델명'][i]
     driver.switch_to.new_window('tab')
@@ -431,7 +435,6 @@ except OSError as e:
 
 
 
-
 # 여기서 부터 정상상품 자동 업로드 위해 추가 작성한 부분
 if add == 0:
     print("order form 작성 시작")
@@ -482,22 +485,34 @@ if add == 0:
     driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[1]/a').click() # 사입요청 탭
     time.sleep(1)
 
+    action.send_keys(Keys.PAGE_DOWN).perform()
     element = driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div[2]/div/div/div/div/div[1]/div[2]/button[2]')
+    action.move_to_element(element)
+    element.send_keys(Keys.ENTER) # 엑셀 등록
+
+    time.sleep(1)
+    driver.find_element_by_xpath('//*[@id="excel_file"]').send_keys(file_order_form)  # 파일선택 버튼
+    time.sleep(1)
+    driver.find_element_by_xpath('//*[@id="uploadExcelModal"]/div/div/div[2]/form/div[3]/input').send_keys(Keys.ENTER) # 보내기 버튼(저장)
+    time.sleep(4)
+
+    action.send_keys(Keys.PAGE_DOWN).perform()
+    element = driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]')
+    action.move_to_element(element).perform()
+    time.sleep(1)
+    element.send_keys(Keys.ENTER)  #사입요청하기 버튼
+
+    action.send_keys(Keys.PAGE_DOWN).perform()
+    element = driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]')
+    action.move_to_element(element).perform()
+    time.sleep(1)
+    element.send_keys(Keys.ENTER)  # 네
+
+    time.sleep(4)
+    element = driver.find_element_by_xpath('//*[@id="method_SINSANGPOINT"]')
     action.move_to_element(element).perform()
     time.sleep(.5)
-    element.send_keys(Keys.ENTER)
-
-    #driver.find_element_by_xpath("//button[contains(text(),'엑셀 업로드')]").click()
-    time.sleep(.5)
-    driver.find_element_by_xpath('//*[@id="excel_file"]').send_keys(file_order_form)  # 파일선택 버튼
-    time.sleep(.5)
-    driver.find_element_by_xpath('//*[@id="uploadExcelModal"]/div/div/div[2]/form/div[3]/input').send_keys(Keys.ENTER) # 보내기 버튼
-    time.sleep(5)
-    driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]').send_keys(Keys.ENTER) # 사입요청하기 버튼
-    time.sleep(.5)
-    driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]').send_keys(Keys.ENTER)  # 네
-    time.sleep(3)
-    driver.find_element_by_xpath('//*[@id="method_SINSANGPOINT"]').send_keys(Keys.ENTER)  # 신상캐시 선택
+    element.send_keys(Keys.ENTER) # 신상캐시 선택
     time.sleep(1)
 
     element = driver.find_element_by_xpath('//*[@id="confirmCollapse"]/div[2]/div/label/span[1]') # 동의합니다.
@@ -513,10 +528,9 @@ if add == 0:
     element = driver.find_element_by_xpath('//*[@id="payment_button"]')
     action.move_to_element(element).perform()
     time.sleep(.5)
-    element.send_keys(Keys.ENTER)  # 결재버튼
+    #element.send_keys(Keys.ENTER)  # 결재버튼
     time.sleep(5)
     print("결재 완료")
-
 
 
 

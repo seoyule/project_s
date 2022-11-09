@@ -6,6 +6,9 @@ from selenium import webdriver  # webdriver를 통해 파싱하기 위함
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from datetime import datetime, timedelta
+from selenium.webdriver.common.keys import Keys
+import glob
+import os
 
 print("딜리버드에 배송요청 시작 - delivery form, master_rs 작성")
 
@@ -18,6 +21,9 @@ warnings.filterwarnings("ignore")
 options = webdriver.ChromeOptions()
 options.headless = True
 options.add_argument("window-size=1920x1080")
+search_dir = "/Users/seoyulejo/Downloads/shopping_raw/" # 필요한 경우 편집
+prefs = {'download.default_directory' : search_dir}
+options.add_experimental_option('prefs', prefs)
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36")
 driver = webdriver.Chrome("/Users/seoyulejo/chromedriver", options=options) #, options=options
 driver.maximize_window()
@@ -26,6 +32,11 @@ action = ActionChains(driver)
 wait = WebDriverWait(driver, 20)
 
 category_list = back_data_mine.category_list # 분류설정
+
+timestr = time.strftime("%Y%m%d")
+yesterday = datetime.now() - timedelta(1)
+timestr_y = datetime.strftime(yesterday, '%Y%m%d')
+timestr_y_ = datetime.strftime(yesterday, '%Y-%m-%d')
 
 # 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
@@ -78,18 +89,35 @@ print("딜리버드 진입 - 사입현황 다운로드")
 driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').click()
 time.sleep(1)
 
+action.send_keys(Keys.PAGE_DOWN).perform()
+time.sleep(.5)
+order_ = []
+for i in range(10):
+    date_ = driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[1]').text[:10]
+    status_ = driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[3]').text
+    if date_ == timestr_y_ and status_ == "사입 완료함	":
+        order_.append(i)
+
 d = {}
-for i in range(num_try): #https://stackoverflow.com/questions/30635145/create-multiple-dataframes-in-loop
+for i in order_: #https://stackoverflow.com/questions/30635145/create-multiple-dataframes-in-loop
     driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[2]').click()
     time.sleep(2)
     driver.switch_to.window(driver.window_handles[1])
-    df_ps = pd.read_html(driver.page_source, match = '상품 번호')
-    df_p = df_ps[1]
-    df_p.columns = df_p.columns.get_level_values(1)
+    action.send_keys(Keys.PAGE_DOWN).perform()
+    driver.find_element_by_xpath('//*[@id="purchasesDetail_wrapper"]/div[1]/div[2]/div/button').send_keys(Keys.ENTER)
+    time.sleep(4)
+
+    files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
+    files.sort(key=lambda x: os.path.getmtime(x))
+    file_name = files[-1]
+
+    time.sleep(1)
+    df_p = pd.read_excel(file_name)
     d[i] =df_p
     driver.close()
     driver.switch_to.window(driver.window_handles[0])
     time.sleep(.5)
+    os.remove(file_name)
 
 df_pf = pd.concat(d.values(), ignore_index=True)
 
@@ -101,9 +129,6 @@ for i in range(len(list_)):
 print("사입 딕셔너리 완성")
 
 #master 가져오기
-timestr = time.strftime("%Y%m%d")
-yesterday = datetime.now() - timedelta(1)
-timestr_y = datetime.strftime(yesterday, '%Y%m%d')
 
 file_name_master = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+".xlsx"
 df = pd.read_excel (file_name_master, sheet_name=0) # 0에 다 통합해 놓을꺼니까 항상 0
@@ -197,10 +222,87 @@ df_pf.to_excel(file_purchase, index=False)
 df.to_excel(file_name_master_rs, index=False)
 print("엑셀 export 완료")
 
+
+# 일단 여기까지..
+
+
 """
-with pd.option_context('display.max_rows', None,
-                       'display.max_columns', None,
-                       'display.precision', 3,
-                       ):
-    print(df_deliv)
+print("deliverd 배송 요청 시작")
+# 딜리버드에 등록
+
+driver.switch_to.window(driver.window_handles[0])
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[4]/a').click()  # 배송요청 탭
+time.sleep(1)
+
+action.send_keys(Keys.PAGE_DOWN).perform()
+element = driver.find_element_by_xpath(
+    '//*[@id="page-wrapper"]/div[2]/div[3]/div/div[1]/div/div/div/div/div[1]/div[2]/button[2]')
+action.move_to_element(element)
+element.send_keys(Keys.ENTER)  # 엑셀 등록
+
+time.sleep(1)
+action.send_keys(Keys.PAGE_DOWN).perform()
+time.sleep(.5)
+element = driver.find_element_by_xpath('//*[@id="combine_type_just_address"]') #동일 배송지 양식 선택
+action.move_to_element(element)
+try:
+    element.send_keys(Keys.SPACE)
+except:
+    time.sleep(1)
+    element.click()
+
+action.send_keys(Keys.PAGE_DOWN).perform()
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="orders"]').send_keys(file_deliver)  # 파일선택 버튼
+time.sleep(1)
+
+driver.find_element_by_xpath('//*[@id="excel_order_import_btn"]').send_keys(Keys.ENTER)  # 보내기 버튼(저장)
+time.sleep(4)
+
+
+#여기서 부터...
+
+
+element = driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]')
+action.move_to_element(element).perform()
+time.sleep(1)
+element.send_keys(Keys.ENTER)  # 사입요청하기 버튼
+
+action.send_keys(Keys.PAGE_DOWN).perform()
+element = driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]')
+action.move_to_element(element).perform()
+time.sleep(1)
+element.send_keys(Keys.ENTER)  # 네
+
+time.sleep(4)
+element = driver.find_element_by_xpath('//*[@id="method_SINSANGPOINT"]')
+action.move_to_element(element).perform()
+time.sleep(.5)
+element.send_keys(Keys.ENTER)  # 신상캐시 선택
+time.sleep(1)
+
+element = driver.find_element_by_xpath('//*[@id="confirmCollapse"]/div[2]/div/label/span[1]')  # 동의합니다.
+action.move_to_element(element).perform()
+time.sleep(1)
+try:
+    element.send_keys(Keys.SPACE)
+except:
+    time.sleep(1)
+    element.click()
+
+time.sleep(1)
+element = driver.find_element_by_xpath('//*[@id="payment_button"]')
+action.move_to_element(element).perform()
+time.sleep(.5)
+# element.send_keys(Keys.ENTER)  # 결재버튼
+time.sleep(5)
+print("결재 완료")
+
 """
+
+
+
+
+
+
