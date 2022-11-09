@@ -92,10 +92,10 @@ time.sleep(1)
 action.send_keys(Keys.PAGE_DOWN).perform()
 time.sleep(.5)
 order_ = []
-for i in range(10):
+for i in range(5):
     date_ = driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[1]').text[:10]
     status_ = driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[3]').text
-    if date_ == timestr_y_ and status_ == "사입 완료함	":
+    if date_ == timestr_y_ and status_ == "사입 완료함":
         order_.append(i)
 
 d = {}
@@ -226,7 +226,7 @@ print("엑셀 export 완료")
 # 일단 여기까지..
 
 
-"""
+
 print("deliverd 배송 요청 시작")
 # 딜리버드에 등록
 
@@ -260,46 +260,30 @@ time.sleep(1)
 driver.find_element_by_xpath('//*[@id="excel_order_import_btn"]').send_keys(Keys.ENTER)  # 보내기 버튼(저장)
 time.sleep(4)
 
+alert_ = driver.find_element_by_xpath('//*[@id="swal2-content"]').text
+print(alert_)
 
-#여기서 부터...
+driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[1]').send_keys(Keys.ENTER) #맞습니까? 네
+time.sleep(1)
 
-
-element = driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]')
+element = driver.find_element_by_xpath('//*[@id="orderList_wrapper"]/div[1]/div[2]/div/button[4]')
 action.move_to_element(element).perform()
 time.sleep(1)
-element.send_keys(Keys.ENTER)  # 사입요청하기 버튼
+element.send_keys(Keys.ENTER)  # 전체배송요청 버튼
 
 action.send_keys(Keys.PAGE_DOWN).perform()
 element = driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]')
 action.move_to_element(element).perform()
 time.sleep(1)
-element.send_keys(Keys.ENTER)  # 네
-
-time.sleep(4)
-element = driver.find_element_by_xpath('//*[@id="method_SINSANGPOINT"]')
-action.move_to_element(element).perform()
-time.sleep(.5)
-element.send_keys(Keys.ENTER)  # 신상캐시 선택
-time.sleep(1)
-
-element = driver.find_element_by_xpath('//*[@id="confirmCollapse"]/div[2]/div/label/span[1]')  # 동의합니다.
-action.move_to_element(element).perform()
-time.sleep(1)
-try:
-    element.send_keys(Keys.SPACE)
-except:
-    time.sleep(1)
-    element.click()
-
-time.sleep(1)
-element = driver.find_element_by_xpath('//*[@id="payment_button"]')
-action.move_to_element(element).perform()
-time.sleep(.5)
-# element.send_keys(Keys.ENTER)  # 결재버튼
+element.send_keys(Keys.ENTER)  # 맞습니까? 네
 time.sleep(5)
-print("결재 완료")
 
-"""
+element = driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[1]')
+action.move_to_element(element).perform()
+time.sleep(.5)
+element.send_keys(Keys.ENTER)  # 배송요청에 성공했습니다.
+time.sleep(1)
+print("배송요청 완료")
 
 
 

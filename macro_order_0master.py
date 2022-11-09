@@ -496,7 +496,6 @@ if add == 0:
     driver.find_element_by_xpath('//*[@id="uploadExcelModal"]/div/div/div[2]/form/div[3]/input').send_keys(Keys.ENTER) # 보내기 버튼(저장)
     time.sleep(4)
 
-    action.send_keys(Keys.PAGE_DOWN).perform()
     element = driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]')
     action.move_to_element(element).perform()
     time.sleep(1)
