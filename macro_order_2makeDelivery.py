@@ -235,24 +235,18 @@ time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[4]/a').click()  # 배송요청 탭
 time.sleep(1)
 
-action.send_keys(Keys.PAGE_DOWN).perform()
 element = driver.find_element_by_xpath(
     '//*[@id="page-wrapper"]/div[2]/div[3]/div/div[1]/div/div/div/div/div[1]/div[2]/button[2]')
-action.move_to_element(element)
 element.send_keys(Keys.ENTER)  # 엑셀 등록
 
 time.sleep(1)
-action.send_keys(Keys.PAGE_DOWN).perform()
-time.sleep(.5)
 element = driver.find_element_by_xpath('//*[@id="combine_type_just_address"]') #동일 배송지 양식 선택
-action.move_to_element(element)
 try:
     element.send_keys(Keys.SPACE)
 except:
     time.sleep(1)
     element.click()
 
-action.send_keys(Keys.PAGE_DOWN).perform()
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="orders"]').send_keys(file_deliver)  # 파일선택 버튼
 time.sleep(1)
@@ -267,22 +261,17 @@ driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[1]').send_keys
 time.sleep(1)
 
 element = driver.find_element_by_xpath('//*[@id="orderList_wrapper"]/div[1]/div[2]/div/button[4]')
-action.move_to_element(element).perform()
 time.sleep(1)
 element.send_keys(Keys.ENTER)  # 전체배송요청 버튼
 
-action.send_keys(Keys.PAGE_DOWN).perform()
 element = driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]')
-action.move_to_element(element).perform()
 time.sleep(1)
 element.send_keys(Keys.ENTER)  # 맞습니까? 네
 time.sleep(5)
 
 element = driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[1]')
-action.move_to_element(element).perform()
-time.sleep(.5)
 element.send_keys(Keys.ENTER)  # 배송요청에 성공했습니다.
-time.sleep(1)
+time.sleep(4)
 print("배송요청 완료")
 
 

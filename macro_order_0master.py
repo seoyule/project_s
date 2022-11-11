@@ -497,25 +497,20 @@ if add == 0:
     time.sleep(4)
 
     element = driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]')
-    action.move_to_element(element).perform()
     time.sleep(1)
     element.send_keys(Keys.ENTER)  #사입요청하기 버튼
 
-    action.send_keys(Keys.PAGE_DOWN).perform()
     element = driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]')
-    action.move_to_element(element).perform()
     time.sleep(1)
     element.send_keys(Keys.ENTER)  # 네
 
     time.sleep(4)
     element = driver.find_element_by_xpath('//*[@id="method_SINSANGPOINT"]')
-    action.move_to_element(element).perform()
     time.sleep(.5)
     element.send_keys(Keys.ENTER) # 신상캐시 선택
     time.sleep(1)
 
     element = driver.find_element_by_xpath('//*[@id="confirmCollapse"]/div[2]/div/label/span[1]') # 동의합니다.
-    action.move_to_element(element).perform()
     time.sleep(1)
     try:
         element.send_keys(Keys.SPACE)
@@ -525,9 +520,8 @@ if add == 0:
 
     time.sleep(1)
     element = driver.find_element_by_xpath('//*[@id="payment_button"]')
-    action.move_to_element(element).perform()
     time.sleep(.5)
-    #element.send_keys(Keys.ENTER)  # 결재버튼
+    element.send_keys(Keys.ENTER)  # 결재버튼
     time.sleep(5)
     print("결재 완료")
 

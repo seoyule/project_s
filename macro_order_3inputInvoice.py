@@ -6,6 +6,7 @@ from selenium import webdriver  # webdriver를 통해 파싱하기 위함
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.keys import Keys
 import glob
 import os
 from datetime import datetime, timedelta
@@ -77,6 +78,10 @@ except:
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[1]/div').click()
 time.sleep(.5)
 print("딜리버드 진입")
+action.send_keys(Keys.ARROW_DOWN)
+action.send_keys(Keys.ARROW_DOWN)
+action.send_keys(Keys.ARROW_DOWN)
+
 driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[5]/a').click() #배송현황 클릭
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="returnSearch"]/div[2]/div/label[1]').click() #오늘 클릭
