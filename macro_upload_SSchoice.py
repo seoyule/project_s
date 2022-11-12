@@ -24,7 +24,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 # 기본세팅
 start = 1 # 중간부터 시작 시작 - 개수 번째
-number = 500 # 아이템 검색 개수
+number = 700 # 아이템 검색 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 n = 0 #완료된 상품 개수
@@ -614,7 +614,7 @@ for j in range(start-1,number):  # 설정하기
         driver.switch_to.window(driver.window_handles[2])
 
         try:
-            driver.find_element_by_xpath('//*[@id="wrap"]/div[3]/div[3]/div[1]/span[1]/button[2]').click()
+            """driver.find_element_by_xpath('//*[@id="wrap"]/div[3]/div[3]/div[1]/span[1]/button[2]').click()
             time.sleep(.3)
             driver.find_element_by_xpath('//*[@id="eInputSearchSet"]').click()
             action.send_keys(category2).perform()
@@ -624,12 +624,11 @@ for j in range(start-1,number):  # 설정하기
             action.send_keys(Keys.TAB).perform()
             action.send_keys(Keys.TAB).perform()
             action.send_keys(Keys.ENTER).perform()
-            time.sleep(.5)
+            time.sleep(.5)"""
 
-            btn = driver.find_element_by_xpath('//*[@id="footer"]/a[2]') # 등록 버튼 클릭
+            btn = driver.find_element_by_xpath('//*[@id="content"]/div/div/div/div[3]/div/button[1]') # 등록 버튼 클릭
             btn.click()
 
-            #마켓으로 보내기
             time.sleep(15)
             alert = driver.switch_to.alert
             message = alert.text

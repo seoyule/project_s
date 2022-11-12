@@ -614,7 +614,7 @@ for k in range(len(urls)): #len(urls)로 변경
             driver.switch_to.window(driver.window_handles[2])
 
             try:
-                driver.find_element_by_xpath('//*[@id="wrap"]/div[3]/div[3]/div[1]/span[1]/button[2]').click()
+                """driver.find_element_by_xpath('//*[@id="wrap"]/div[3]/div[3]/div[1]/span[1]/button[2]').click()
                 time.sleep(.3)
                 driver.find_element_by_xpath('//*[@id="eInputSearchSet"]').click()
                 action.send_keys(category2).perform()
@@ -624,12 +624,11 @@ for k in range(len(urls)): #len(urls)로 변경
                 action.send_keys(Keys.TAB).perform()
                 action.send_keys(Keys.TAB).perform()
                 action.send_keys(Keys.ENTER).perform()
-                time.sleep(.5)
+                time.sleep(.5)"""
 
-                btn = driver.find_element_by_xpath('//*[@id="footer"]/a[2]')  # 등록 버튼 클릭
+                btn = driver.find_element_by_xpath('//*[@id="content"]/div/div/div/div[3]/div/button[1]')  # 등록 버튼 클릭
                 btn.click()
 
-                # 마켓으로 보내기
                 time.sleep(15)
                 alert = driver.switch_to.alert
                 message = alert.text

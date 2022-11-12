@@ -260,12 +260,12 @@ for i in range(len(df)):
         continue
 
     #품절확인
-    html = driver.page_source
+    """html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
     if soup.find("div", attrs={'class': 'sold-out'}):
         note.append('!! sold-out !!')
     else:
-        note.append('OK')
+        note.append('OK')"""
 
     time.sleep(.5)
     #도매가격
