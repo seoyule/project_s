@@ -320,19 +320,15 @@ for j in range(start-1,number):  # 설정하기
             driver.close()  # 창닫기
             driver.switch_to.window(driver.window_handles[2])
         """
-        # 신상: 가품 확인 (새창- 3번째 창)
-        fake = False
-        for f in back_data_mine.fakes:
+        # 신상: 기존 반품 확인 (새창- 3번째 창)
+        block_subject = False
+        for f in back_data_mine.block_subject:
             if f in subject:
-                fake = True
+                block_subject = True
                 break
-        if "x" in subject.lower():
-            if "xl" in subject.lower():
-                pass
-            else:
-                fake = True
-        if fake:
-            print("가품 skip: ", subject)
+
+        if block_subject:
+            print("기존반품 상품: ", subject)
             driver.close()  # 창닫기
             driver.switch_to.window(driver.window_handles[0])
             action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입

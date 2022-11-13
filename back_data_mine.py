@@ -98,10 +98,28 @@ category_convert = {
 
 
 fakes = ['디옷','디올','디오르','디욜','샤x','샤널','샤넬','CHA','에르메스','구구','구c','구찌','베네','타이틀','PXG','탐브','TB',
-         '프라','몽끌','에트로','베르체','coco','COCO','셀린', '발망']
+         '프라','몽끌','에트로','베르체','coco','COCO','셀린','발망']
 
 image_check = []
 #image_check = ['이미지 사용 불가','이미지 공유가 불가','이미지 사용이 금지']
+
+block_subject = [
+    '원피스 레트로 프릴 롱원피스',
+    '원피스 뽀글원피스',
+    '아우터 모모 울 방모자켓',
+    '아우터 신상)꽈배기니트가죽 자켓',
+    '아우터 신상)닥스숄 가디건',
+    '아우터 날개무스탕조끼',
+    '세트 아이템 후드p트레이닝세트',
+    '원피스 맥시트위드원피스',
+    '아우터 페이즐오버가디건',
+    '아우터 니트패딩가디건',
+    '아우터 가죽배색 트위드자켓 가을신상',
+    '원피스 로마트위드투피스',
+    '티-탑 플루토 맨투맨',
+    '원피스 메리유 주름 롱원피스',
+    '아우터 아리니트자켓'
+]
 
 def name_change(subject):
     subject = subject.lower().replace("[", "(")
@@ -126,4 +144,7 @@ def name_change(subject):
         subject = subject.lower().replace("y", " 가디건")
     if re.search("y[.]$|Y[.]$", subject):
         subject = subject.lower().replace("y.", " 가디건")
+    for i in fakes:
+        if i in subject:
+            subject = subject.replace(i, i[0])
     return subject

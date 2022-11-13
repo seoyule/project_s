@@ -24,7 +24,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 # 기본세팅
 start = 0 # 샵 중간부터 시작 시 (처음은 0 ~)
-number_d = 40 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
+number_d = 80 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 subject_4f = ""
@@ -54,8 +54,9 @@ urls = [("https://sinsangmarket.kr/store/11711?isPublic=1","누죤 지하2층 70
         ("https://sinsangmarket.kr/store/9765?isPublic=1","남평화 3층 127호 초이스(Choice)","no"),
         ("https://sinsangmarket.kr/store/8984?isPublic=1","누죤 지하1층 615호 오블리","no"),
         ("https://sinsangmarket.kr/store/2729?isPublic=1","디오트 2층 J06 헤르츠","no"),
-        ("https://sinsangmarket.kr/store/23248?isPublic=1","신발상가 D동 2층 10호 바이앤바이(buyandbuy)","no"),
-        ("https://sinsangmarket.kr/store/1477?isPublic=1","디오트 4층 C13 제이런 (J-run, Jrun)","no"),
+        ("https://sinsangmarket.kr/store/10759?isPublic=1","누죤 1층 701호 야무지게 (YAMUJIGE)","no"),
+        ("https://sinsangmarket.kr/store/21948?isPublic=1","테크노 4층 426호 도비","no"),
+        ("https://sinsangmarket.kr/store/5246?isPublic=1","디오트 1층 E13 DOUBLEM(더블엠)","no"),
         ]
 
 # 신상마켓 로그인
@@ -346,19 +347,15 @@ for k in range(len(urls)): #len(urls)로 변경
 
             # 낱장 셀러 등록 - 생략
 
-            # 신상: 가품 확인 (새창- 3번째 창)
-            fake = False
-            for f in back_data_mine.fakes:
+            # 신상: 기존 반품 확인 (새창- 3번째 창)
+            block_subject = False
+            for f in back_data_mine.block_subject:
                 if f in subject:
-                    fake = True
+                    block_subject = True
                     break
-            if "x" in subject.lower():
-                if "xl" in subject.lower():
-                    pass
-                else:
-                    fake = True
-            if fake:
-                print("가품 skip: ", subject)
+
+            if block_subject:
+                print("기존반품 상품: ", subject)
                 driver.close()  # 창닫기
                 driver.switch_to.window(driver.window_handles[0])
                 action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입

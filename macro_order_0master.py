@@ -260,12 +260,12 @@ for i in range(len(df)):
         continue
 
     #품절확인
-    """html = driver.page_source
+    html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
     if soup.find("div", attrs={'class': 'sold-out'}):
-        note.append('!! sold-out !!')
+        note.append('OK - sold-out')
     else:
-        note.append('OK')"""
+        note.append('OK')
 
     time.sleep(.5)
     #도매가격
@@ -360,12 +360,18 @@ file_name2 = files[-1]
 
 time.sleep(1)
 df_stock = pd.read_excel(file_name2)
-#df_stock.columns = df_stock.columns.get_level_values(1)
-#df_stock['도매 매장명'] = df_stock['도매 매장명'].replace('도매\s매장\s변경','',regex=True)
-#df_stock['상품번호'] = df_stock['상품번호'].replace('상품정보\s수정','',regex=True)
 df_stock['key'] = df_stock['판매 상품명']+"_"+df_stock['상품옵션 1']+"_"+df_stock['상품옵션 2']
 df_stock['key'] = df_stock['key'].str.lower()
 df_stock['key'] = df_stock['key'].replace('\s','', regex=True)
+
+#반품 상품중 옵션 다른 것 팔렸을때 표시, 구매 안함.
+df_stock_2 = df_stock[['판매 상품명','상품옵션 1','상품옵션 2']]
+list_2 = df_stock_2.values.tolist()
+for i in range(len(df)):
+    for j in range(len(df_stock_2)):
+        if df['상품명(한국어 쇼핑몰)'][i] == list_2[j][0]:
+            if df['option1'][i] != list_2[j][1] or df['option2'][i] != list_2[j][2]:
+                df['note'][i] = "옵션 다른 재고 상품, 취소해야함."
 
 df_stock_ = df_stock[['key','상품번호','정상재고']]
 list_ = df_stock_.values.tolist()
@@ -393,6 +399,8 @@ for i in range(len(df)):
                 if dict_[df['key'][i].lower()][1]>0: #재고개수 >0?
                     num +=1
                     dict_[df['key'][i].lower()][1] -= 1
+                    if dict_[df['key'][i].lower()][1] ==0:
+                        df['note'][i] = "재고 소진, 상품삭제 필요"
     p_result.append(result)
     p_number.append(num)
 
@@ -448,7 +456,7 @@ if add == 0:
         {'수량': 'sum', 'in_stock': 'sum', '구매수량': 'sum'})
     df2 = df2.add_suffix('').reset_index()
     df2 = df2[df2['구매수량'] > 0]
-    df2 = df2[df2['note'] == "OK"]
+    df2 = df2[df2['note'].str.contains('OK')]
 
     cols = df2.columns.tolist()
     cols = cols[:5] + cols[14:15] + cols[5:12] + cols[12:14]
@@ -524,8 +532,6 @@ if add == 0:
     element.send_keys(Keys.ENTER)  # 결재버튼
     time.sleep(5)
     print("결재 완료")
-
-
 
 
 
