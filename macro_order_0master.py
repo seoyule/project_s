@@ -179,9 +179,6 @@ files.sort(key=lambda x: os.path.getmtime(x))
 file_name = files[-1]
 
 df = pd.read_csv(file_name)
-if add !=0:
-    df = df.drop(df.index[0:add*-1])
-    df = df.reset_index(drop=True)
 print("df import 완료:",len(df),"개")
 
 df['option1'] = df['상품옵션'].replace('.*=(\S+),.*',r'\1', regex=True)
@@ -207,6 +204,8 @@ shop_phone_number = []
 note = []
 
 print("데이터 채우기 시작")
+
+skip_point = len(df)-add
 for i in range(len(df)):
     if pd.isnull(df['모델명'][i]):
         link = df['배송메시지'][i]
@@ -218,6 +217,18 @@ for i in range(len(df)):
             df['option2'][i] = re.search(r'옵션=(\S*)\s(\S*)', option_).group(2)
     else:
         link = df['모델명'][i]
+
+    if add !=0 and i < skip_point:
+        note.append('이미 처리')
+        title_ss.append('-')
+        price_ss.append('0')
+        shop_name.append('-')
+        building_name.append('-')
+        shop_location.append('-')
+        shop_phone_number.append('-')
+        print(i,"이미등록")
+        continue
+
     driver.switch_to.new_window('tab')
     time.sleep(.5)
     driver.switch_to.window(driver.window_handles[2])
@@ -330,6 +341,8 @@ df = df[cols]
 df.insert(12,'key','')
 df.insert(15,'in_stock','')
 df.insert(16,'구매수량','')
+df.insert(17,'미송수량','')
+df.insert(18,'실구매수량','')
 
 #재고와 비교위한 key값 생성
 df['key'] = df['상품명(한국어 쇼핑몰)']+"_"+df['option1']+"_"+df['option2']
@@ -345,6 +358,8 @@ df['key_'] = df['key_'].replace('\s','', regex=True)
 
 check= []
 for i in range(len(df)):
+    if add != 0 and i < skip_point:
+        continue
     if df['key_'][i] in check:
         while df['key_'][i] in check:
             df['title_ss'][i] += "_"
@@ -421,18 +436,58 @@ for i in range(len(df)):
     p_result.append(result)
     p_number.append(num)
 
-#마스터 양식에 재고 반영
 df['temp_사입번호'] = p_result
 df['in_stock'] = p_number
-
 df['구매수량'] = df['수량']-df['in_stock']
 print("df에 재고수량 반영")
 
+#미송 마스터에 반영
+print("딜리버드 진입 - 미송 확인 (사입현황 탭)")
+driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').send_keys(Keys.ENTER) #재고로 가기
+time.sleep(2)
+driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[1]/div[1]/ul/li[3]/a').send_keys(Keys.ENTER) #미송상품 클릭
+time.sleep(3)
+driver.find_element_by_xpath('//*[@id="prepaidProduct_wrapper"]/div[1]/div[2]/div/button').send_keys(Keys.ENTER) # 엑셀 다운로
+time.sleep(4)
+
+files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
+files.sort(key=lambda x: os.path.getmtime(x))
+file_name3 = files[-1]
+
+time.sleep(1)
+df_delay = pd.read_excel(file_name3)
+df_delay['상품옵션'] = df_delay['옵션 1/2'].str.replace('/','_')
+
+df_delay['key'] = df_delay['판매 상품명']+"_"+df_delay['상품옵션']
+df_delay['key'] = df_delay['key'].str.lower()
+df_delay['key'] = df_delay['key'].replace('\s','', regex=True)
+
+df_delay_ = df_delay[['key','딜리버드 상품번호','사입 요청 수량']]
+list_d = df_delay_.values.tolist()
+dict_d = {}
+for i in range(len(list_d)):
+    dict_d[list_d[i][0]] = [list_d[i][1],list_d[i][2]]
+print("미송 dic 완료")
+
+# 미송 - 매입 수량에서 제외..
+p_number = [] # 미송 수량
+for i in range(len(df)):
+    num = 0 #수량
+    if df['key'][i] in dict_d:
+        if dict_d[df['key'][i]][1]>0:
+            #stock 개수 넣기
+            for j in range(df['구매수량'][i].item()):
+                if dict_d[df['key'][i]][1]>0: #재고개수 >0?
+                    num +=1
+                    dict_d[df['key'][i]][1] -= 1
+    p_number.append(num)
+df['미송수량'] = p_number
+df['실구매수량'] = df['구매수량']-df['미송수량']
+print("df에 미송수량 반영")
+
 timestr_now = time.strftime("%Y%m%d-%H%M%S")
 timestr = time.strftime("%Y%m%d")
-
 file_name_master = "/Users/seoyulejo/Downloads/files/order_master_"+timestr+".xlsx"
-file_name_stock = "/Users/seoyulejo/Downloads/files/stock_"+timestr+".xlsx"
 
 if add == 0:
     df.to_excel(file_name_master)
@@ -445,12 +500,11 @@ else:
     writer.save()
     writer.close()
 
-df_stock.to_excel(file_name_stock)
-
 try:
     os.remove(file_path)
     os.remove(file_name)
     os.remove(file_name2)
+    os.remove(file_name3)
 except OSError as e:
     print(e.strerror)
 
@@ -470,13 +524,13 @@ if add == 0:
     df2 = df.groupby(
         ['title_ss', '상품명(한국어 쇼핑몰)', 'option1', 'option2', 'price_ss', 'shop_name', 'building_name', 'shop_location',
          'shop_phone_number', '상품품목코드', '모델명', 'note'], dropna=False).agg(
-        {'수량': 'sum', 'in_stock': 'sum', '구매수량': 'sum'})
+        {'수량': 'sum', 'in_stock': 'sum', '실구매수량': 'sum'})
     df2 = df2.add_suffix('').reset_index()
-    df2 = df2[df2['구매수량'] > 0]
+    df2 = df2[df2['실구매수량'] > 0]
     df2 = df2[df2['note'].str.contains('OK')]
 
     cols = df2.columns.tolist()
-    cols = cols[:5] + cols[14:15] + cols[5:12] + cols[12:14]
+    cols = cols[:5] + cols[14:15] + cols[5:14]
     df2 = df2[cols]
 
     df2.insert(0, '고객사 상품코드_temp', '')
@@ -488,6 +542,8 @@ if add == 0:
     df2.insert(16, 'blank3temp', '')
     df2.insert(17, 'blank4-temp', '')
     df2.insert(19, 'blank5-temp', '')  # 메모2, 서율샵 자리
+
+    df2['일시품절시_temp'] = '미송'
 
     # 공백 추가
     df2.loc[-1] = ""
@@ -510,7 +566,7 @@ if add == 0:
     driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[1]/a').send_keys(Keys.ENTER) # 사입요청 탭
     time.sleep(1)
 
-    action.send_keys(Keys.PAGE_DOWN).perform()
+    action.send_keys(Keys.PAGE_DOWN)
     element = driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div[2]/div/div/div/div/div[1]/div[2]/button[2]')
     action.move_to_element(element)
     element.send_keys(Keys.ENTER) # 엑셀 등록
@@ -534,7 +590,7 @@ if add == 0:
     time.sleep(1)
 
     for i in range(8):
-        action.send_keys(Keys.DOWN).perform()
+        action.send_keys(Keys.DOWN)
         time.sleep(1)
 
     element = driver.find_element_by_xpath('//*[@id="confirmCollapse"]/div[2]/div/label/span[1]') # 동의합니다.

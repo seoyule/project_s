@@ -89,7 +89,7 @@ print("딜리버드 진입 - 사입현황 다운로드")
 driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').send_keys(Keys.ENTER) #사입현황 탭
 time.sleep(1)
 
-action.send_keys(Keys.PAGE_DOWN).perform()
+action.send_keys(Keys.PAGE_DOWN)
 time.sleep(.5)
 order_ = []
 for i in range(5):
@@ -103,7 +103,7 @@ for i in order_: #https://stackoverflow.com/questions/30635145/create-multiple-d
     driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[2]').click()
     time.sleep(2)
     driver.switch_to.window(driver.window_handles[1])
-    action.send_keys(Keys.PAGE_DOWN).perform()
+    action.send_keys(Keys.PAGE_DOWN)
     driver.find_element_by_xpath('//*[@id="purchasesDetail_wrapper"]/div[1]/div[2]/div/button').send_keys(Keys.ENTER)
     time.sleep(4)
 
