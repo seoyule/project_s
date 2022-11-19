@@ -23,8 +23,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 # 기본세팅
-start = 0 # 샵 중간부터 시작 시 (처음은 0 ~)
-number_d = 80 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
+start = 10 # 샵 중간부터 시작 시 (처음은 0 ~)
+number_d = 100 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 subject_4f = ""
@@ -47,16 +47,20 @@ category_list = back_data_mine.category_list # 분류설정
 with open('listfile', 'rb') as fp: # url 리스트 불러오기
     urls = pickle.load(fp)
 """
-urls = [("https://sinsangmarket.kr/store/11711?isPublic=1","누죤 지하2층 706호 쵸콜릿","no"),
-        ("https://sinsangmarket.kr/store/21781?isPublic=1","누죤 지하2층 213호 CC하니","no"),
-        ("https://sinsangmarket.kr/store/7548?isPublic=1","스튜디오W 2층 36호 Ami 아미","no"),
-        ("https://sinsangmarket.kr/store/14751?isPublic=1","디오트 지하2층 A07 블랙번","no"),
-        ("https://sinsangmarket.kr/store/9765?isPublic=1","남평화 3층 127호 초이스(Choice)","no"),
-        ("https://sinsangmarket.kr/store/8984?isPublic=1","누죤 지하1층 615호 오블리","no"),
-        ("https://sinsangmarket.kr/store/2729?isPublic=1","디오트 2층 J06 헤르츠","no"),
-        ("https://sinsangmarket.kr/store/10759?isPublic=1","누죤 1층 701호 야무지게 (YAMUJIGE)","no"),
-        ("https://sinsangmarket.kr/store/21948?isPublic=1","테크노 4층 426호 도비","no"),
-        ("https://sinsangmarket.kr/store/5246?isPublic=1","디오트 1층 E13 DOUBLEM(더블엠)","no"),
+urls = [("https://sinsangmarket.kr/store/11711?isPublic=1","쵸콜릿",'(.*)\n\n[0-9]+\n.*'),
+        ("https://sinsangmarket.kr/store/21781?isPublic=1","CC하니",''),
+        ("https://sinsangmarket.kr/store/7548?isPublic=1","Ami 아미",''),
+        ("https://sinsangmarket.kr/store/14751?isPublic=1","블랙번",''),
+        ("https://sinsangmarket.kr/store/8984?isPublic=1","오블리",''),
+        ("https://sinsangmarket.kr/store/2729?isPublic=1","헤르츠",''),
+        ("https://sinsangmarket.kr/store/10759?isPublic=1","야무지게 (YAMUJIGE)",''),
+        ("https://sinsangmarket.kr/store/21948?isPublic=1","도비",''),
+        ("https://sinsangmarket.kr/store/5246?isPublic=1","DOUBLEM(더블엠)",''),
+        ("https://sinsangmarket.kr/store/26517?isPublic=1","마키","no"),
+        ("https://sinsangmarket.kr/store/16895?isPublic=1","제이프랑","no"),
+        ("https://sinsangmarket.kr/store/5202?isPublic=1","바이율","(.*)"),
+        ("https://sinsangmarket.kr/store/1319?isPublic=1","더클리닝","no"),
+        ("https://sinsangmarket.kr/store/19835?isPublic=1","콜라컴퍼니","no"),
         ]
 
 # 신상마켓 로그인
@@ -151,14 +155,14 @@ for k in range(len(urls)): #len(urls)로 변경
         location = 2
 
     # 찜순/선택순
-    if urls[k][2].lower() == "yes":
+    """if urls[k][2].lower() == "yes":
         url = url.split("?")
         url = url[0] + "?sort=likes&" + url[1]
         driver.get(url)
         print("찜순 선택")
         time.sleep(1)
     else:
-        print("최신순 선택")
+        print("최신순 선택")"""
 
     # 수행 횟수 구하기
     number_ = driver.find_element_by_xpath(f'//*[@id="{id}"]/div/div[{location}]/div/div[1]/div[1]').text
@@ -325,28 +329,6 @@ for k in range(len(urls)): #len(urls)로 변경
                 action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
                 continue
 
-            """# 신상: 등록일자 비교
-            x = table['상품등록정보']
-            first = datetime(int(x[:4]), int(x[5:7]), int(x[8:]))
-            dt_now = datetime.now()
-            second = dt_now + relativedelta(months=-6)
-            if second >= first:
-                print("6개월이상 지난상품 skip: ", x)
-                driver.close()  # 창닫기
-                driver.switch_to.window(driver.window_handles[0])
-                action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
-                continue"""
-
-            """# 신상: 낱장여부 확인 (새창- 3번째 창)
-            if table['낱장 여부'] != '낱장 가능':
-                print("낱장 안됨 skip: ", subject)
-                driver.close()  # 창닫기
-                driver.switch_to.window(driver.window_handles[0])
-                action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
-                continue"""
-
-            # 낱장 셀러 등록 - 생략
-
             # 신상: 기존 반품 확인 (새창- 3번째 창)
             block_subject = False
             for f in back_data_mine.block_subject:
@@ -387,6 +369,16 @@ for k in range(len(urls)): #len(urls)로 변경
             subject_keywords = ",".join(subject_keywords)
 
             # 신상: 제품 상세설명 따기 - 생략
+            r = soup.find("div", attrs={"class": "row__content"}).get_text()
+            try:
+                p = re.compile(urls[k][2], re.DOTALL)
+                m = p.search(r)
+                comment = m.group(1)
+                comment = comment.lower().replace("\n", "<br>")
+
+            except:
+                r = ""
+                comment = ""
 
             # 신상: 이미지 사용가능 여부 체크
             image_avail = ""
@@ -508,7 +500,7 @@ for k in range(len(urls)): #len(urls)로 변경
                 if i == '낱장 여부':
                     continue
                 html_template_ = html_template_ + f"<tr><td>{i}</td><td>{table[i]}</td></tr>"
-            html_template_ = html_template_ + f"</table></tbody><br><p>더 다양한 상품을 soyool샵에서 만나보세요 :) </p><p>https://soyool.co.kr/</p><br>"
+            html_template_ = html_template_ + f"</table></tbody><br><p>{comment}</p><br><p>더 다양한 상품을 soyool샵에서 만나보세요 :) </p><p>https://soyool.co.kr/</p><br>"
 
             driver.find_element_by_xpath('//*[@id="eTabNnedit"]').click()
             driver.find_element_by_xpath('//*[@id="html-1"]').click()

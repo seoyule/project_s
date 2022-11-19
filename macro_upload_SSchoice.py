@@ -288,38 +288,6 @@ for j in range(start-1,number):  # 설정하기
             action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
             continue
 
-        """
-        # 신상: 등록일자 비교
-        x = table['상품등록정보']
-        first = datetime(int(x[:4]), int(x[5:7]), int(x[8:]))
-        dt_now = datetime.now()
-        second = dt_now + relativedelta(months=-6)
-        if second >= first:
-            driver.close()  # 창닫기
-            driver.switch_to.window(driver.window_handles[0])
-            action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
-            continue
-        
-        # 신상: 낱장여부 확인 (새창- 3번째 창)
-        if table['낱장 여부'] != '낱장 가능':
-            print("낱장 안됨 skip: ", subject)
-            driver.close()  # 창닫기
-            driver.switch_to.window(driver.window_handles[0])
-            action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
-            continue
-
-        # 낱장 셀러 등록
-        if seller not in [i[0] for i in urls]:
-            driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').click()
-            time.sleep(1)
-            driver.switch_to.window(driver.window_handles[3])
-            addr_ = driver.current_url
-            urls.append((addr_, seller, "no"))
-            with open('listfile', 'wb') as fp:
-                pickle.dump(urls, fp)
-            driver.close()  # 창닫기
-            driver.switch_to.window(driver.window_handles[2])
-        """
         # 신상: 기존 반품 확인 (새창- 3번째 창)
         block_subject = False
         for f in back_data_mine.block_subject:

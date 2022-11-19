@@ -80,9 +80,13 @@ time.sleep(.5)
 print("딜리버드 진입")
 
 driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[5]/a').send_keys(Keys.ENTER) #배송현황 클릭
-time.sleep(.5)
-driver.find_element_by_xpath('//*[@id="returnSearch"]/div[2]/div/label[1]').send_keys(Keys.ENTER) #오늘 클릭
-time.sleep(1)
+time.sleep(4)
+try:
+    driver.find_element_by_xpath('//*[@id="returnSearch"]/div[2]/div/label[1]').click() #오늘 클릭
+    time.sleep(1)
+except:
+    driver.find_element_by_xpath('//*[@id="returnSearch"]/div[2]/div/label[1]').click()  # 오늘 클릭
+    time.sleep(1)
 driver.find_element_by_xpath('//*[@id="orderList_wrapper"]/div[1]/div[2]/div/button').send_keys(Keys.ENTER) #엑셀다운로드 클릭
 time.sleep(.5)
 print("배송현황 다운로드 완료")
@@ -224,6 +228,11 @@ for i in range(num_goods):
         driver.find_element_by_xpath(f'//*[@id="invoice_no_{i}"]').click()
         action.send_keys(invoice).perform()
 
+#엑셀 export
+file_name_master_rsi = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+"_rsi.xlsx"
+df.to_excel(file_name_master_rsi, index=False)
+print("df export 완료")
+
 time.sleep(2)
 driver.find_element_by_xpath(f'//*[@id="eShipStartBtn"]').send_keys(Keys.ENTER) # 배송중 클릭
 time.sleep(4)
@@ -231,11 +240,11 @@ time.sleep(4)
 alert = driver.switch_to.alert
 alert.accept()
 
-alert = driver.switch_to.alert
-print(alert.text)
-alert.accept()
+try:
+    alert = driver.switch_to.alert
+    print(alert.text)
+    alert.accept()
+except:
+    pass
 
-file_name_master_rsi = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+"_rsi.xlsx"
-df.to_excel(file_name_master_rsi, index=False)
-print("df export 완료")
 time.sleep(3)

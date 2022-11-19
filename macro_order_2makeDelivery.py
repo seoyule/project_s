@@ -86,7 +86,7 @@ time.sleep(.5)
 
 print("딜리버드 진입 - 사입현황 다운로드")
 #사입현황으로 가기
-driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').click()
+driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').send_keys(Keys.ENTER) #사입현황 탭
 time.sleep(1)
 
 action.send_keys(Keys.PAGE_DOWN).perform()
@@ -222,11 +222,6 @@ df_pf.to_excel(file_purchase, index=False)
 df.to_excel(file_name_master_rs, index=False)
 print("엑셀 export 완료")
 
-
-# 일단 여기까지..
-
-
-
 print("deliverd 배송 요청 시작")
 # 딜리버드에 등록
 
@@ -252,13 +247,15 @@ driver.find_element_by_xpath('//*[@id="orders"]').send_keys(file_deliver)  # 파
 time.sleep(1)
 
 driver.find_element_by_xpath('//*[@id="excel_order_import_btn"]').send_keys(Keys.ENTER)  # 보내기 버튼(저장)
-time.sleep(4)
+time.sleep(8)
+try:
+    alert_ = driver.find_element_by_xpath('//*[@id="swal2-content"]').text
+    print(alert_)
 
-alert_ = driver.find_element_by_xpath('//*[@id="swal2-content"]').text
-print(alert_)
-
-driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[1]').send_keys(Keys.ENTER) #맞습니까? 네
-time.sleep(1)
+    driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[1]').send_keys(Keys.ENTER) #맞습니까? 네
+    time.sleep(1)
+except:
+    pass
 
 element = driver.find_element_by_xpath('//*[@id="orderList_wrapper"]/div[1]/div[2]/div/button[4]')
 time.sleep(1)

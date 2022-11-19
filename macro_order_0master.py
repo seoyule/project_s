@@ -338,6 +338,23 @@ df['key'] = df['key'].replace('\s','', regex=True)
 
 print("데이터 채우기 완료")
 
+#도매 상품명 중복 검증위한 key_값 생성
+df['key_'] = df['title_ss']+"_"+df['option1']+"_"+df['option2']
+df['key_'] = df['key_'].str.lower()
+df['key_'] = df['key_'].replace('\s','', regex=True)
+
+check= []
+for i in range(len(df)):
+    if df['key_'][i] in check:
+        while df['key_'][i] in check:
+            df['title_ss'][i] += "_"
+            df['key_'][i] = df['title_ss'][i] + "_" + df['option1'][i] + "_" + df['option2'][i]
+        check.append(df['key_'][i])
+    else:
+        check.append(df['key_'][i])
+
+df.drop('key_', axis=1, inplace= True)
+
 ####################
 #딜리버드에서 재고 다운받기
 driver.switch_to.window(driver.window_handles[0])
@@ -489,8 +506,8 @@ if add == 0:
     #딜리버드에 등록
 
     driver.switch_to.window(driver.window_handles[0])
-    time.sleep(.5)
-    driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[1]/a').click() # 사입요청 탭
+    time.sleep(3)
+    driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[1]/a').send_keys(Keys.ENTER) # 사입요청 탭
     time.sleep(1)
 
     action.send_keys(Keys.PAGE_DOWN).perform()
@@ -502,11 +519,9 @@ if add == 0:
     driver.find_element_by_xpath('//*[@id="excel_file"]').send_keys(file_order_form)  # 파일선택 버튼
     time.sleep(1)
     driver.find_element_by_xpath('//*[@id="uploadExcelModal"]/div/div/div[2]/form/div[3]/input').send_keys(Keys.ENTER) # 보내기 버튼(저장)
-    time.sleep(4)
+    time.sleep(6)
 
-    element = driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]')
-    time.sleep(1)
-    element.send_keys(Keys.ENTER)  #사입요청하기 버튼
+    driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]').send_keys(Keys.ENTER)  #사입요청하기 버튼
 
     element = driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]')
     time.sleep(1)
@@ -518,19 +533,20 @@ if add == 0:
     element.send_keys(Keys.ENTER) # 신상캐시 선택
     time.sleep(1)
 
+    for i in range(8):
+        action.send_keys(Keys.DOWN).perform()
+        time.sleep(1)
+
     element = driver.find_element_by_xpath('//*[@id="confirmCollapse"]/div[2]/div/label/span[1]') # 동의합니다.
-    time.sleep(1)
     try:
         element.send_keys(Keys.SPACE)
     except:
-        time.sleep(1)
         element.click()
 
-    time.sleep(1)
+    time.sleep(2)
     element = driver.find_element_by_xpath('//*[@id="payment_button"]')
-    time.sleep(.5)
     element.send_keys(Keys.ENTER)  # 결재버튼
-    time.sleep(5)
+    time.sleep(6)
     print("결재 완료")
 
 
