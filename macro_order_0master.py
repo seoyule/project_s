@@ -403,7 +403,12 @@ for i in range(len(df)):
     for j in range(len(df_stock_2)):
         if df['상품명(한국어 쇼핑몰)'][i] == list_2[j][0]:
             if df['option1'][i] != list_2[j][1] or df['option2'][i] != list_2[j][2]:
-                df['note'][i] = "옵션 다른 재고 상품, 취소해야함."
+                df['note'][i] = "옵션 다른 반품 상품, 취소해야함."
+
+#과거 반품상품 점검
+for i in range(len(df)):
+    if df['상품명(한국어 쇼핑몰)'][i] in back_data_mine.block_subject:
+        df['note'][i] = "과거 반품상품과 같은이름, 점검 필요."
 
 df_stock_ = df_stock[['key','상품번호','정상재고']]
 list_ = df_stock_.values.tolist()
