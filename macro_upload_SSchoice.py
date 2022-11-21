@@ -24,7 +24,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 # 기본세팅
 start = 1 # 중간부터 시작 시작 - 개수 번째
-number = 700 # 아이템 검색 개수
+number = 500 # 아이템 검색 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 n = 0 #완료된 상품 개수
@@ -192,7 +192,7 @@ if start > 4:
     time.sleep(5)
 
 for j in range(start-1,number):  # 설정하기
-    if existing > 100:
+    if existing > 200:
         print("cafe24 - 이전 업데이트 포인트 도달")
         break
 

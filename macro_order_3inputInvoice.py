@@ -9,6 +9,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 import glob
 import os
+import re
 from datetime import datetime, timedelta
 
 print("카페24에 송장번호 입력 시작!")
@@ -156,6 +157,7 @@ driver.find_element_by_xpath('//*[@id="search_button"]').click() #검색
 num_goods = driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[3]/div[1]/p/strong').text
 num_goods = int(num_goods)
 
+acc_num =0
 for i in range(num_goods):
     key = ""
     value = ""
@@ -168,28 +170,24 @@ for i in range(num_goods):
     order_num = driver.find_element_by_xpath(f'//*[@id="copyarea_{i}"]').text
     for j in range(loop):
         if j ==0:
-            product = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/p[1]/a[2]').text
-            product =product.split("\n")[0]
+            product = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/p[1]').text
+            product = re.search("내역 (.*)\n\(.*",product).group(1)
             option1 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/ul/li[1]').text
             option1 = option1.replace(" : ","=").strip()
-            #option1 = option1.split(" : ")[1].strip()
             try:
                 option2 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/ul/li[2]').text
                 option2 = option2.replace(" : ","=").strip()
-                #option2 = option2.split(" : ")[1].strip()
             except:
                 option2 = ""
         else:
             product = driver.find_element_by_xpath(
-                f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/p[1]/a[2]').text
-            product = product.split("\n")[0]
+                f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/p[1]').text
+            product = re.search("내역 (.*)\n\(.*",product).group(1)
             option1 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/ul/li[1]').text
             option1 = option1.replace(" : ", "=").strip()
-            #option1 = option1.split(" : ")[1].strip()
             try:
                 option2 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/ul/li[2]').text
                 option2 = option2.replace(" : ", "=").strip()
-                #option2 = option2.split(" : ")[1].strip()
             except:
                 option2 = ""
 
@@ -215,6 +213,7 @@ for i in range(num_goods):
                 driver.find_element_by_xpath(
                     f'//*[@id="shipedReadyList"]/table/tbody[{i + 1}]/tr[{j + 1}]/td[1]/input[1]').click()
             num += 1
+            acc_num += 1
             print(i,"-",j,"클릭 완료")
         elif len(idx) >1:
             for k in range(len(idx)):
@@ -227,6 +226,7 @@ for i in range(num_goods):
     if num > 0:
         driver.find_element_by_xpath(f'//*[@id="invoice_no_{i}"]').click()
         action.send_keys(invoice).perform()
+print("총",acc_num,"개 라인 배송중 처리")
 
 #엑셀 export
 file_name_master_rsi = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+"_rsi.xlsx"

@@ -22,6 +22,23 @@ df2 = df2.add_suffix('').reset_index()
 df2 = df2[df2['실구매수량']>0]
 df2 = df2[df2['note'].str.contains('OK')]
 
+# 도매 상품명 중복 검증위한 key_값 생성
+df2['key_'] = df2['title_ss'] + "_" + df2['option1'] + "_" + df2['option2']
+df2['key_'] = df2['key_'].str.lower()
+df2['key_'] = df2['key_'].replace('\s', '', regex=True)
+check = []
+for i in range(len(df2)):
+    """if add != 0 and i < skip_point:
+        continue"""
+    if df2['key_'][i] in check:
+        while df2['key_'][i] in check:
+            df2['title_ss'][i] += "_"
+            df2['key_'][i] = df2['title_ss'][i] + "_" + df2['option1'][i] + "_" + df2['option2'][i]
+        check.append(df2['key_'][i])
+    else:
+        check.append(df2['key_'][i])
+df2.drop('key_', axis=1, inplace=True)
+
 cols = df2.columns.tolist()
 cols = cols[:5]+cols[14:15]+cols[5:14]
 df2 = df2[cols]

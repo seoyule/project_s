@@ -23,8 +23,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 # 기본세팅
-start = 10 # 샵 중간부터 시작 시 (처음은 0 ~)
-number_d = 100 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
+start = 0 # 샵 중간부터 시작 시 (처음은 0 ~)
+number_d = 50 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 subject_4f = ""
@@ -48,19 +48,19 @@ with open('listfile', 'rb') as fp: # url 리스트 불러오기
     urls = pickle.load(fp)
 """
 urls = [("https://sinsangmarket.kr/store/11711?isPublic=1","쵸콜릿",'(.*)\n\n[0-9]+\n.*'),
-        ("https://sinsangmarket.kr/store/21781?isPublic=1","CC하니",''),
-        ("https://sinsangmarket.kr/store/7548?isPublic=1","Ami 아미",''),
-        ("https://sinsangmarket.kr/store/14751?isPublic=1","블랙번",''),
-        ("https://sinsangmarket.kr/store/8984?isPublic=1","오블리",''),
-        ("https://sinsangmarket.kr/store/2729?isPublic=1","헤르츠",''),
-        ("https://sinsangmarket.kr/store/10759?isPublic=1","야무지게 (YAMUJIGE)",''),
-        ("https://sinsangmarket.kr/store/21948?isPublic=1","도비",''),
-        ("https://sinsangmarket.kr/store/5246?isPublic=1","DOUBLEM(더블엠)",''),
-        ("https://sinsangmarket.kr/store/26517?isPublic=1","마키","no"),
-        ("https://sinsangmarket.kr/store/16895?isPublic=1","제이프랑","no"),
-        ("https://sinsangmarket.kr/store/5202?isPublic=1","바이율","(.*)"),
-        ("https://sinsangmarket.kr/store/1319?isPublic=1","더클리닝","no"),
-        ("https://sinsangmarket.kr/store/19835?isPublic=1","콜라컴퍼니","no"),
+        ("https://sinsangmarket.kr/store/21781?isPublic=1","CC하니",'(.*)'),
+        ("https://sinsangmarket.kr/store/7548?isPublic=1","Ami 아미",''),#comment 없이
+        ("https://sinsangmarket.kr/store/14751?isPublic=1","블랙번",''),#comment 없이
+        ("https://sinsangmarket.kr/store/8984?isPublic=1","오블리",''),#comment 없이
+        ("https://sinsangmarket.kr/store/2729?isPublic=1","헤르츠",''),#comment 없이
+        ("https://sinsangmarket.kr/store/10759?isPublic=1","야무지게 (YAMUJIGE)",'(실측사이즈: .*모델정보[^\n]*)'),
+        ("https://sinsangmarket.kr/store/21948?isPublic=1","도비",'(실측사이즈: .*모델정보[^\n]*)'),
+        ("https://sinsangmarket.kr/store/5246?isPublic=1","DOUBLEM(더블엠)",'(실측사이즈: .*모델정보[^\n]*)'),
+        ("https://sinsangmarket.kr/store/26517?isPublic=1","마키",'(실측사이즈: .*모델정보[^\n]*)'),
+        ("https://sinsangmarket.kr/store/16895?isPublic=1","제이프랑",""),#comment 없이
+        ("https://sinsangmarket.kr/store/5202?isPublic=1","바이율",'(실측사이즈: .*모델정보[^\n]*)'),
+        ("https://sinsangmarket.kr/store/1319?isPublic=1","더클리닝",'(실측사이즈: .*모델정보[^\n]*)'),
+        ("https://sinsangmarket.kr/store/19835?isPublic=1","콜라컴퍼니",""),#comment 없이
         ]
 
 # 신상마켓 로그인

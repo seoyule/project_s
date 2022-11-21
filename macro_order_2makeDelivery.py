@@ -87,7 +87,7 @@ time.sleep(.5)
 print("딜리버드 진입 - 사입현황 다운로드")
 #사입현황으로 가기
 driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').send_keys(Keys.ENTER) #사입현황 탭
-time.sleep(1)
+time.sleep(1.5)
 
 action.send_keys(Keys.PAGE_DOWN)
 time.sleep(.5)
@@ -121,11 +121,11 @@ for i in order_: #https://stackoverflow.com/questions/30635145/create-multiple-d
 
 df_pf = pd.concat(d.values(), ignore_index=True)
 
-df_pfs = df_pf[['기타메모1','상품 번호','사입 성공 수량','사입사 메모','사입 입고 예정일']]
+df_pfs = df_pf[['기타메모1','상품 번호','사입 성공 수량','사입사 메모','사입 입고 예정일','미송 수량']]
 list_ = df_pfs.values.tolist()
 dict_ = {}
 for i in range(len(list_)):
-    dict_[list_[i][0]] = [list_[i][1],list_[i][2],list_[i][3],list_[i][4]]
+    dict_[list_[i][0]] = [list_[i][1],list_[i][2],list_[i][3],list_[i][4],list_[i][5]]
 print("사입 딕셔너리 완성")
 
 #master 가져오기
@@ -154,14 +154,14 @@ for i in range(len(df)):
     num = 0 #수량
     info1 = '처음값'
     info2 = '처음값'
-    if df['구매수량'][i]>0 and df['상품품목코드'][i] in dict_:
+    if df['실구매수량'][i]>0 and df['상품품목코드'][i] in dict_:
         # 사입사 메모 입력,사입번호 넣기
         info1 = dict_[df['상품품목코드'][i]][2]
         info2 = dict_[df['상품품목코드'][i]][3]
         result = dict_[df['상품품목코드'][i]][0]
         if dict_[df['상품품목코드'][i]][1]>0:
             #stock 개수 넣기
-            for j in range(df['구매수량'][i].item()):
+            for j in range(df['실구매수량'][i].item()):
                 if dict_[df['상품품목코드'][i]][1]>0: #재고개수 >0?
                     num +=1
                     dict_[df['상품품목코드'][i]][1] -= 1

@@ -17,11 +17,11 @@ import os
 from openpyxl import load_workbook
 
 #첫번째 시도에 문제 없는 OK건 다 올린다. (note = 'OK', 구매수량 >0)
-#두번째 시도에 수정, 추가건 마스터 2번째 탭에 작업한 후 1번 파일 돌린다.
-#참고로 두번째 시도때는 딜리버드에 사입 주문 안들어간다. (마스터 파일 추가분 작성까지만)
-#추가작업? - 몇개 추가? 0 은 모두..
+#두번째 시도에 수정, 추가건은 파일 생성까지만 된다. (자동으로 딜리버드에 올라가지 않는다.)
+
 #배송메시지 명령어 : skip <- 수량 0으로 처리 (오류주문, 주문 안되게), hold <- (반품 기다리는 것) 주문 안들어 가게..
 #링크 없는건 미리 배송메시지에 업데이트 해놓는다.
+
 add = 0
 
 if add == 0:
@@ -351,25 +351,6 @@ df['key'] = df['key'].replace('\s','', regex=True)
 
 print("데이터 채우기 완료")
 
-#도매 상품명 중복 검증위한 key_값 생성
-df['key_'] = df['title_ss']+"_"+df['option1']+"_"+df['option2']
-df['key_'] = df['key_'].str.lower()
-df['key_'] = df['key_'].replace('\s','', regex=True)
-
-check= []
-for i in range(len(df)):
-    if add != 0 and i < skip_point:
-        continue
-    if df['key_'][i] in check:
-        while df['key_'][i] in check:
-            df['title_ss'][i] += "_"
-            df['key_'][i] = df['title_ss'][i] + "_" + df['option1'][i] + "_" + df['option2'][i]
-        check.append(df['key_'][i])
-    else:
-        check.append(df['key_'][i])
-
-df.drop('key_', axis=1, inplace= True)
-
 ####################
 #딜리버드에서 재고 다운받기
 driver.switch_to.window(driver.window_handles[0])
@@ -519,53 +500,93 @@ except OSError as e:
 
 
 
+
+
+
 # 여기서 부터 정상상품 자동 업로드 위해 추가 작성한 부분
+
+print("order form 작성 시작")
+
+# 오더 양식으로 변경
+df['option1'] = df['option1'].str.lower()
+df['option2'] = df['option2'].str.lower()
+df2 = df.groupby(
+    ['title_ss', '상품명(한국어 쇼핑몰)', 'option1', 'option2', 'price_ss', 'shop_name', 'building_name', 'shop_location',
+     'shop_phone_number', '상품품목코드', '모델명', 'note'], dropna=False).agg(
+    {'수량': 'sum', 'in_stock': 'sum', '실구매수량': 'sum'})
+df2 = df2.add_suffix('').reset_index()
+df2 = df2[df2['실구매수량'] > 0]
+df2 = df2[df2['note'].str.contains('OK')]
+
+# 도매 상품명 중복 검증위한 key_값 생성
+df2['key_'] = df2['title_ss'] + "_" + df2['option1'] + "_" + df2['option2']
+df2['key_'] = df2['key_'].str.lower()
+df2['key_'] = df2['key_'].replace('\s', '', regex=True)
+check = []
+for i in range(len(df2)):
+    """if add != 0 and i < skip_point:
+        continue"""
+    if df2['key_'][i] in check:
+        while df2['key_'][i] in check:
+            df2['title_ss'][i] += "_"
+            df2['key_'][i] = df2['title_ss'][i] + "_" + df2['option1'][i] + "_" + df2['option2'][i]
+        check.append(df2['key_'][i])
+    else:
+        check.append(df2['key_'][i])
+df2.drop('key_', axis=1, inplace=True)
+
+cols = df2.columns.tolist()
+cols = cols[:5] + cols[14:15] + cols[5:14]
+df2 = df2[cols]
+
+df2.insert(0, '고객사 상품코드_temp', '')
+df2.insert(1, '일시품절시_temp', '')
+df2.insert(6, '기타옵션-temp', '')
+df2.insert(9, '카테고리-temp', '')
+df2.insert(14, 'blank1-temp', '')
+df2.insert(15, 'blank2-temp', '')
+df2.insert(16, 'blank3temp', '')
+df2.insert(17, 'blank4-temp', '')
+df2.insert(19, 'blank5-temp', '')  # 메모2, 서율샵 자리
+
+df2['일시품절시_temp'] = '미송'
+
+# 공백 추가
+df2.loc[-1] = ""
+df2.index = df2.index + 1
+df2 = df2.sort_index()
+
+df2.loc[-1] = ""
+df2.index = df2.index + 1
+df2 = df2.sort_index()
+
+file_order_form = "/Users/seoyulejo/Downloads/files/order_form_" + timestr + ".xlsx"
+
 if add == 0:
-    print("order form 작성 시작")
-
-    # 오더 양식으로 변경
-    df['option1'] = df['option1'].str.lower()
-    df['option2'] = df['option2'].str.lower()
-    df2 = df.groupby(
-        ['title_ss', '상품명(한국어 쇼핑몰)', 'option1', 'option2', 'price_ss', 'shop_name', 'building_name', 'shop_location',
-         'shop_phone_number', '상품품목코드', '모델명', 'note'], dropna=False).agg(
-        {'수량': 'sum', 'in_stock': 'sum', '실구매수량': 'sum'})
-    df2 = df2.add_suffix('').reset_index()
-    df2 = df2[df2['실구매수량'] > 0]
-    df2 = df2[df2['note'].str.contains('OK')]
-
-    cols = df2.columns.tolist()
-    cols = cols[:5] + cols[14:15] + cols[5:14]
-    df2 = df2[cols]
-
-    df2.insert(0, '고객사 상품코드_temp', '')
-    df2.insert(1, '일시품절시_temp', '')
-    df2.insert(6, '기타옵션-temp', '')
-    df2.insert(9, '카테고리-temp', '')
-    df2.insert(14, 'blank1-temp', '')
-    df2.insert(15, 'blank2-temp', '')
-    df2.insert(16, 'blank3temp', '')
-    df2.insert(17, 'blank4-temp', '')
-    df2.insert(19, 'blank5-temp', '')  # 메모2, 서율샵 자리
-
-    df2['일시품절시_temp'] = '미송'
-
-    # 공백 추가
-    df2.loc[-1] = ""
-    df2.index = df2.index + 1
-    df2 = df2.sort_index()
-
-    df2.loc[-1] = ""
-    df2.index = df2.index + 1
-    df2 = df2.sort_index()
-
-    file_order_form = "/Users/seoyulejo/Downloads/files/order_form_" + timestr + ".xlsx"
-
     df2.to_excel(file_order_form, index=False)
-    print("엑셀 export 완료")
+else:
+    ExcelWorkbook = load_workbook(file_order_form)
+    writer = pd.ExcelWriter(file_order_form, engine='openpyxl')
+    writer.book = ExcelWorkbook
+    df2.to_excel(writer, sheet_name=timestr_now)
+    writer.save()
+    writer.close()
 
-    #딜리버드에 등록
+print("엑셀 order form - export 완료")
 
+
+
+
+
+
+
+
+
+
+
+
+#딜리버드에 등록
+if add == 0:
     driver.switch_to.window(driver.window_handles[0])
     time.sleep(3)
     driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[1]/a').send_keys(Keys.ENTER) # 사입요청 탭
@@ -582,7 +603,11 @@ if add == 0:
     driver.find_element_by_xpath('//*[@id="uploadExcelModal"]/div/div/div[2]/form/div[3]/input').send_keys(Keys.ENTER) # 보내기 버튼(저장)
     time.sleep(6)
 
-    driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]').send_keys(Keys.ENTER)  #사입요청하기 버튼
+    try:
+        driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]').send_keys(Keys.ENTER)  #사입요청하기 버튼
+    except:
+        driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]').send_keys(
+            Keys.ENTER)  # 사입요청하기 버튼
 
     element = driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]')
     time.sleep(1)
