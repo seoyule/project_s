@@ -22,7 +22,7 @@ from openpyxl import load_workbook
 #배송메시지 명령어 : skip <- 수량 0으로 처리 (오류주문, 주문 안되게), hold <- (반품 기다리는 것) 주문 안들어 가게..
 #링크 없는건 미리 배송메시지에 업데이트 해놓는다.
 
-add = 0
+add = 1
 
 if add == 0:
     print("전체작업 (첫번째 시도, 정상상품은 딜리버드 등록까지)")
@@ -326,6 +326,8 @@ for i in range(len(df)):
     driver.switch_to.window(driver.window_handles[1])
     print(i+1,"완료")
 
+print("데이터 채우기 완료")
+
 df['title_ss'] = title_ss
 df['price_ss'] = price_ss
 df['shop_name'] = shop_name
@@ -343,13 +345,12 @@ df.insert(15,'in_stock','')
 df.insert(16,'구매수량','')
 df.insert(17,'미송수량','')
 df.insert(18,'실구매수량','')
+df.insert(19,'미송노트','')
 
 #재고와 비교위한 key값 생성
 df['key'] = df['상품명(한국어 쇼핑몰)']+"_"+df['option1']+"_"+df['option2']
 df['key'] = df['key'].str.lower()
 df['key'] = df['key'].replace('\s','', regex=True)
-
-print("데이터 채우기 완료")
 
 ####################
 #딜리버드에서 재고 다운받기
@@ -442,13 +443,14 @@ file_name3 = files[-1]
 
 time.sleep(1)
 df_delay = pd.read_excel(file_name3)
+df_delay['미송대기수량'] = df_delay['사입 요청 수량']-df_delay['누적 사입 수량']-df_delay['환불 수량']
 df_delay['상품옵션'] = df_delay['옵션 1/2'].str.replace('/','_')
 
 df_delay['key'] = df_delay['판매 상품명']+"_"+df_delay['상품옵션']
 df_delay['key'] = df_delay['key'].str.lower()
 df_delay['key'] = df_delay['key'].replace('\s','', regex=True)
 
-df_delay_ = df_delay[['key','딜리버드 상품번호','사입 요청 수량']]
+df_delay_ = df_delay[['key','미송대기수량','사입사 메모']]
 list_d = df_delay_.values.tolist()
 dict_d = {}
 for i in range(len(list_d)):
@@ -457,18 +459,23 @@ print("미송 dic 완료")
 
 # 미송 - 매입 수량에서 제외..
 p_number = [] # 미송 수량
+note_misong = [] # 미송 노트
 for i in range(len(df)):
     num = 0 #수량
+    m_note =""
     if df['key'][i] in dict_d:
-        if dict_d[df['key'][i]][1]>0:
+        if dict_d[df['key'][i]][0]>0:
             #stock 개수 넣기
             for j in range(df['구매수량'][i].item()):
-                if dict_d[df['key'][i]][1]>0: #재고개수 >0?
+                if dict_d[df['key'][i]][0]>0: #재고개수 >0?
                     num +=1
-                    dict_d[df['key'][i]][1] -= 1
+                    dict_d[df['key'][i]][0] -= 1
+            m_note = dict_d[df['key'][i]][1]
     p_number.append(num)
+    note_misong.append(m_note)
 df['미송수량'] = p_number
 df['실구매수량'] = df['구매수량']-df['미송수량']
+df['미송노트'] = note_misong
 print("df에 미송수량 반영")
 
 timestr_now = time.strftime("%Y%m%d-%H%M%S")
@@ -524,15 +531,13 @@ df2['key_'] = df2['key_'].str.lower()
 df2['key_'] = df2['key_'].replace('\s', '', regex=True)
 check = []
 for i in range(len(df2)):
-    """if add != 0 and i < skip_point:
-        continue"""
-    if df2['key_'][i] in check:
-        while df2['key_'][i] in check:
-            df2['title_ss'][i] += "_"
-            df2['key_'][i] = df2['title_ss'][i] + "_" + df2['option1'][i] + "_" + df2['option2'][i]
-        check.append(df2['key_'][i])
+    if df2['key_'].iloc[i] in check:
+        while df2['key_'].iloc[i] in check:
+            df2['title_ss'].iloc[i] += "_"
+            df2['key_'].iloc[i] = df2['title_ss'].iloc[i] + "_" + df2['option1'].iloc[i] + "_" + df2['option2'].iloc[i]
+        check.append(df2['key_'].iloc[i])
     else:
-        check.append(df2['key_'][i])
+        check.append(df2['key_'].iloc[i])
 df2.drop('key_', axis=1, inplace=True)
 
 cols = df2.columns.tolist()
@@ -568,7 +573,7 @@ else:
     ExcelWorkbook = load_workbook(file_order_form)
     writer = pd.ExcelWriter(file_order_form, engine='openpyxl')
     writer.book = ExcelWorkbook
-    df2.to_excel(writer, sheet_name=timestr_now)
+    df2.to_excel(writer, sheet_name=timestr_now, index=False)
     writer.save()
     writer.close()
 

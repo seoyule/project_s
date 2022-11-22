@@ -13,7 +13,6 @@ import os
 print("딜리버드에 배송요청 시작 - delivery form, master_rs 작성")
 
 #딜리버드 사입요청 일시로 정하기
-num_try = 1 #사입요청 몇개? 1개부터 (취소 포함)
 
 # 기본세팅
 warnings.filterwarnings("ignore")
@@ -100,7 +99,7 @@ for i in range(5):
 
 d = {}
 for i in order_: #https://stackoverflow.com/questions/30635145/create-multiple-dataframes-in-loop
-    driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[2]').click()
+    driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[2]/button').click()
     time.sleep(2)
     driver.switch_to.window(driver.window_handles[1])
     action.send_keys(Keys.PAGE_DOWN)
@@ -152,8 +151,8 @@ p_info_2 = []
 for i in range(len(df)):
     result = '' #번호
     num = 0 #수량
-    info1 = '처음값'
-    info2 = '처음값'
+    info1 = ''
+    info2 = ''
     if df['실구매수량'][i]>0 and df['상품품목코드'][i] in dict_:
         # 사입사 메모 입력,사입번호 넣기
         info1 = dict_[df['상품품목코드'][i]][2]
@@ -171,17 +170,21 @@ for i in range(len(df)):
         p_info_2.append(info2)
 
     else:
-        p_result.append("구매목록에 없음")
+        p_result.append('구매목록에 없음')
         p_number.append(0)
-        p_info_1.append('구매목록에 없음')
+        p_info_1.append('')
         p_info_2.append('구매목록에 없음')
 
 df['사입번호'] = p_result
+df['주문수량'] = df['수량']
 df['사입수량'] = p_number
-df['배송수량'] = df['사입수량']+df['in_stock']
+df['미송입고'] = 0 #!!!!!!!!!!!!!!!!!작업해야함
+df['반품재고'] = df['in_stock']
+df['배송수량'] = df['사입수량']+df['미송입고']+df['반품재고']
 df['수량check'] = df['수량']==df['배송수량']
 df['info_1'] = p_info_1
 df['info_2'] = p_info_2
+df['미송노트'] = '' #!!!!!!!!!!!!!!!!!작업해야함
 
 for i in range(len(df)):
     if df['사입번호'][i] == "구매목록에 없음" and df['in_stock'][i]>0:
@@ -207,6 +210,7 @@ df_deliv.insert(18,'_재고구분','정상')
 #사입수량 모자란 부분 제거
 
 df_deliv = df_deliv.loc[df_deliv['수량check'] == True]
+df_deliv = df_deliv.loc[df_deliv['사입번호'] != '구매목록에 없음']
 
 #공백 추가
 df_deliv.loc[-1]= ""

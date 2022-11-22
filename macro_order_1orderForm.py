@@ -28,15 +28,13 @@ df2['key_'] = df2['key_'].str.lower()
 df2['key_'] = df2['key_'].replace('\s', '', regex=True)
 check = []
 for i in range(len(df2)):
-    """if add != 0 and i < skip_point:
-        continue"""
-    if df2['key_'][i] in check:
-        while df2['key_'][i] in check:
-            df2['title_ss'][i] += "_"
-            df2['key_'][i] = df2['title_ss'][i] + "_" + df2['option1'][i] + "_" + df2['option2'][i]
-        check.append(df2['key_'][i])
+    if df2['key_'].iloc[i] in check:
+        while df2['key_'].iloc[i] in check:
+            df2['title_ss'].iloc[i] += "_"
+            df2['key_'].iloc[i] = df2['title_ss'].iloc[i] + "_" + df2['option1'].iloc[i] + "_" + df2['option2'].iloc[i]
+        check.append(df2['key_'].iloc[i])
     else:
-        check.append(df2['key_'][i])
+        check.append(df2['key_'].iloc[i])
 df2.drop('key_', axis=1, inplace=True)
 
 cols = df2.columns.tolist()
