@@ -4,11 +4,12 @@ import warnings
 import back_data_mine
 from selenium import webdriver  # webdriver를 통해 파싱하기 위함
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait,Select
 from datetime import datetime, timedelta
 from selenium.webdriver.common.keys import Keys
 import glob
 import os
+import zipfile
 
 print("딜리버드에 배송요청 시작 - delivery form, master_rs 작성")
 
@@ -79,11 +80,138 @@ try:
 except:
     pass
 
+#현재 주문리스트 만들기
+# cafe24 열기
+driver.switch_to.new_window('tab')
+time.sleep(.5)
+driver.switch_to.window(driver.window_handles[1])
+driver.get("https://eclogin.cafe24.com/Shop/")
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="mall_id"]').click()
+time.sleep(.5)
+action.send_keys('soyool').perform()
+driver.find_element_by_xpath('//*[@id="userpasswd"]').click()
+action.send_keys('!QAZwsx123').perform()
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="frm_user"]/div/div[3]/button').click()
+time.sleep(3)
+print("cafe24 진입")
+
+driver.get('https://soyool.cafe24.com/admin/php/shop1/s_new/shipped_begin_list.php') #배송준비중으로 이동
+time.sleep(2)
+driver.find_element_by_xpath('//*[@id="QA_deposit1"]/div[2]/table/tbody/tr[2]/td/a[6]').click() #지난 한달 선택
+time.sleep(1)
+
+select = Select(driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[5]/div[2]/select[2]'))  # 검색종류
+select.select_by_visible_text('100개씩보기')
+time.sleep(1)
+
+driver.find_element_by_xpath('//*[@id="search_button"]').click() #검색
+
+try:
+    driver.find_element_by_xpath('//*[@id="ch-plugin-core"]/div[2]/div/div/button').click()  # 광고 close
+except:
+    pass
+
+#엑셀 다운로드
+driver.find_element_by_xpath('//*[@id="eExcelDownloadBtn"]').click()
+time.sleep(1)
+driver.switch_to.window(driver.window_handles[2])
+
+select = Select(driver.find_element_by_xpath('//*[@id="aManagesList"]'))
+select.select_by_visible_text('ForOrderSejo')
+time.sleep(.5)
+
+driver.find_element_by_xpath('//*[@id="Password"]').click()
+action.send_keys('protest123').perform()
+time.sleep(.5)
+
+driver.find_element_by_xpath('//*[@id="PasswordConfirm"]').click()
+action.send_keys('protest123').perform()
+time.sleep(.5)
+
+driver.find_element_by_xpath('//*[@id="QA_common_password1"]/div[3]/a').click() #자료 요청
+time.sleep(.5)
+
+alert = driver.switch_to.alert
+alert.accept()
+driver.switch_to.window(driver.window_handles[2])
+
+time.sleep(10)
+driver.find_element_by_xpath('//*[@id="QA_common_password2"]/div[3]/table/tbody/tr[1]/td[7]').click() #다운로드 버튼
+
+driver.find_element_by_xpath('//*[@id="password"]').click() #다시 비밀번호 물어봄
+action.send_keys('protest123').perform()
+time.sleep(.5)
+
+driver.find_element_by_xpath('//*[@id="reason_for_download"]').click() #이유 적어줌
+action.send_keys('analysis').perform()
+time.sleep(.5)
+
+driver.find_element_by_xpath('//*[@id="excel_download"]').click() #파일요청
+time.sleep(7)
+driver.close()
+driver.switch_to.window(driver.window_handles[1])
+
+print("다운로드 완료")
+#다운로드 zip 파일 이름 확인 https://stackoverflow.com/questions/168409/how-do-you-get-a-directory-listing-sorted-by-creation-date-in-python
+files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
+files.sort(key=lambda x: os.path.getmtime(x))
+file_path = files[-1]
+
+#zip 풀기
+with zipfile.ZipFile(file_path, 'r') as zip_ref:
+    zip_ref.extractall(search_dir, pwd=b'protest123')
+print("압축해제 완료")
+
+#변환 파일 이름 확인 https://stackoverflow.com/questions/168409/how-do-you-get-a-directory-listing-sorted-by-creation-date-in-python
+files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
+files.sort(key=lambda x: os.path.getmtime(x))
+file_name = files[-1]
+
+df_c = pd.read_csv(file_name)
+try:
+    os.remove(file_name)
+    os.remove(file_path)
+except OSError as e:
+    print(e.strerror)
+
+df_c['option1'] = df_c['상품옵션'].replace('.*=(\S+),.*',r'\1', regex=True)
+df_c['option2'] = df_c['상품옵션'].replace('.*=.*=(.*)',r'\1', regex=True)
+df_c['option2'] = df_c['option2'].str.lower()
+df_c['key'] = df_c['상품명(한국어 쇼핑몰)']+"_"+df_c['option1']+"_"+df_c['option2']
+df_c['key'] = df_c['key'].str.lower()
+df_c['key'] = df_c['key'].replace('\s','', regex=True)
+df_c['key1'] = df_c['주문번호']+"_"+df_c['key']
+df_c = df_c[['key1']]
+print("현재 구매리스트 완료")
+
+
+#master 가져오기
+file_name_master = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+".xlsx"
+df = pd.read_excel (file_name_master, sheet_name=0) # 0에 다 통합해 놓을꺼니까 항상 0
+df['수령인 우편번호'] = df['수령인 우편번호'].astype(str)
+
+zip_code = []
+for i in range(len(df)):
+    if len(df['수령인 우편번호'][i])==4:
+        z_code = '0'+df['수령인 우편번호'][i]
+    else:
+        z_code = df['수령인 우편번호'][i]
+    zip_code.append(z_code)
+df['수령인 우편번호'] = zip_code
+print("마스터 df import 완료")
+
+#밤사이 사라진 주문 제거
+df = pd.merge(left=df, right=df_c, how='inner', on = 'key1')
+
 #딜리버드로 가기
+driver.switch_to.window(driver.window_handles[0])
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[1]/div').click()
 time.sleep(.5)
 
 print("딜리버드 진입 - 사입현황 다운로드")
+
 #사입현황으로 가기
 driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').send_keys(Keys.ENTER) #사입현황 탭
 time.sleep(1.5)
@@ -94,8 +222,12 @@ order_ = []
 for i in range(5):
     date_ = driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[1]').text[:10]
     status_ = driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[3]').text
-    if date_ == timestr_y_ and status_ == "사입 완료함":
+    if date_ == timestr_y_ and (status_ == "사입 완료함" or status_ == "사입 시작함"):
         order_.append(i)
+
+for i in range(5):
+    action.send_keys(Keys.DOWN)
+    time.sleep(.5)
 
 d = {}
 for i in order_: #https://stackoverflow.com/questions/30635145/create-multiple-dataframes-in-loop
@@ -127,22 +259,6 @@ for i in range(len(list_)):
     dict_[list_[i][0]] = [list_[i][1],list_[i][2],list_[i][3],list_[i][4],list_[i][5]]
 print("사입 딕셔너리 완성")
 
-#master 가져오기
-
-file_name_master = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+".xlsx"
-df = pd.read_excel (file_name_master, sheet_name=0) # 0에 다 통합해 놓을꺼니까 항상 0
-df['수령인 우편번호'] = df['수령인 우편번호'].astype(str)
-
-zip_code = []
-for i in range(len(df)):
-    if len(df['수령인 우편번호'][i])==4:
-        z_code = '0'+df['수령인 우편번호'][i]
-    else:
-        z_code = df['수령인 우편번호'][i]
-    zip_code.append(z_code)
-df['수령인 우편번호'] = zip_code
-print("마스터 df import 완료")
-
 # 사입결과 df에 입력하기
 p_result = [] # 사입번호
 p_number = [] # stock 수량
@@ -170,28 +286,132 @@ for i in range(len(df)):
         p_info_2.append(info2)
 
     else:
-        p_result.append('구매목록에 없음')
+        p_result.append('')
         p_number.append(0)
         p_info_1.append('')
-        p_info_2.append('구매목록에 없음')
+        p_info_2.append('')
 
-df['사입번호'] = p_result
-df['주문수량'] = df['수량']
+df['사입번호_'] = p_result
+df['사입번호'] = ''
+df['수량_'] = df['수량']
 df['사입수량'] = p_number
-df['미송입고'] = 0 #!!!!!!!!!!!!!!!!!작업해야함
-df['반품재고'] = df['in_stock']
-df['배송수량'] = df['사입수량']+df['미송입고']+df['반품재고']
-df['수량check'] = df['수량']==df['배송수량']
+df['사입+미송+반품'] = 0
+df['수량check'] = ''
 df['info_1'] = p_info_1
 df['info_2'] = p_info_2
-df['미송노트'] = '' #!!!!!!!!!!!!!!!!!작업해야함
+df['미송노트_'] = ''
 
+print('사입+미송+반품 작성, 딜리버드 진입 - 상품 및 재고 탭')
+#재고로 가기
+driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[7]/a').send_keys(Keys.ENTER)
+time.sleep(3)
+driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div/div/div[3]/div/div/div[2]/label').send_keys(Keys.SPACE) #재고 없음 클릭
+time.sleep(3)
+driver.find_element_by_xpath('//*[@id="productList_wrapper"]/div[1]/div[2]/div/button[1]').send_keys(Keys.ENTER)
+time.sleep(4)
+
+files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
+files.sort(key=lambda x: os.path.getmtime(x))
+file_name2 = files[-1]
+
+time.sleep(1)
+df_stock = pd.read_excel(file_name2)
+df_stock['key'] = df_stock['판매 상품명']+"_"+df_stock['상품옵션 1']+"_"+df_stock['상품옵션 2']
+df_stock['key'] = df_stock['key'].str.lower()
+df_stock['key'] = df_stock['key'].replace('\s','', regex=True)
+
+df_stock_ = df_stock[['key','상품번호','정상재고']]
+list_ = df_stock_.values.tolist()
+dict_ = {}
+for i in range(len(list_)):
+    dict_[list_[i][0]] = [list_[i][1],list_[i][2]]
+print("사입+미송+반품 dic 완료")
+
+# 반품 재고 매입 수량에 반영..
+p_result = [] # 상품번호
+p_number = [] # stock 수량
 for i in range(len(df)):
+    result = '' #번호
+    num = 0 #수량
+    if df['key'][i].lower() in dict_:
+        # 상품번호 넣기
+        result = dict_[df['key'][i].lower()][0]
+        if dict_[df['key'][i].lower()][1]>0:
+            #stock 개수 넣기
+            for j in range(df['수량'][i].item()):
+                if dict_[df['key'][i].lower()][1]>0: #재고개수 >0?
+                    num +=1
+                    dict_[df['key'][i].lower()][1] -= 1
+
+    p_result.append(result)
+    p_number.append(num)
+
+df['사입번호'] = p_result
+df['사입+미송+반품'] = p_number
+df['수량check'] = df['수량']==df['사입+미송+반품']
+
+"""for i in range(len(df)):
     if df['사입번호'][i] == "구매목록에 없음" and df['in_stock'][i]>0:
         df['사입번호'][i] = df['temp_사입번호'][i]
         df['info_1'][i] = 'temp_사입번호 -> 사입번호로 (원래 구매목록에 없음)'
+"""
 
-df_deliv = df[['수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','배송수량','수량check']]
+#미송노트 마스터에 반영
+print("딜리버드 진입 - 미송 확인 (사입현황 탭)")
+driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').send_keys(Keys.ENTER) #사입현황으로 가기
+time.sleep(2)
+driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[1]/div[1]/ul/li[3]/a').send_keys(Keys.ENTER) #미송상품 클릭
+time.sleep(3)
+try:
+    driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[1]/div[3]/div/div/div/form/div[2]/div[2]/label/span').click() #미송지연 클릭해제
+    time.sleep(3)
+except:
+    driver.find_element_by_xpath(
+        '//*[@id="page-wrapper"]/div[2]/div[1]/div[3]/div/div/div/form/div[2]/div[2]/label/span').click()
+    time.sleep(3)
+driver.find_element_by_xpath('//*[@id="prepaidProduct_wrapper"]/div[1]/div[2]/div/button').send_keys(Keys.ENTER) # 엑셀 다운로드
+time.sleep(4)
+
+files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
+files.sort(key=lambda x: os.path.getmtime(x))
+file_name3 = files[-1]
+
+time.sleep(1)
+df_delay = pd.read_excel(file_name3)
+
+df_delay['상품옵션'] = df_delay['옵션 1/2'].str.replace('/','_')
+
+df_delay['key'] = df_delay['판매 상품명']+"_"+df_delay['상품옵션']
+df_delay['key'] = df_delay['key'].str.lower()
+df_delay['key'] = df_delay['key'].replace('\s','', regex=True)
+
+df_delay_ = df_delay[['key','사입사 메모']]
+list_d = df_delay_.values.tolist()
+dict_d = {}
+for i in range(len(list_d)):
+    dict_d[list_d[i][0]] = [list_d[i][1]]
+print("미송 dic 완료")
+
+# 미송노트 작성
+note_misong = [] # 미송 노트
+for i in range(len(df)):
+    m_note =""
+    if df['미송수량'][i]>0 and df['key'][i] in dict_d:
+        m_note = dict_d[df['key'][i]][0]
+    note_misong.append(m_note)
+df['미송노트_'] = note_misong
+print("df에 미송노트 반영")
+
+try:
+    os.remove(file_name2)
+    os.remove(file_name3)
+except OSError as e:
+    print(e.strerror)
+
+
+
+print("딜리버드 배송요청 양식 작성")
+df_deliv = df[['수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','사입+미송+반품','수량check']]
 df_deliv.insert(0,'balnk0','')
 df_deliv.insert(1,'blank1','')
 df_deliv.insert(2,'temp_배송방법','일반배송')
@@ -210,7 +430,7 @@ df_deliv.insert(18,'_재고구분','정상')
 #사입수량 모자란 부분 제거
 
 df_deliv = df_deliv.loc[df_deliv['수량check'] == True]
-df_deliv = df_deliv.loc[df_deliv['사입번호'] != '구매목록에 없음']
+df_deliv = df_deliv[df_deliv['사입번호'] != '']
 
 #공백 추가
 df_deliv.loc[-1]= ""
@@ -226,9 +446,10 @@ df_pf.to_excel(file_purchase, index=False)
 df.to_excel(file_name_master_rs, index=False)
 print("엑셀 export 완료")
 
+
+
 print("deliverd 배송 요청 시작")
 # 딜리버드에 등록
-
 driver.switch_to.window(driver.window_handles[0])
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[4]/a').click()  # 배송요청 탭

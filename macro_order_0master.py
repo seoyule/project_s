@@ -226,7 +226,7 @@ for i in range(len(df)):
         building_name.append('-')
         shop_location.append('-')
         shop_phone_number.append('-')
-        print(i,"이미등록")
+        print(i+1,"이미등록")
         continue
 
     driver.switch_to.new_window('tab')
@@ -341,16 +341,18 @@ cols = cols[:11]+cols[12:14]+cols[15:19]+cols[11:12]+cols[14:15]+cols[19:]
 df = df[cols]
 
 df.insert(12,'key','')
-df.insert(15,'in_stock','')
-df.insert(16,'구매수량','')
-df.insert(17,'미송수량','')
-df.insert(18,'실구매수량','')
-df.insert(19,'미송노트','')
+df.insert(13,'key1','')
+df.insert(16,'in_stock','')
+df.insert(17,'구매수량','')
+df.insert(18,'미송수량','')
+df.insert(19,'실구매수량','')
+df.insert(20,'미송노트','')
 
 #재고와 비교위한 key값 생성
 df['key'] = df['상품명(한국어 쇼핑몰)']+"_"+df['option1']+"_"+df['option2']
 df['key'] = df['key'].str.lower()
 df['key'] = df['key'].replace('\s','', regex=True)
+df['key1'] = df['주문번호']+"_"+df['key']
 
 ####################
 #딜리버드에서 재고 다운받기
@@ -377,7 +379,7 @@ df_stock = pd.read_excel(file_name2)
 df_stock['key'] = df_stock['판매 상품명']+"_"+df_stock['상품옵션 1']+"_"+df_stock['상품옵션 2']
 df_stock['key'] = df_stock['key'].str.lower()
 df_stock['key'] = df_stock['key'].replace('\s','', regex=True)
-
+"""
 #반품 상품중 옵션 다른 것 팔렸을때 표시, 구매 안함.
 df_stock_2 = df_stock[['판매 상품명','상품옵션 1','상품옵션 2']]
 list_2 = df_stock_2.values.tolist()
@@ -386,7 +388,7 @@ for i in range(len(df)):
         if df['상품명(한국어 쇼핑몰)'][i] == list_2[j][0]:
             if df['option1'][i] != list_2[j][1] or df['option2'][i] != list_2[j][2]:
                 df['note'][i] = "옵션 다른 반품 상품, 취소해야함."
-
+"""
 #과거 반품상품 점검
 for i in range(len(df)):
     if df['상품명(한국어 쇼핑몰)'][i] in back_data_mine.block_subject:
@@ -434,7 +436,7 @@ driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').sen
 time.sleep(2)
 driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[1]/div[1]/ul/li[3]/a').send_keys(Keys.ENTER) #미송상품 클릭
 time.sleep(3)
-driver.find_element_by_xpath('//*[@id="prepaidProduct_wrapper"]/div[1]/div[2]/div/button').send_keys(Keys.ENTER) # 엑셀 다운로
+driver.find_element_by_xpath('//*[@id="prepaidProduct_wrapper"]/div[1]/div[2]/div/button').send_keys(Keys.ENTER) # 엑셀 다운로드
 time.sleep(4)
 
 files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
@@ -443,6 +445,7 @@ file_name3 = files[-1]
 
 time.sleep(1)
 df_delay = pd.read_excel(file_name3)
+df_delay = df_delay[df_delay['진행 상태']=='진행중']
 df_delay['미송대기수량'] = df_delay['사입 요청 수량']-df_delay['누적 사입 수량']-df_delay['환불 수량']
 df_delay['상품옵션'] = df_delay['옵션 1/2'].str.replace('/','_')
 
@@ -554,8 +557,6 @@ df2.insert(16, 'blank3temp', '')
 df2.insert(17, 'blank4-temp', '')
 df2.insert(19, 'blank5-temp', '')  # 메모2, 서율샵 자리
 
-df2['일시품절시_temp'] = '미송'
-
 # 공백 추가
 df2.loc[-1] = ""
 df2.index = df2.index + 1
@@ -610,10 +611,13 @@ if add == 0:
 
     try:
         driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]').send_keys(Keys.ENTER)  #사입요청하기 버튼
+
     except:
+        time.sleep(3)
         driver.find_element_by_xpath('//*[@id="purchasesList_wrapper"]/div[1]/div/div/button[9]').send_keys(
             Keys.ENTER)  # 사입요청하기 버튼
 
+    time.sleep(1)
     element = driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]')
     time.sleep(1)
     element.send_keys(Keys.ENTER)  # 네

@@ -51,8 +51,6 @@ df2.insert(16,'blank3temp','')
 df2.insert(17,'blank4-temp','')
 df2.insert(19,'blank5-temp','')#메모2, 서율샵 자리
 
-df2['일시품절시_temp'] = '미송'
-
 #공백 추가
 df2.loc[-1]= ""
 df2.index = df2.index + 1

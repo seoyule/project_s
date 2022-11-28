@@ -118,7 +118,7 @@ df['수령인 전화번호'] = df['수령인 전화번호'].str.replace('-','')
 df['수령인'] = df['수령인'].str.strip()
 df['key2']= df['수령인']+"_"+df['수령인 전화번호']
 
-df['송장번호']= df['key2'].map(df_invoice)
+df['송장번호']= df['key2'].map(df_invoice) #merge로 할수도 있음.
 df.loc[df['수량check'] == False, '송장번호'] = ""
 
 df['수량check'] = df['수량check'].map({True: 'True', False: 'False'})
@@ -227,6 +227,8 @@ for i in range(num_goods):
         driver.find_element_by_xpath(f'//*[@id="invoice_no_{i}"]').click()
         action.send_keys(invoice).perform()
 print("총",acc_num,"개 라인 배송중 처리")
+
+df.drop(['key2','key3'], axis=1, inplace=True)
 
 #엑셀 export
 file_name_master_rsi = "/Users/seoyulejo/Downloads/files/order_master_"+timestr_y+"_rsi.xlsx"
