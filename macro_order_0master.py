@@ -22,7 +22,7 @@ from openpyxl import load_workbook
 #배송메시지 명령어 : skip <- 수량 0으로 처리 (오류주문, 주문 안되게), hold <- (반품 기다리는 것) 주문 안들어 가게..
 #링크 없는건 미리 배송메시지에 업데이트 해놓는다.
 
-add = 1
+add = 0
 
 if add == 0:
     print("전체작업 (첫번째 시도, 정상상품은 딜리버드 등록까지)")
@@ -181,7 +181,7 @@ file_name = files[-1]
 df = pd.read_csv(file_name)
 print("df import 완료:",len(df),"개")
 
-df['option1'] = df['상품옵션'].replace('.*=(\S+),.*',r'\1', regex=True)
+df['option1'] = df['상품옵션'].replace('.*=(\S+),.*',r'\1', regex=True) #상품옵션 -> 색상=네이비, 사이즈=free
 df['option2'] = df['상품옵션'].replace('.*=.*=(.*)',r'\1', regex=True)
 df['option2'] = df['option2'].str.lower()
 df['수령인 우편번호'] = df['수령인 우편번호'].astype(str)
@@ -207,16 +207,16 @@ print("데이터 채우기 시작")
 
 skip_point = len(df)-add
 for i in range(len(df)):
-    if pd.isnull(df['모델명'][i]):
-        link = df['배송메시지'][i]
-        df['모델명'][i] = df['배송메시지'][i]
-        if df['주문경로'][i]=='쿠팡':
-            option_ = df['상품옵션'][i]
+    if pd.isnull(df['모델명'].iloc[i]):
+        link = df['배송메시지'].iloc[i]
+        df['모델명'].iloc[i] = df['배송메시지'].iloc[i]
+        if df['주문경로'].iloc[i]=='쿠팡':
+            option_ = df['상품옵션'].iloc[i]
             option_.strip()
-            df['option1'][i] = re.search(r'옵션=(\S*)\s(\S*)', option_).group(1)
-            df['option2'][i] = re.search(r'옵션=(\S*)\s(\S*)', option_).group(2)
+            df['option1'].iloc[i] = re.search(r'옵션=(\S*)\s(\S*)', option_).group(1)
+            df['option2'].iloc[i] = re.search(r'옵션=(\S*)\s(\S*)', option_).group(2)
     else:
-        link = df['모델명'][i]
+        link = df['모델명'].iloc[i]
 
     if add !=0 and i < skip_point:
         note.append('이미 처리')
@@ -344,9 +344,9 @@ df.insert(12,'key','')
 df.insert(13,'key1','')
 df.insert(16,'in_stock','')
 df.insert(17,'구매수량','')
-df.insert(18,'미송수량','')
-df.insert(19,'실구매수량','')
-df.insert(20,'미송노트','')
+#df.insert(18,'미송수량','')
+#df.insert(19,'실구매수량','')
+#df.insert(20,'미송노트','')
 
 #재고와 비교위한 key값 생성
 df['key'] = df['상품명(한국어 쇼핑몰)']+"_"+df['option1']+"_"+df['option2']
@@ -391,8 +391,8 @@ for i in range(len(df)):
 """
 #과거 반품상품 점검
 for i in range(len(df)):
-    if df['상품명(한국어 쇼핑몰)'][i] in back_data_mine.block_subject:
-        df['note'][i] = "과거 반품상품과 같은이름, 점검 필요."
+    if df['상품명(한국어 쇼핑몰)'].iloc[i] in back_data_mine.block_subject:
+        df['note'].iloc[i] = "과거 반품상품과 같은이름, 점검 필요."
 
 df_stock_ = df_stock[['key','상품번호','정상재고']]
 list_ = df_stock_.values.tolist()
@@ -407,21 +407,22 @@ p_number = [] # stock 수량
 for i in range(len(df)):
     result = '' #번호
     num = 0 #수량
-    if df['배송메시지'][i].lower() == "skip":
-        df['수량'][i] = 0
-    if df['배송메시지'][i].lower() == "hold":
-        df['note'][i] = "hold"
-    if df['key'][i].lower() in dict_:
+    if df['배송메시지'].iloc[i].lower() == "skip":
+        df['수량'].iloc[i] = 0
+    if df['배송메시지'].iloc[i].lower() == "hold":
+        df['note'].iloc[i] = "hold"
+    if df['key'].iloc[i].lower() in dict_:
         # 사입번호 넣기
-        result = dict_[df['key'][i].lower()][0]
-        if dict_[df['key'][i].lower()][1]>0:
+        result = dict_[df['key'].iloc[i].lower()][0]
+        if dict_[df['key'].iloc[i].lower()][1]>0:
             #stock 개수 넣기
-            for j in range(df['수량'][i].item()):
-                if dict_[df['key'][i].lower()][1]>0: #재고개수 >0?
+            for j in range(df['수량'].iloc[i].item()):
+                if dict_[df['key'].iloc[i].lower()][1]>0: #재고개수 >0?
                     num +=1
                     dict_[df['key'][i].lower()][1] -= 1
                     if dict_[df['key'][i].lower()][1] ==0:
                         df['note'][i] = "재고 소진, 상품삭제 필요"
+
     p_result.append(result)
     p_number.append(num)
 
@@ -429,57 +430,6 @@ df['temp_사입번호'] = p_result
 df['in_stock'] = p_number
 df['구매수량'] = df['수량']-df['in_stock']
 print("df에 재고수량 반영")
-
-#미송 마스터에 반영
-print("딜리버드 진입 - 미송 확인 (사입현황 탭)")
-driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').send_keys(Keys.ENTER) #재고로 가기
-time.sleep(2)
-driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[1]/div[1]/ul/li[3]/a').send_keys(Keys.ENTER) #미송상품 클릭
-time.sleep(3)
-driver.find_element_by_xpath('//*[@id="prepaidProduct_wrapper"]/div[1]/div[2]/div/button').send_keys(Keys.ENTER) # 엑셀 다운로드
-time.sleep(4)
-
-files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
-files.sort(key=lambda x: os.path.getmtime(x))
-file_name3 = files[-1]
-
-time.sleep(1)
-df_delay = pd.read_excel(file_name3)
-df_delay = df_delay[df_delay['진행 상태']=='진행중']
-df_delay['미송대기수량'] = df_delay['사입 요청 수량']-df_delay['누적 사입 수량']-df_delay['환불 수량']
-df_delay['상품옵션'] = df_delay['옵션 1/2'].str.replace('/','_')
-
-df_delay['key'] = df_delay['판매 상품명']+"_"+df_delay['상품옵션']
-df_delay['key'] = df_delay['key'].str.lower()
-df_delay['key'] = df_delay['key'].replace('\s','', regex=True)
-
-df_delay_ = df_delay[['key','미송대기수량','사입사 메모']]
-list_d = df_delay_.values.tolist()
-dict_d = {}
-for i in range(len(list_d)):
-    dict_d[list_d[i][0]] = [list_d[i][1],list_d[i][2]]
-print("미송 dic 완료")
-
-# 미송 - 매입 수량에서 제외..
-p_number = [] # 미송 수량
-note_misong = [] # 미송 노트
-for i in range(len(df)):
-    num = 0 #수량
-    m_note =""
-    if df['key'][i] in dict_d:
-        if dict_d[df['key'][i]][0]>0:
-            #stock 개수 넣기
-            for j in range(df['구매수량'][i].item()):
-                if dict_d[df['key'][i]][0]>0: #재고개수 >0?
-                    num +=1
-                    dict_d[df['key'][i]][0] -= 1
-            m_note = dict_d[df['key'][i]][1]
-    p_number.append(num)
-    note_misong.append(m_note)
-df['미송수량'] = p_number
-df['실구매수량'] = df['구매수량']-df['미송수량']
-df['미송노트'] = note_misong
-print("df에 미송수량 반영")
 
 timestr_now = time.strftime("%Y%m%d-%H%M%S")
 timestr = time.strftime("%Y%m%d")
@@ -500,20 +450,11 @@ try:
     os.remove(file_path)
     os.remove(file_name)
     os.remove(file_name2)
-    os.remove(file_name3)
 except OSError as e:
     print(e.strerror)
 
 
 
-
-
-
-
-
-
-
-# 여기서 부터 정상상품 자동 업로드 위해 추가 작성한 부분
 
 print("order form 작성 시작")
 
@@ -523,9 +464,9 @@ df['option2'] = df['option2'].str.lower()
 df2 = df.groupby(
     ['title_ss', '상품명(한국어 쇼핑몰)', 'option1', 'option2', 'price_ss', 'shop_name', 'building_name', 'shop_location',
      'shop_phone_number', '상품품목코드', '모델명', 'note'], dropna=False).agg(
-    {'수량': 'sum', 'in_stock': 'sum', '실구매수량': 'sum'})
+    {'수량': 'sum', 'in_stock': 'sum', '구매수량': 'sum'})
 df2 = df2.add_suffix('').reset_index()
-df2 = df2[df2['실구매수량'] > 0]
+df2 = df2[df2['구매수량'] > 0]
 df2 = df2[df2['note'].str.contains('OK')]
 
 # 도매 상품명 중복 검증위한 key_값 생성

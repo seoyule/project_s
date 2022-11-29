@@ -75,7 +75,7 @@ try:
 except:
     pass
 
-#딜리버드로 가기
+#딜리버드로 가기 (송장번호 get)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[1]/div').click()
 time.sleep(.5)
 print("딜리버드 진입")
@@ -226,7 +226,6 @@ for i in range(num_goods):
     if num > 0:
         driver.find_element_by_xpath(f'//*[@id="invoice_no_{i}"]').click()
         action.send_keys(invoice).perform()
-print("총",acc_num,"개 라인 배송중 처리")
 
 df.drop(['key2','key3'], axis=1, inplace=True)
 
@@ -246,6 +245,8 @@ try:
     alert = driver.switch_to.alert
     print(alert.text)
     alert.accept()
+    print("대상 수량(건):",len(df[df['송장번호'] != '']))
+    print("배송중 처리: ", acc_num, "/", df['배송수량'].sum())
 except:
     pass
 
