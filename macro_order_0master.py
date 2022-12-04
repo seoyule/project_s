@@ -108,10 +108,10 @@ print("cafe24 진입")
 
 driver.get('https://soyool.cafe24.com/admin/php/shop1/s_new/shipped_begin_list.php') #배송준비중으로 이동
 time.sleep(2)
-driver.find_element_by_xpath('//*[@id="QA_deposit1"]/div[2]/table/tbody/tr[2]/td/a[6]').click() #지난 한달 선택
+driver.find_element_by_xpath('//*[@id="QA_deposit1"]/div[1]/table/tbody/tr[1]/td/a[6]').click() #지난 한달 선택
 time.sleep(1)
 
-select = Select(driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[5]/div[2]/select[2]'))  # 검색종류
+select = Select(driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[4]/div[2]/select[2]'))  # 검색종류
 select.select_by_visible_text('100개씩보기')
 time.sleep(1)
 
@@ -559,9 +559,16 @@ if add == 0:
             Keys.ENTER)  # 사입요청하기 버튼
 
     time.sleep(1)
-    element = driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]')
-    time.sleep(1)
-    element.send_keys(Keys.ENTER)  # 네
+    try:
+        driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]').send_keys(Keys.ENTER)  # 네
+    except:
+        time.sleep(1)
+        action.send_keys(Keys.DOWN)
+        try:
+            driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]').send_keys(Keys.ENTER)  # 네
+        except:
+            time.sleep(1)
+            driver.find_element_by_xpath('/html/body/div[5]/div/div[3]/button[3]').click()  # 네
 
     time.sleep(4)
     element = driver.find_element_by_xpath('//*[@id="method_SINSANGPOINT"]')

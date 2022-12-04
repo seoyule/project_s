@@ -4,7 +4,7 @@ from openpyxl import load_workbook
 
 print("order form 작성 시작")
 
-sheet_order = 0 #(0~) 마스터의 몇번째 탭 import 할껀지 지정
+sheet_order = 1 #(0~) 마스터의 몇번째 탭 import 할껀지 지정
 
 timestr = time.strftime("%Y%m%d")
 timestr_now = time.strftime("%Y%m%d-%H%M%S")

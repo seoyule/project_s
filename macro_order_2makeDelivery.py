@@ -10,6 +10,7 @@ from selenium.webdriver.common.keys import Keys
 import glob
 import os
 import zipfile
+import re
 
 print("딜리버드에 배송요청 시작 - delivery form, master_rs 작성")
 
@@ -99,10 +100,10 @@ print("cafe24 진입")
 
 driver.get('https://soyool.cafe24.com/admin/php/shop1/s_new/shipped_begin_list.php') #배송준비중으로 이동
 time.sleep(2)
-driver.find_element_by_xpath('//*[@id="QA_deposit1"]/div[2]/table/tbody/tr[2]/td/a[6]').click() #지난 한달 선택
+driver.find_element_by_xpath('//*[@id="QA_deposit1"]/div[1]/table/tbody/tr[1]/td/a[6]').click() #지난 한달 선택
 time.sleep(1)
 
-select = Select(driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[5]/div[2]/select[2]'))  # 검색종류
+select = Select(driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[4]/div[2]/select[2]'))  # 검색종류
 select.select_by_visible_text('100개씩보기')
 time.sleep(1)
 
@@ -179,6 +180,15 @@ except OSError as e:
 df_c['option1'] = df_c['상품옵션'].replace('.*=(\S+),.*',r'\1', regex=True)
 df_c['option2'] = df_c['상품옵션'].replace('.*=.*=(.*)',r'\1', regex=True)
 df_c['option2'] = df_c['option2'].str.lower()
+
+for i in range(len(df_c)):
+    if pd.isnull(df_c['모델명'].iloc[i]):
+        if df_c['주문경로'].iloc[i]=='쿠팡':
+            option_ = df_c['상품옵션'].iloc[i]
+            option_.strip()
+            df_c['option1'].iloc[i] = re.search(r'옵션=(\S*)\s(\S*)', option_).group(1)
+            df_c['option2'].iloc[i] = re.search(r'옵션=(\S*)\s(\S*)', option_).group(2)
+
 df_c['key'] = df_c['상품명(한국어 쇼핑몰)']+"_"+df_c['option1']+"_"+df_c['option2']
 df_c['key'] = df_c['key'].str.lower()
 df_c['key'] = df_c['key'].replace('\s','', regex=True)
@@ -225,11 +235,11 @@ for i in range(5):
     if date_ == timestr_y_ and (status_ == "사입 완료함" or status_ == "사입 시작함"):
         order_.append(i)
 try:
-    for i in range(4):
+    for i in range(2):
         action.send_keys(Keys.DOWN).perform()
         time.sleep(.5)
 except:
-    for i in range(4):
+    for i in range(2):
         action.send_keys(Keys.DOWN)
         time.sleep(.5)
 
@@ -311,7 +321,7 @@ for i in range(len(df)):
         df['info_1'].iloc[i] = 'temp_사입번호 -> 사입번호로 (반품재고소진)'
 
 print("딜리버드 배송요청 양식 작성")
-df_deliv = df[['수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','사입+미송+반품','수량check']]
+df_deliv = df[['수령인','수령인 전화번호','수령인 우편번호','수령인 주소(전체)','사입번호','배송수량','수량check']]
 df_deliv.insert(0,'balnk0','')
 df_deliv.insert(1,'blank1','')
 df_deliv.insert(2,'temp_배송방법','일반배송')

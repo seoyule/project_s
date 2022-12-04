@@ -145,16 +145,16 @@ print("cafe24 진입")
 
 driver.get('https://soyool.cafe24.com/admin/php/shop1/s_new/shipped_begin_list.php') #배송준비중으로 이동
 time.sleep(2)
-driver.find_element_by_xpath('//*[@id="QA_deposit1"]/div[2]/table/tbody/tr[2]/td/a[6]').click() #지난 한달 선택
+driver.find_element_by_xpath('//*[@id="QA_deposit1"]/div[1]/table/tbody/tr[1]/td/a[6]').click() #지난 한달 선택
 time.sleep(1)
 
-select = Select(driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[5]/div[2]/select[2]'))  # 검색종류
+select = Select(driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[4]/div[2]/select[2]'))  # 검색종류
 select.select_by_visible_text('100개씩보기')
 time.sleep(1)
 
 driver.find_element_by_xpath('//*[@id="search_button"]').click() #검색
 
-num_goods = driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[3]/div[1]/p/strong').text
+num_goods = driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[2]/div[1]/div/strong').text
 num_goods = int(num_goods)
 
 acc_num =0
@@ -223,7 +223,7 @@ for i in range(num_goods):
         else:
             print(i,"-",j,"매칭정보 없음")
 
-    if num > 0:
+    if num > 0: # 인보이스번호 입력
         driver.find_element_by_xpath(f'//*[@id="invoice_no_{i}"]').click()
         action.send_keys(invoice).perform()
 
@@ -240,6 +240,7 @@ time.sleep(4)
 
 alert = driver.switch_to.alert
 alert.accept()
+time.sleep(2)
 
 try:
     alert = driver.switch_to.alert
