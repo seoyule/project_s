@@ -75,9 +75,9 @@ for i in range(looping_num):
     alert = driver.switch_to.alert
     alert.accept()
     driver.switch_to.window(driver.window_handles[0])
-    time.sleep(50)
+    time.sleep(60)
 
-    wait.until(EC.alert_is_present())
+    #wait.until(EC.alert_is_present())
     alert = driver.switch_to.alert
     alert.accept()
     driver.switch_to.window(driver.window_handles[0])

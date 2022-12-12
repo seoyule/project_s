@@ -47,7 +47,7 @@ category_list = back_data_mine.category_list # 분류설정
 with open('listfile', 'rb') as fp: # url 리스트 불러오기
     urls = pickle.load(fp)
 """
-urls = [("https://sinsangmarket.kr/store/11711?isPublic=1","쵸콜릿",'(.*)\n\n[0-9]+\n.*'),
+urls = [("https://sinsangmarket.kr/store/11711?isPublic=1","쵸콜릿",'(.*)\n\n[0-9]+.*'),
         ("https://sinsangmarket.kr/store/21781?isPublic=1","CC하니",'(.*)'),
         ("https://sinsangmarket.kr/store/7548?isPublic=1","Ami 아미",''),#comment 없이
         ("https://sinsangmarket.kr/store/8984?isPublic=1","오블리",''),#comment 없이
@@ -275,11 +275,17 @@ for k in range(len(urls)): #len(urls)로 변경
 
             # 신상: 기본정보 따기 (새창- 3번째 창)
             table = {}
-            datas = soup.find_all("div", attrs={'class': re.compile('w-full flex border-b border-gray-30')})
+            datas = soup.find_all("div", attrs={'class': 'w-full flex gap-x-[1px]'})
+            #기본 속성
             for data in datas:
                 t_key = data.find("div", attrs={
-                    'class': re.compile('text-gray-80 border-r border-gray-30')}).get_text().strip()
-                t_value = data.find("div", attrs={'class': re.compile('text-gray-100')})
+                    'class': 'w-[120px] py-[20px] pl-[12px] text-gray-80 flex items-center bg-gray-10'})
+                if t_key:
+                    t_key = t_key.get_text().strip()
+                else:
+                    continue
+                t_value = data.find("div", attrs={
+                    'class': 'information-row__content flex items-center text-gray-100 py-[20px] px-[24px] bg-white-100'})
                 if t_value:
                     if len(t_value) > 1:
                         t_val = []
@@ -288,6 +294,21 @@ for k in range(len(urls)): #len(urls)로 변경
                     else:
                         t_val = t_value.get_text().strip()
                     table[t_key] = t_val
+            #두께 등..
+            for data in datas:
+                t_key = data.find("div", attrs={
+                    'class': 'w-[120px] min-w-[82px] flex items-center py-[20px] pl-[12px] text-gray-80 bg-gray-10'})
+                if t_key:
+                    t_key = t_key.get_text().strip()
+                else:
+                    continue
+                t_value = data.find("div", attrs={
+                    'class': 'min-w-[42px] text-gray-100'})
+                if t_value:
+                    t_val = t_value.get_text().strip()
+                    table[t_key] = t_val
+                else:
+                    continue
 
             color = table['색상']
             table['색상'] = table['색상'].replace(" ", "").split(',')

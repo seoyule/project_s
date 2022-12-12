@@ -86,6 +86,7 @@ try:
     driver.find_element_by_xpath('//*[@id="returnSearch"]/div[2]/div/label[1]').click() #오늘 클릭
     time.sleep(1)
 except:
+    time.sleep(1)
     driver.find_element_by_xpath('//*[@id="returnSearch"]/div[2]/div/label[1]').click()  # 오늘 클릭
     time.sleep(1)
 driver.find_element_by_xpath('//*[@id="orderList_wrapper"]/div[1]/div[2]/div/button').send_keys(Keys.ENTER) #엑셀다운로드 클릭
@@ -99,7 +100,7 @@ file_name = files[-1]
 df_invoice = pd.read_excel(file_name, converters={'받는 사람 연락처':str})
 df_invoice['key'] = df_invoice['받는 사람 이름'].str.strip() + "_" + df_invoice['받는 사람 연락처'].str.strip()
 df_invoice['송장번호'] = df_invoice['송장번호'].fillna(0)
-df_invoice['송장번호'] = df_invoice['송장번호'].astype(int)
+df_invoice['송장번호'] = df_invoice['송장번호'].astype(str)
 df_invoice = df_invoice[['key','송장번호']] #연락처에 - 없음
 df_invoice = df_invoice.drop_duplicates()
 df_invoice = df_invoice.set_index('key')['송장번호']
@@ -120,6 +121,9 @@ df['key2']= df['수령인']+"_"+df['수령인 전화번호']
 
 df['송장번호']= df['key2'].map(df_invoice) #merge로 할수도 있음.
 df.loc[df['수량check'] == False, '송장번호'] = ""
+df.loc[df['배송수량'] < 1, '송장번호'] = ""
+
+df['상품명(한국어 쇼핑몰)'] = df['상품명(한국어 쇼핑몰)'].str.replace("티&탑","티-탑")
 
 df['수량check'] = df['수량check'].map({True: 'True', False: 'False'})
 df['key3'] = df['주문번호']+"_"+df['상품명(한국어 쇼핑몰)']+"_"+df['상품옵션']+"_"+df['수량check']
@@ -158,20 +162,28 @@ num_goods = driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[2]/di
 num_goods = int(num_goods)
 
 acc_num =0
+we_map_double = []
 for i in range(num_goods):
     key = ""
     value = ""
     invoice = ""
     num = 0
 
+    market = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[3]/img').get_property('title')
     element = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[3]')
     val = int(element.get_attribute("rowspan"))
     loop = val -1
     order_num = driver.find_element_by_xpath(f'//*[@id="copyarea_{i}"]').text
+
+    if market == '위메프' and loop >1:
+        we_map_double.append(order_num)
+        continue
+
     for j in range(loop):
         if j ==0:
             product = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/p[1]').text
             product = re.search("내역 (.*)\n\(.*",product).group(1)
+            product = product.replace("티&탑","티-탑")
             option1 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[1]/td[10]/div/ul/li[1]').text
             option1 = option1.replace(" : ","=").strip()
             try:
@@ -183,6 +195,7 @@ for i in range(num_goods):
             product = driver.find_element_by_xpath(
                 f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/p[1]').text
             product = re.search("내역 (.*)\n\(.*",product).group(1)
+            product = product.replace("티&탑", "티-탑")
             option1 = driver.find_element_by_xpath(f'//*[@id="shipedReadyList"]/table/tbody[{i+1}]/tr[{j+1}]/td[3]/div/ul/li[1]').text
             option1 = option1.replace(" : ", "=").strip()
             try:
@@ -201,10 +214,10 @@ for i in range(num_goods):
         idx = df.index[df['key3'].str.lower() == key.lower()].tolist()
         if len(idx) == 1:
             invoice = df['송장번호'].iloc[idx[0]]
-            if pd.isnull(invoice): # skip으로 수량=0으로 true인 경우.
+            if invoice == '': # skip으로 수량=0으로 true인 경우.
                 print(i, "-", j, "매칭정보 없음")
                 continue
-            invoice = int(invoice)
+            #invoice = int(invoice)
             df['deliver_check'].iloc[idx[0]] = "OK"
             if j==0:
                 driver.find_element_by_xpath(
@@ -246,9 +259,9 @@ try:
     alert = driver.switch_to.alert
     print(alert.text)
     alert.accept()
-    print("대상 수량(건):",len(df[df['송장번호'] != '']))
-    print("배송중 처리: ", acc_num, "/", df['배송수량'].sum())
+    print("배송중 처리(건): ", acc_num, "/", len(df[df['배송수량'] > 0]))
 except:
     pass
 
+print("위메프 수동처리할 건(복수주문): ", we_map_double)
 time.sleep(3)

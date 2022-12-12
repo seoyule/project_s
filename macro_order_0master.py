@@ -576,7 +576,7 @@ if add == 0:
     element.send_keys(Keys.ENTER) # 신상캐시 선택
     time.sleep(1)
 
-    for i in range(8):
+    for i in range(4):
         action.send_keys(Keys.DOWN)
         time.sleep(1)
 
@@ -584,7 +584,13 @@ if add == 0:
     try:
         element.send_keys(Keys.SPACE)
     except:
-        element.click()
+        try:
+            time.sleep(1)
+            action.send_keys(Keys.DOWN)
+            element.send_keys(Keys.SPACE)
+        except:
+            time.sleep(1)
+            element.click()
 
     time.sleep(2)
     element = driver.find_element_by_xpath('//*[@id="payment_button"]')

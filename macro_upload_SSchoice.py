@@ -178,6 +178,7 @@ for loop in range(looping_num): #looping_num
         except:
             t_company = ""
         goods_list.append((t_name, t_company))
+    pyautogui.press('ctrl')
 
 print(f"cafe24-거래선 전체상품 list 완료: {len(goods_list)}개")
 driver.switch_to.window(driver.window_handles[0])
@@ -244,18 +245,40 @@ for j in range(start-1,number):  # 설정하기
 
         # 신상: 기본정보 따기 (새창- 3번째 창)
         table = {}
-        datas = soup.find_all("div", attrs={'class': re.compile('w-full flex border-b border-gray-30')})
+        datas = soup.find_all("div", attrs={'class': 'w-full flex gap-x-[1px]'})
+        #기본 속성
         for data in datas:
-            t_key = data.find("div", attrs={'class': re.compile('text-gray-80 border-r border-gray-30')}).get_text().strip()
-            t_value = data.find("div", attrs={'class': re.compile('text-gray-100')})
+            t_key = data.find("div", attrs={
+                'class': 'w-[120px] py-[20px] pl-[12px] text-gray-80 flex items-center bg-gray-10'})
+            if t_key:
+                t_key = t_key.get_text().strip()
+            else:
+                continue
+            t_value = data.find("div", attrs={
+                'class': 'information-row__content flex items-center text-gray-100 py-[20px] px-[24px] bg-white-100'})
             if t_value:
-                if len(t_value)>1:
+                if len(t_value) > 1:
                     t_val = []
                     for i in t_value:
                         t_val.append(i.get_text().strip())
                 else:
                     t_val = t_value.get_text().strip()
                 table[t_key] = t_val
+        #두께 등..
+        for data in datas:
+            t_key = data.find("div", attrs={
+                'class': 'w-[120px] min-w-[82px] flex items-center py-[20px] pl-[12px] text-gray-80 bg-gray-10'})
+            if t_key:
+                t_key = t_key.get_text().strip()
+            else:
+                continue
+            t_value = data.find("div", attrs={
+                'class': 'min-w-[42px] text-gray-100'})
+            if t_value:
+                t_val = t_value.get_text().strip()
+                table[t_key] = t_val
+            else:
+                continue
 
         color = table['색상']
         table['색상'] = table['색상'].replace(" ", "").split(',')
@@ -264,8 +287,6 @@ for j in range(start-1,number):  # 설정하기
         table['사이즈'] = table['사이즈'].replace(" ", "").split(',')
         if table['사이즈'][0] == 'F':
             table['사이즈'][0] = 'Free'
-        #table['상품등록정보'] = table['상품등록정보'].replace(" ", "").split("등록")[0]
-
         registered = table['상품등록정보']
         category = table['카테고리'][1]
         category2 = back_data_mine.category_convert[category]
@@ -273,6 +294,7 @@ for j in range(start-1,number):  # 설정하기
             category_ = '티-탑'
         else:
             category_ = table['카테고리'][1]
+
         color_ = table['색상']
         size_ = table['사이즈']
         subject = category_ + " " + subject
@@ -331,7 +353,7 @@ for j in range(start-1,number):  # 설정하기
         r = soup.find("div", attrs={"class": "row__content"}).get_text()
         if "모델정보" in r:
             try:
-                p = re.compile('.*모델정보[^\n]*', re.DOTALL)
+                p = re.compile('실측사이즈:.*모델정보[^\n]*', re.DOTALL)
                 m = p.search(r)
                 comment = m.group()
                 comment = comment.lower().replace("\n", "<br>")
@@ -402,12 +424,6 @@ for j in range(start-1,number):  # 설정하기
             count += 1
         print("이미지저장 완료")
 
-        """# 하트 클릭
-        element = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[3]/div[2]/div[2]/button')
-        action.move_to_element(element).perform()
-        element.click()
-        time.sleep(.3)"""
-
         # 세번째 창 닫기
         driver.close() #창닫기
 
@@ -463,13 +479,6 @@ for j in range(start-1,number):  # 설정하기
         driver.find_element_by_xpath('//*[@id="ma_product_code"]').click()
         action.send_keys(seller[:39]).perform()
         time.sleep(.5)
-
-        """#중복 검사 (cafe24에 있는지..)
-        html = driver.page_source
-        soup = BeautifulSoup(html, 'html.parser')
-        val = soup.find("div", attrs={'class': 'tip', 'style': 'display: block;'})
-        if val:
-            raise Exception("웹상에서 중복 확인")"""
 
         # 상세설명 입력
         html_template_ = "<h2>기본정보</h2><table><tbody>"
