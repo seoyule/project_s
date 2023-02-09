@@ -87,7 +87,10 @@ try:
     time.sleep(1)
 except:
     time.sleep(1)
-    driver.find_element_by_xpath('//*[@id="returnSearch"]/div[2]/div/label[1]').click()  # 오늘 클릭
+    try:
+        driver.find_element_by_xpath('//*[@id="returnSearch"]/div[2]/div/label[1]').click()  # 오늘 클릭
+    except:
+        driver.find_element_by_xpath('//*[@id="returnSearch"]/div[2]/div/label[1]').click()  # 오늘 클릭
     time.sleep(1)
 driver.find_element_by_xpath('//*[@id="orderList_wrapper"]/div[1]/div[2]/div/button').send_keys(Keys.ENTER) #엑셀다운로드 클릭
 time.sleep(.5)

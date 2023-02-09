@@ -3,16 +3,12 @@ from bs4 import BeautifulSoup  # 파싱된 데이터를 python에서 사용하�
 import os
 import re
 import time
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
-import requests
 import pyautogui
 import warnings
 import shutil
 import math
 import back_data_mine
-import pickle
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from selenium import webdriver  # webdriver를 통해 파싱하기 위함
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
@@ -20,7 +16,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
-
 
 # 기본세팅
 start = 1 # 중간부터 시작 시작 - 개수 번째
@@ -46,8 +41,8 @@ action = ActionChains(driver)
 wait = WebDriverWait(driver, 15)
 
 category_list = back_data_mine.category_list # 분류설정
-with open('listfile', 'rb') as fp: # url 리스트 불러오기
-    urls = pickle.load(fp)
+#with open('listfile', 'rb') as fp: # url 리스트 불러오기
+#    urls = pickle.load(fp)
 
 # 기본-신상: 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
@@ -56,11 +51,20 @@ driver.get('https://sinsangmarket.kr/login')
 except:
     pass
 """
+
+# 기본-신상: 한글로 바꾸기
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[4]/div/div/div/div').click()
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[4]/ul/li[1]/label/div/div').click()
+time.sleep(.5)
+
+
 try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
 except:
     pass
 time.sleep(.5)
+
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[1]/input').click()
 action.send_keys('protestt').perform()
 time.sleep(.5)
@@ -72,24 +76,16 @@ print("신상 로그인 성공")
 
 # 기본-신상: 광고 있으면 close
 time.sleep(.5)
-try:
-    driver.find_element_by_class_name("button.close-button").click()
-    time.sleep(.3)
-except:
-    pass
+html = driver.page_source
+soup = BeautifulSoup(html, 'html.parser')
+popup = soup.select('div[class *="popup"]')
 
-# 기본-신상: 한글로 바꾸기
-driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
-time.sleep(.5)
-driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/ul/li[1]/label').click()
-time.sleep(.5)
-
-# 기본-신상: 광고 있으면 close
-try:
+while popup:
     driver.find_element_by_class_name("button.close-button").click()
-    time.sleep(.3)
-except:
-    pass
+    time.sleep(1)
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    popup = soup.select('div[class *="popup"]')
 
 # 기본-신상: 신상초이스 진입
 driver.get('https://sinsangmarket.kr/sinsangChoice')
@@ -106,15 +102,19 @@ action.send_keys('!QAZwsx123').perform()
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="frm_user"]/div/div[3]/button').click()
 time.sleep(1)
+
 # 기본-cafe24: 광고 있으면 close
-try:
+html = driver.page_source
+soup = BeautifulSoup(html, 'html.parser')
+popup = soup.select('div[class *="popup"]')
+
+while popup:
     driver.find_element_by_class_name("btnClose.eClose").click()
     time.sleep(.3)
-except:
-    pass
-#wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'btnPromodeView')))
-#driver.find_element_by_class_name('btnPromodeView').click()# new 관리자 화면 진입 'newPromodeArea
-#time.sleep(.5)
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    popup = soup.select('div[class *="popup"]')
+
 print("cafe24 진입")
 
 # 기본-cafe24: 상품목록 진입
@@ -181,10 +181,10 @@ for loop in range(looping_num): #looping_num
     pyautogui.press('ctrl')
 
 print(f"cafe24-거래선 전체상품 list 완료: {len(goods_list)}개")
-driver.switch_to.window(driver.window_handles[0])
 
 ################## 아이템별 스크린 시작 ####################
 
+driver.switch_to.window(driver.window_handles[0])
 if start > 4:
     for i in range(round(start / 8)):
         action.send_keys(Keys.PAGE_DOWN).perform()
@@ -231,6 +231,7 @@ for j in range(start-1,number):  # 설정하기
         # 신상: 거래처따기 (새창- 3번째 창)
         seller = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').text.strip()
         print("거래처: ", seller)
+
         block_seller = ""
         for i in back_data_mine.block_seller:
             if i in seller:
@@ -289,6 +290,13 @@ for j in range(start-1,number):  # 설정하기
             table['사이즈'][0] = 'Free'
         registered = table['상품등록정보']
         category = table['카테고리'][1]
+
+        if category not in back_data_mine.category_convert:
+            driver.close()  # 창닫기
+            driver.switch_to.window(driver.window_handles[0])
+            action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+            continue
+
         category2 = back_data_mine.category_convert[category]
         if table['카테고리'][1] == '티&탑': #상품이름 입력시.. 변환 위함.. (오픈마켓에 &안들어감)
             category_ = '티-탑'
@@ -316,7 +324,6 @@ for j in range(start-1,number):  # 설정하기
             if f in subject:
                 block_subject = True
                 break
-
         if block_subject:
             print("기존반품 상품: ", subject)
             driver.close()  # 창닫기
@@ -346,6 +353,7 @@ for j in range(start-1,number):  # 설정하기
         subject_keywords = subject_keywords.replace("(", ",")
         subject_keywords = subject_keywords.replace(")", ",")
         subject_keywords = subject_keywords.split(",")
+        subject_keywords = [ele for ele in subject_keywords if ele != '']
         subject_keywords = [subject_keyword[0:18] for subject_keyword in subject_keywords]
         subject_keywords = ",".join(subject_keywords)
 
@@ -391,6 +399,7 @@ for j in range(start-1,number):  # 설정하기
         # https://docs.google.com/spreadsheets/d/1ZNMG8hey03UuLasNO5dEvQo1ncBi-GZXVQn6WP5EMZQ/edit#gid=289254889
         print("매입가/판매가: ", price, price_)
 
+
         # 이미지 다운로드
         r = soup.select_one('.swiper-wrapper')
         s = r.find_all("img")
@@ -398,29 +407,49 @@ for j in range(start-1,number):  # 설정하기
         os.mkdir(down_path + f"{j}_{subject_4f}")
         for i in s:
             link = i.attrs['src']
-            # print(link)
-            res = requests.get(link)
-            if res.status_code == 200 and count < 20:
-                file_ = down_path + f"{j}_{subject_4f}/{subject_4f}_{count + 1}.jpg"
-                file_rs = down_path + f"{j}_{subject_4f}/{subject_4f}_{count + 1}_rs.jpg"
-                with open(file_, "wb") as file:
-                    file.write(res.content)
+            file_ = down_path + f"{j}_{subject_4f}/{subject_4f}_{count + 1}.jpg"
+            file_rs = down_path + f"{j}_{subject_4f}/{subject_4f}_{count + 1}_rs.jpg"
 
-                if os.path.getsize(file_) > 2000000:
-                    img = Image.open(file_)
-                    img = img.convert('RGB')
-                    img.save(file_, 'JPEG', qualty=85)
+            driver.switch_to.new_window('tab')
+            time.sleep(.3)
+            driver.switch_to.window(driver.window_handles[3])
+            driver.get(link)
+            time.sleep(1)
+            driver.save_screenshot(file_)
+            driver.close()
+            driver.switch_to.window(driver.window_handles[2])
 
-                img = Image.open(file_)  # 이미지 불러오기
-                img_size = img.size  # 이미지의 크기 측정
-                x = img_size[0]  # 넓이값
-                y = img_size[1]  # 높이값
-                if x != y:
-                    size = max(x, y)
-                    resized_img = Image.new(mode='RGB', size=(size, size), color="white")
-                    offset = (round((abs(x - size)) / 2), round((abs(y - size)) / 2))
-                    resized_img.paste(img, offset)
-                    resized_img.save(file_rs)
+            if os.path.getsize(file_) > 2000000:
+                img = Image.open(file_)
+                img = img.convert('RGB')
+                img.save(file_, 'JPEG', qualty=85)
+
+            img = Image.open(file_)  # 이미지 불러오기
+            img_size = img.size  # 이미지의 크기 측정
+            x = img_size[0]  # 넓이값
+            y = img_size[1]  # 높이값
+
+            size = min(x, y)
+
+            left = round((x - size) / 2)
+            top = 0
+            right = round((x + size) / 2)-1
+            bottom = y
+
+            # Crop the center of the image
+            resized_img = img.crop((left, top, right, bottom))
+            resized_img = resized_img.convert('RGB')
+
+            background = Image.new("RGBA", resized_img.size, (0, 0, 0, 0))
+            draw = ImageDraw.Draw(background)
+            draw.rounded_rectangle((397, 447, 530, 483), 10, fill="WhiteSmoke", outline=None)
+            new_img = Image.composite(background, resized_img, background)
+
+            draw2 = ImageDraw.Draw(new_img)
+            font2 = ImageFont.truetype("Arial.ttf", 30)
+            draw2.text((420, 447), "Soyool", font=font2, fill='teal')
+            new_img.save(file_rs)
+
             count += 1
         print("이미지저장 완료")
 
@@ -510,7 +539,7 @@ for j in range(start-1,number):  # 설정하기
         time.sleep(.5)
 
         #검색어 입력
-        element = driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[2]/tbody/tr/td/div/input')
+        element = driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[2]/tbody/tr/td/div/textarea')
         action.move_to_element(element).perform()
         element.click()
         action.send_keys(subject_keywords[:49]).perform()
@@ -648,3 +677,35 @@ print("완료된 상품 개수:", n)
 print("error list: ", error)
 print("finished")
 
+"""# 이미지 다운로드
+r = soup.select_one('.swiper-wrapper')
+s = r.find_all("img")
+count = 0
+os.mkdir(down_path + f"{j}_{subject_4f}")
+for i in s:
+    link = i.attrs['src']
+    # print(link)
+    res = requests.get(link)
+    if res.status_code == 200 and count < 20:
+        file_ = down_path + f"{j}_{subject_4f}/{subject_4f}_{count + 1}.jpg"
+        file_rs = down_path + f"{j}_{subject_4f}/{subject_4f}_{count + 1}_rs.jpg"
+        with open(file_, "wb") as file:
+            file.write(res.content)
+
+        if os.path.getsize(file_) > 2000000:
+            img = Image.open(file_)
+            img = img.convert('RGB')
+            img.save(file_, 'JPEG', qualty=85)
+
+        img = Image.open(file_)  # 이미지 불러오기
+        img_size = img.size  # 이미지의 크기 측정
+        x = img_size[0]  # 넓이값
+        y = img_size[1]  # 높이값
+        if x != y:
+            size = max(x, y)
+            resized_img = Image.new(mode='RGB', size=(size, size), color="white")
+            offset = (round((abs(x - size)) / 2), round((abs(y - size)) / 2))
+            resized_img.paste(img, offset)
+            resized_img.save(file_rs)
+    count += 1
+print("이미지저장 완료")"""

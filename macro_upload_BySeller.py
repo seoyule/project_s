@@ -9,7 +9,7 @@ import requests
 import pyautogui
 import warnings
 import shutil
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 import math
 import back_data_mine
 import pickle

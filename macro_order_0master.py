@@ -106,6 +106,9 @@ driver.find_element_by_xpath('//*[@id="frm_user"]/div/div[3]/button').click()
 time.sleep(3)
 print("cafe24 진입")
 
+
+
+
 driver.get('https://soyool.cafe24.com/admin/php/shop1/s_new/shipped_begin_list.php') #배송준비중으로 이동
 time.sleep(2)
 driver.find_element_by_xpath('//*[@id="QA_deposit1"]/div[1]/table/tbody/tr[1]/td/a[6]').click() #지난 한달 선택
@@ -173,7 +176,7 @@ with zipfile.ZipFile(file_path, 'r') as zip_ref:
     zip_ref.extractall(search_dir, pwd=b'protest123')
 print("압축해제 완료")
 
-#변환 파일 이름 확인 https://stackoverflow.com/questions/168409/how-do-you-get-a-directory-listing-sorted-by-creation-date-in-python
+#https://stackoverflow.com/questions/168409/how-do-you-get-a-directory-listing-sorted-by-creation-date-in-python
 files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
 files.sort(key=lambda x: os.path.getmtime(x))
 file_name = files[-1]
@@ -277,8 +280,8 @@ for i in range(len(df)):
         note.append('OK - sold-out')
     else:
         note.append('OK')
-
     time.sleep(.5)
+
     #도매가격
     price = int(driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[3]/div[1]/div/span').text.replace(",",""))
     price_ss.append(price)
@@ -389,10 +392,6 @@ for i in range(len(df)):
             if df['option1'][i] != list_2[j][1] or df['option2'][i] != list_2[j][2]:
                 df['note'][i] = "옵션 다른 반품 상품, 취소해야함."
 """
-#과거 반품상품 점검
-for i in range(len(df)):
-    if df['상품명(한국어 쇼핑몰)'].iloc[i] in back_data_mine.block_subject:
-        df['note'].iloc[i] = "과거 반품상품과 같은이름, 점검 필요."
 
 df_stock_ = df_stock[['key','상품번호','정상재고']]
 list_ = df_stock_.values.tolist()
@@ -407,9 +406,9 @@ p_number = [] # stock 수량
 for i in range(len(df)):
     result = '' #번호
     num = 0 #수량
-    if df['배송메시지'].iloc[i].lower() == "skip":
+    if df['배송메시지'].iloc[i].lower() == "skip": #수량 0으로 만듬 (#오류로 배송준비에 남아있는 경우)
         df['수량'].iloc[i] = 0
-    if df['배송메시지'].iloc[i].lower() == "hold":
+    if df['배송메시지'].iloc[i].lower() == "hold": #hold- 주문하지 않게 만듬 (#어떤 이유로 (반품회수) 대기하고 있는 경우)
         df['note'].iloc[i] = "hold"
     if df['key'].iloc[i].lower() in dict_:
         # 사입번호 넣기
@@ -430,6 +429,11 @@ df['temp_사입번호'] = p_result
 df['in_stock'] = p_number
 df['구매수량'] = df['수량']-df['in_stock']
 print("df에 재고수량 반영")
+
+#과거 반품상품 점검
+for i in range(len(df)):
+    if df['상품명(한국어 쇼핑몰)'].iloc[i] in back_data_mine.block_subject:
+        df['note'].iloc[i] = "과거 반품상품"
 
 timestr_now = time.strftime("%Y%m%d-%H%M%S")
 timestr = time.strftime("%Y%m%d")
