@@ -3,8 +3,6 @@ from bs4 import BeautifulSoup  # 파싱된 데이터를 python에서 사용하�
 import os
 import re
 import time
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 import requests
 import pyautogui
 import warnings
@@ -12,7 +10,6 @@ import shutil
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 import math
 import back_data_mine
-import pickle
 from selenium import webdriver  # webdriver를 통해 파싱하기 위함
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
@@ -24,7 +21,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 # 기본세팅
 start = 0 # 샵 중간부터 시작 시 (처음은 0 ~)
-number_d = 50 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
+number_d = 200 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
 subject_4f = ""
@@ -43,29 +40,35 @@ action = ActionChains(driver)
 wait = WebDriverWait(driver, 15)
 
 category_list = back_data_mine.category_list # 분류설정
-"""
-with open('listfile', 'rb') as fp: # url 리스트 불러오기
-    urls = pickle.load(fp)
-"""
-urls = [("https://sinsangmarket.kr/store/11711?isPublic=1","쵸콜릿",'(.*)\n\n[0-9]+.*'),
+
+urls = [("https://sinsangmarket.kr/store/1688?isPublic=1","카라멜",'(.*)\n\n[0-9]+.*'),
         ("https://sinsangmarket.kr/store/21781?isPublic=1","CC하니",'(.*)'),
         ("https://sinsangmarket.kr/store/7548?isPublic=1","Ami 아미",''),#comment 없이
         ("https://sinsangmarket.kr/store/8984?isPublic=1","오블리",''),#comment 없이
         ("https://sinsangmarket.kr/store/2729?isPublic=1","헤르츠",''),#comment 없이
         ]
-
-# 신상마켓 로그인
+#콜라컴퍼니
+# 기본-신상: 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
-try:
+"""try:
     driver.find_element_by_xpath('//*[@id="alert"]/div/div/button').click() #too many segment 버튼 클릭
 except:
     pass
+"""
+
+# 기본-신상: 한글로 바꾸기
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[4]/div/div/div/div').click()
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[4]/ul/li[1]/label/div/div').click()
+time.sleep(.5)
+
 
 try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
 except:
     pass
 time.sleep(.5)
+
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[1]/input').click()
 action.send_keys('protestt').perform()
 time.sleep(.5)
@@ -75,26 +78,18 @@ time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[3]/div[2]/div/button').click()
 print("신상 로그인 성공")
 
-# 광고 있으면 close
-time.sleep(.5)
-try:
-    driver.find_element_by_class_name("button.close-button").click()
-    time.sleep(.3)
-except:
-    pass
+# 기본-신상: 광고 있으면 close
+time.sleep(1)
+html = driver.page_source
+soup = BeautifulSoup(html, 'html.parser')
+popup = soup.select('div[class *="popup"]')
 
-# 한글로 바꾸기
-driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
-time.sleep(.5)
-driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/ul/li[1]/label').click()
-time.sleep(.5)
-
-# 광고 있으면 close
-try:
+while popup:
     driver.find_element_by_class_name("button.close-button").click()
-    time.sleep(.3)
-except:
-    pass
+    time.sleep(1)
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    popup = soup.select('div[class *="popup"]')
 
 # cafe24 열기
 driver.execute_script('window.open("https://eclogin.cafe24.com/Shop/");')
@@ -108,12 +103,19 @@ action.send_keys('!QAZwsx123').perform()
 time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="frm_user"]/div/div[3]/button').click()
 time.sleep(1)
-# 광고 있으면 close
-try:
+
+# 기본-cafe24: 광고 있으면 close
+html = driver.page_source
+soup = BeautifulSoup(html, 'html.parser')
+popup = soup.select('div[class *="popup"]')
+
+while popup:
     driver.find_element_by_class_name("btnClose.eClose").click()
     time.sleep(.3)
-except:
-    pass
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    popup = soup.select('div[class *="popup"]')
+
 print("cafe24 진입")
 
 driver.switch_to.window(driver.window_handles[0])
@@ -236,7 +238,7 @@ for k in range(len(urls)): #len(urls)로 변경
     n = 0  # 완료된 상품 개수
 
     for j in range(number):
-        if existing > 50:
+        if existing > number/2:
             print("cafe24 - 이전 업데이트 포인트 도달")
             break
         try:
@@ -317,20 +319,26 @@ for k in range(len(urls)): #len(urls)로 변경
             table['사이즈'] = table['사이즈'].replace(" ", "").split(',')
             if table['사이즈'][0] == 'F':
                 table['사이즈'][0] = 'Free'
-            #table['상품등록정보'] = table['상품등록정보'].replace(" ", "").split("등록")[0]
-
             registered = table['상품등록정보']
             category = table['카테고리'][1]
-            category2 = back_data_mine.category_convert[category]
+            #category2 = back_data_mine.category_convert[category]
             if table['카테고리'][1] == '티&탑':  # 상품이름 입력시.. 변환 위함.. (오픈마켓에 &안들어감)
                 category_ = '티-탑'
             else:
                 category_ = table['카테고리'][1]
+
             color_ = table['색상']
             size_ = table['사이즈']
             subject = category_ + " " + subject
             print("품명: ", subject)
             print("table: ", table)
+
+            if category not in back_data_mine.category_convert:
+                print("category skip: ", category)
+                driver.close()  # 창닫기
+                driver.switch_to.window(driver.window_handles[0])
+                action.send_keys(Keys.ESCAPE).perform()  # 찜목록으로 재진입
+                continue
 
             # 신상: 기존 cafe24업로드 여부 확인 (새창- 3번째 창)
             if subject in goods_list:
@@ -377,6 +385,7 @@ for k in range(len(urls)): #len(urls)로 변경
             subject_keywords = subject_keywords.replace("(", ",")
             subject_keywords = subject_keywords.replace(")", ",")
             subject_keywords = subject_keywords.split(",")
+            subject_keywords = [ele for ele in subject_keywords if ele != '']
             subject_keywords = [subject_keyword[0:18] for subject_keyword in subject_keywords]
             subject_keywords = ",".join(subject_keywords)
 
@@ -423,9 +432,9 @@ for k in range(len(urls)): #len(urls)로 변경
             os.mkdir(down_path + f"{j}_{subject_4f}")
             for i in s:
                 link = i.attrs['src']
-                # print(link)
                 res = requests.get(link)
-                if res.status_code == 200 and count < 20:
+                img_n = 15
+                if res.status_code == 200 and count < img_n:
                     file_ = down_path + f"{j}_{subject_4f}/{subject_4f}_{count + 1}.jpg"
                     file_rs = down_path + f"{j}_{subject_4f}/{subject_4f}_{count + 1}_rs.jpg"
                     with open(file_, "wb") as file:
@@ -434,19 +443,48 @@ for k in range(len(urls)): #len(urls)로 변경
                     if os.path.getsize(file_) > 2000000:
                         img = Image.open(file_)
                         img = img.convert('RGB')
-                        img.save(file_, 'JPEG', qualty=85)
 
-                    img = Image.open(file_)  # 이미지 불러오기
-                    img_size = img.size  # 이미지의 크기 측정
+                    img = Image.open(file_).convert('RGBA')
+
+                    if img.size != (1500, 2000):
+                        img = img.resize((1500, 2000))
+
+                    # blur 처리
+                    (x0, y0, x1, y1) = (623, 971, 879, 1035)
+                    cropped = img.crop((x0, y0, x1, y1))
+                    blurred = cropped.filter(ImageFilter.GaussianBlur(radius=10))
+                    img.paste(blurred, (x0, y0, x1, y1))
+
+                    # watermark 삽입
+                    txt = Image.new('RGBA', img.size, (255, 255, 255, 0))
+                    text = "soyool shop"
+                    font = ImageFont.truetype("Arial.ttf", 25)
+
+                    d = ImageDraw.Draw(txt)
+
+                    textwidth, textheight = d.textsize(text, font)
+                    x = (x1 + x0) / 2 - textwidth / 2
+                    y = (y1 + y0) / 2 - textheight / 2
+                    d.text((x, y), text, fill=(255, 255, 255, 150), font=font)
+
+                    watermarked = Image.alpha_composite(img, txt)
+                    watermarked = watermarked.convert("RGB")
+                    watermarked.save(file_)
+
+                    # 정사각형으로 만들
+
+                    img_size = watermarked.size  # 이미지의 크기 측정
                     x = img_size[0]  # 넓이값
                     y = img_size[1]  # 높이값
                     if x != y:
                         size = max(x, y)
-                        resized_img = Image.new(mode='RGB', size=(size, size),color = "white")
+                        resized_img = Image.new(mode='RGB', size=(size, size), color="white")
                         offset = (round((abs(x - size)) / 2), round((abs(y - size)) / 2))
-                        resized_img.paste(img, offset)
+                        resized_img.paste(watermarked, offset)
                         resized_img.save(file_rs)
+
                 count += 1
+                time.sleep(.3)
             print("이미지저장 완료")
 
             #세번째 창 닫기
@@ -473,7 +511,7 @@ for k in range(len(urls)): #len(urls)로 변경
                     time.sleep(.3)
             except:
                 driver.find_element_by_xpath(
-                    '//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[18]').click()
+                    '//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[9]').click()
             driver.find_element_by_xpath('//*[@id="eCategoryTbody"]/tr/td[5]/div').click()  # 등록
 
             # 상품명 입력
@@ -512,7 +550,7 @@ for k in range(len(urls)): #len(urls)로 변경
                 if i == '낱장 여부':
                     continue
                 html_template_ = html_template_ + f"<tr><td>{i}</td><td>{table[i]}</td></tr>"
-            html_template_ = html_template_ + f"</table></tbody><br><p>{comment}</p><br><p>더 다양한 상품을 soyool샵에서 만나보세요 :) </p><p>https://soyool.co.kr/</p><br>"
+            html_template_ = html_template_ + f"</table></tbody><br><p>{comment}</p><br><p>더 다양한 상품을 더 합리적인 가격에 soyool샵에서 만나보세요 :) </p><a href='https://soyool.co.kr/'>https://soyool.co.kr/</a><br>"
 
             driver.find_element_by_xpath('//*[@id="eTabNnedit"]').click()
             driver.find_element_by_xpath('//*[@id="html-1"]').click()
@@ -524,7 +562,7 @@ for k in range(len(urls)): #len(urls)로 변경
             driver.find_element_by_xpath('//*[@id="insertFiles-1"]').click()  # 다중이미지 클릭
             files = []  # 파일선택
             for i in range(len(s)):
-                if i < 20:
+                if i < img_n:
                     files.append(down_path + f"{j}_{subject_4f}/{subject_4f}_{i + 1}.jpg")
             list_file = '\n'.join(files)
             time.sleep(.5)
@@ -536,8 +574,10 @@ for k in range(len(urls)): #len(urls)로 변경
             time.sleep(.5)
 
             #검색어 입력
-            wait.until(EC.element_to_be_clickable((By.XPATH,'//*[@id="QA_register2"]/div[2]/div/table[2]/tbody/tr/td/div/input'))).click()
-            driver.find_element_by_xpath('//*[@id="QA_register2"]/div[2]/div/table[2]/tbody/tr/td/div/input').click()
+            element = driver.find_element_by_xpath(
+                '//*[@id="QA_register2"]/div[2]/div/table[2]/tbody/tr/td/div/textarea')
+            action.move_to_element(element).perform()
+            element.click()
             action.send_keys(subject_keywords[:49]).perform()
 
             # 가격입력
@@ -599,7 +639,7 @@ for k in range(len(urls)): #len(urls)로 변경
             action.send_keys(Keys.PAGE_DOWN).perform()
             if len(s) > 1:
                 for i in range(len(s)):
-                    if i == 1 or i >= 20:
+                    if i == 1 or i >= img_n:
                         continue
                     driver.find_element_by_xpath('//*[@id="eOptionAddImageUpload"]').send_keys(
                         down_path + fr"{j}_{subject_4f}/{subject_4f}_{i + 1}_rs.jpg")

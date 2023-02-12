@@ -21,7 +21,9 @@ category_list = {
     '니트': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[3]'],
     '스커트': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[4]'],
     '셔츠/남방': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[5]'],
-    '모자': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[6]'],
+    '원피스': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[6]'],
+    '세트 아이템': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[7]'],
+    '모자': ['//*[@id="eCategoryTbody"]/tr/td[1]/div/ul/li[8]'],
 }
 
 category_convert = {
@@ -30,6 +32,8 @@ category_convert = {
     '니트': '니트',
     '스커트': '스커트',
     '셔츠/남방': '셔츠/남방',
+    '원피스': '원피스',
+    '세트 아이템': '세트 아이템',
     '모자': '모자',
 }
 
