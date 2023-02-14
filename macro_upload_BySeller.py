@@ -20,7 +20,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 # 기본세팅
-start = 0 # 샵 중간부터 시작 시 (처음은 0 ~)
+start = 3 # 샵 중간부터 시작 시 (처음은 0 ~)
 number_d = 200 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
@@ -44,8 +44,9 @@ category_list = back_data_mine.category_list # 분류설정
 urls = [("https://sinsangmarket.kr/store/1688?isPublic=1","카라멜",'(.*)\n\n[0-9]+.*'),
         ("https://sinsangmarket.kr/store/21781?isPublic=1","CC하니",'(.*)'),
         ("https://sinsangmarket.kr/store/7548?isPublic=1","Ami 아미",''),#comment 없이
-        ("https://sinsangmarket.kr/store/8984?isPublic=1","오블리",''),#comment 없이
         ("https://sinsangmarket.kr/store/2729?isPublic=1","헤르츠",''),#comment 없이
+        ("https://sinsangmarket.kr/store/8984?isPublic=1","오블리",''),#comment 없이
+
         ]
 #콜라컴퍼니
 # 기본-신상: 신상마켓 로그인
@@ -88,7 +89,9 @@ while popup:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(1)
     html = driver.page_source
+    time.sleep(1)
     soup = BeautifulSoup(html, 'html.parser')
+    time.sleep(1)
     popup = soup.select('div[class *="popup"]')
 
 # cafe24 열기
@@ -567,7 +570,7 @@ for k in range(len(urls)): #len(urls)로 변경
             list_file = '\n'.join(files)
             time.sleep(.5)
             driver.find_element_by_xpath('//*[@id="fr-files-upload-layer-1"]/div/div[2]/input').send_keys(list_file)
-            time.sleep(.5)
+            time.sleep(3)
             driver.find_element_by_xpath('//*[@id="checkAll-1"]').click()  # 전체선택
             time.sleep(.5)
             driver.find_element_by_xpath('//*[@id="insertAll-1"]').click()  # 올리기
@@ -584,6 +587,7 @@ for k in range(len(urls)): #len(urls)로 변경
             action.send_keys(Keys.PAGE_DOWN).perform()
             time.sleep(.5)
             driver.find_element_by_xpath('//*[@id="product_price"]').click()
+            time.sleep(.3)
             action.send_keys(price_).perform()
             time.sleep(.5)
 
@@ -643,7 +647,7 @@ for k in range(len(urls)): #len(urls)로 변경
                         continue
                     driver.find_element_by_xpath('//*[@id="eOptionAddImageUpload"]').send_keys(
                         down_path + fr"{j}_{subject_4f}/{subject_4f}_{i + 1}_rs.jpg")
-                    time.sleep(.3)
+                    time.sleep(2)
 
             # 최종 상품등록
             time.sleep(.3)

@@ -83,7 +83,9 @@ while popup:
     driver.find_element_by_class_name("button.close-button").click()
     time.sleep(1)
     html = driver.page_source
+    time.sleep(1)
     soup = BeautifulSoup(html, 'html.parser')
+    time.sleep(1)
     popup = soup.select('div[class *="popup"]')
 
 # 기본-신상: 신상초이스 진입
@@ -540,7 +542,7 @@ for j in range(start-1,number):  # 설정하기
         list_file = '\n'.join(files)
         time.sleep(.5)
         driver.find_element_by_xpath('//*[@id="fr-files-upload-layer-1"]/div/div[2]/input').send_keys(list_file)
-        time.sleep(.5)
+        time.sleep(3)
         driver.find_element_by_xpath('//*[@id="checkAll-1"]').click() #전체선택
         time.sleep(.5)
         driver.find_element_by_xpath('//*[@id="insertAll-1"]').click() #올리기

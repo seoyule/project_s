@@ -47,19 +47,26 @@ wait = WebDriverWait(driver, 20)
 
 category_list = back_data_mine.category_list # 분류설정
 
-# 신상마켓 로그인
+# 기본-신상: 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
 """try:
     driver.find_element_by_xpath('//*[@id="alert"]/div/div/button').click() #too many segment 버튼 클릭
 except:
     pass
 """
+
+# 기본-신상: 한글로 바꾸기
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[4]/div/div/div/div').click()
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[4]/ul/li[1]/label/div/div').click()
+time.sleep(.5)
+
 try:
-    driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click() #start 버튼 클릭
+    driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
 except:
     pass
-
 time.sleep(.5)
+
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[1]/input').click()
 action.send_keys('protestt').perform()
 time.sleep(.5)
@@ -69,26 +76,20 @@ time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[3]/div[2]/div/button').click()
 print("신상 로그인 성공")
 
-# 광고 있으면 close
-time.sleep(.5)
-try:
-    driver.find_element_by_class_name("button.close-button").click()
-    time.sleep(.3)
-except:
-    pass
+# 기본-신상: 광고 있으면 close
+time.sleep(1)
+html = driver.page_source
+soup = BeautifulSoup(html, 'html.parser')
+popup = soup.select('div[class *="popup"]')
 
-# 한글로 바꾸기
-driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
-time.sleep(.5)
-driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/ul/li[1]/label').click()
-time.sleep(.5)
-
-# 광고 있으면 close
-try:
+while popup:
     driver.find_element_by_class_name("button.close-button").click()
-    time.sleep(.3)
-except:
-    pass
+    time.sleep(1)
+    html = driver.page_source
+    time.sleep(1)
+    soup = BeautifulSoup(html, 'html.parser')
+    time.sleep(1)
+    popup = soup.select('div[class *="popup"]')
 
 # cafe24 열기
 driver.switch_to.new_window('tab')
@@ -106,18 +107,13 @@ driver.find_element_by_xpath('//*[@id="frm_user"]/div/div[3]/button').click()
 time.sleep(3)
 print("cafe24 진입")
 
-
-
-
 driver.get('https://soyool.cafe24.com/admin/php/shop1/s_new/shipped_begin_list.php') #배송준비중으로 이동
 time.sleep(2)
 driver.find_element_by_xpath('//*[@id="QA_deposit1"]/div[1]/table/tbody/tr[1]/td/a[6]').click() #지난 한달 선택
 time.sleep(1)
-
 select = Select(driver.find_element_by_xpath('//*[@id="QA_prepareNumber2"]/div[4]/div[2]/select[2]'))  # 검색종류
 select.select_by_visible_text('100개씩보기')
 time.sleep(1)
-
 driver.find_element_by_xpath('//*[@id="search_button"]').click() #검색
 
 try:
@@ -209,6 +205,7 @@ note = []
 print("데이터 채우기 시작")
 
 skip_point = len(df)-add
+seller_dic = {}
 for i in range(len(df)):
     if pd.isnull(df['모델명'].iloc[i]):
         link = df['배송메시지'].iloc[i]
@@ -235,7 +232,7 @@ for i in range(len(df)):
     driver.switch_to.new_window('tab')
     time.sleep(.5)
     driver.switch_to.window(driver.window_handles[2])
-    #url 검
+    #url 검사
     try:
         driver.get(link)
         time.sleep(1.5)
@@ -287,6 +284,22 @@ for i in range(len(df)):
     price_ss.append(price)
     time.sleep(.5)
 
+    # 도매매장 정보확인
+    seller_info = []
+
+    seller = driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').text.strip()
+    if seller in seller_dic:
+
+        shop_name.append(seller_dic[seller][0])
+        shop_phone_number.append(seller_dic[seller][1])
+        building_name.append(seller_dic[seller][2])
+        shop_location.append(seller_dic[seller][3])
+
+        driver.close()
+        driver.switch_to.window(driver.window_handles[1])
+        time.sleep(.5)
+        continue
+
     #가게 화면 진입
     driver.find_element_by_xpath('//*[@id="goods-detail"]/div/div[2]/div[2]/div[1]/div[1]/span').click()
     time.sleep(1.5)
@@ -295,10 +308,12 @@ for i in range(len(df)):
     #가게이름
     shop_n = driver.find_element_by_xpath('/html/body/div/div[1]/div[2]/div/div/div[1]/div[2]/div[1]/div[1]/span').text
     shop_name.append(shop_n)
+    seller_info.append(shop_n)
     time.sleep(.5)
     #전화번호
     shop_p = driver.find_element_by_xpath('/html/body/div/div[1]/div[2]/div/div/div[1]/div[2]/div[1]/div[2]/div[1]/div').text.strip()
     shop_phone_number.append(shop_p)
+    seller_info.append(shop_p)
     time.sleep(.5)
 
     address = driver.find_element_by_xpath('/html/body/div/div[1]/div[2]/div/div/div[1]/div[2]/div[1]/div[2]/div[2]/div').text.strip()
@@ -311,6 +326,7 @@ for i in range(len(df)):
         except:
             building_n = address
     building_name.append(building_n)
+    seller_info.append(building_n)
     time.sleep(.5)
     #주소
     try:
@@ -321,7 +337,9 @@ for i in range(len(df)):
         except:
             shop_l = address
     shop_location.append(shop_l)
+    seller_info.append(shop_l)
     time.sleep(.5)
+    seller_dic[seller] = seller_info
 
     driver.close()
     driver.switch_to.window(driver.window_handles[2])
@@ -366,11 +384,11 @@ time.sleep(2)
 
 print("딜리버드 진입 - 반품재고 확인 (상품 및 재고 탭)")
 #재고로 가기
-driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[7]/a').send_keys(Keys.ENTER)
+driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[8]/a').send_keys(Keys.ENTER)
 time.sleep(3)
 driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[2]/div/div/div/div[3]/div/div/div[2]/label').send_keys(Keys.SPACE) #재고 없음 클릭
 time.sleep(3)
-driver.find_element_by_xpath('//*[@id="productList_wrapper"]/div[1]/div[2]/div/button[1]').send_keys(Keys.ENTER)
+driver.find_element_by_xpath('//*[@id="productList_wrapper"]/div[1]/div[2]/div/button[1]').send_keys(Keys.ENTER) #엑셀 다운버튼
 time.sleep(4)
 
 files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
@@ -540,7 +558,7 @@ print("엑셀 order form - export 완료")
 if add == 0:
     driver.switch_to.window(driver.window_handles[0])
     time.sleep(3)
-    driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[1]/a').send_keys(Keys.ENTER) # 사입요청 탭
+    driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').send_keys(Keys.ENTER) # 사입요청 탭
     time.sleep(1)
 
     action.send_keys(Keys.PAGE_DOWN)
