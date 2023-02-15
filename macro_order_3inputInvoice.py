@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup  # 파싱된 데이터를 python에서 사용하기 좋게 변환
 import pandas as pd
 import time
 import warnings
@@ -33,18 +34,26 @@ wait = WebDriverWait(driver, 20)
 category_list = back_data_mine.category_list # 분류설정
 
 
-# 신상마켓 로그인
+# 기본-신상: 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
 """try:
     driver.find_element_by_xpath('//*[@id="alert"]/div/div/button').click() #too many segment 버튼 클릭
 except:
-    pass"""
+    pass
+"""
+
+# 기본-신상: 한글로 바꾸기
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[4]/div/div/div/div').click()
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[4]/ul/li[1]/label/div/div').click()
+time.sleep(.5)
 
 try:
     driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
 except:
     pass
 time.sleep(.5)
+
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[1]/input').click()
 action.send_keys('protestt').perform()
 time.sleep(.5)
@@ -54,34 +63,30 @@ time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[3]/div[2]/div/button').click()
 print("신상 로그인 성공")
 
-# 광고 있으면 close
-time.sleep(.5)
-try:
-    driver.find_element_by_class_name("button.close-button").click()
-    time.sleep(.3)
-except:
-    pass
+# 기본-신상: 광고 있으면 close
+time.sleep(1)
+html = driver.page_source
+soup = BeautifulSoup(html, 'html.parser')
+popup = soup.select('div[class *="popup"]')
 
-# 한글로 바꾸기
-driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
-time.sleep(.5)
-driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/ul/li[1]/label').click()
-time.sleep(.5)
-
-# 광고 있으면 close
-try:
+while popup:
     driver.find_element_by_class_name("button.close-button").click()
-    time.sleep(.3)
-except:
-    pass
+    time.sleep(1)
+    html = driver.page_source
+    time.sleep(1)
+    soup = BeautifulSoup(html, 'html.parser')
+    time.sleep(1)
+    popup = soup.select('div[class *="popup"]')
 
 #딜리버드로 가기 (송장번호 get)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[1]/div').click()
 time.sleep(.5)
 print("딜리버드 진입")
 
-driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[5]/a').send_keys(Keys.ENTER) #배송현황 클릭
-time.sleep(4)
+driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[6]/a').send_keys(Keys.ENTER) #배송현황 클릭
+time.sleep(2)
+driver.find_element_by_xpath('//*[@id="page-wrapper"]/div[2]/div[1]/div[1]/ul[1]/li[3]/a').send_keys(Keys.ENTER) #배송현황 클릭
+time.sleep(3)
 try:
     driver.find_element_by_xpath('//*[@id="returnSearch"]/div[2]/div/label[1]').click() #오늘 클릭
     time.sleep(1)
