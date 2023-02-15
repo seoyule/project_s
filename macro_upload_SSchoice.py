@@ -111,9 +111,11 @@ popup = soup.select('div[class *="popup"]')
 
 while popup:
     driver.find_element_by_class_name("btnClose.eClose").click()
-    time.sleep(.3)
+    time.sleep(1)
     html = driver.page_source
+    time.sleep(1)
     soup = BeautifulSoup(html, 'html.parser')
+    time.sleep(1)
     popup = soup.select('div[class *="popup"]')
 
 print("cafe24 진입")

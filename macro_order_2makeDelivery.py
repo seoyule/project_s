@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup  # 파싱된 데이터를 python에서 사용하기 좋게 변환
 import pandas as pd
 import time
 import warnings
@@ -39,18 +40,27 @@ yesterday = datetime.now() - timedelta(1)
 timestr_y = datetime.strftime(yesterday, '%Y%m%d')
 timestr_y_ = datetime.strftime(yesterday, '%Y-%m-%d')
 
-# 신상마켓 로그인
+
+# 기본-신상: 신상마켓 로그인
 driver.get('https://sinsangmarket.kr/login')
 """try:
     driver.find_element_by_xpath('//*[@id="alert"]/div/div/button').click() #too many segment 버튼 클릭
 except:
-    pass"""
+    pass
+"""
+
+# 기본-신상: 한글로 바꾸기
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[4]/div/div/div/div').click()
+time.sleep(.5)
+driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[4]/ul/li[1]/label/div/div').click()
+time.sleep(.5)
 
 try:
-    driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click() #start 버튼 클릭
+    driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/header/div/div[2]/div[3]/p').click()
 except:
     pass
 time.sleep(.5)
+
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[1]/input').click()
 action.send_keys('protestt').perform()
 time.sleep(.5)
@@ -60,26 +70,20 @@ time.sleep(.5)
 driver.find_element_by_xpath('//*[@id="app"]/div[1]/div/div[2]/div[2]/div[2]/div[3]/div[2]/div/button').click()
 print("신상 로그인 성공")
 
-# 광고 있으면 close
-time.sleep(.5)
-try:
-    driver.find_element_by_class_name("button.close-button").click()
-    time.sleep(.3)
-except:
-    pass
+# 기본-신상: 광고 있으면 close
+time.sleep(1)
+html = driver.page_source
+soup = BeautifulSoup(html, 'html.parser')
+popup = soup.select('div[class *="popup"]')
 
-# 한글로 바꾸기
-driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/div').click()
-time.sleep(.5)
-driver.find_element_by_xpath('//*[@id="app"]/div[1]/div[1]/div[1]/div/ul/li[5]/div/ul/li[1]/label').click()
-time.sleep(.5)
-
-# 광고 있으면 close
-try:
+while popup:
     driver.find_element_by_class_name("button.close-button").click()
-    time.sleep(.3)
-except:
-    pass
+    time.sleep(1)
+    html = driver.page_source
+    time.sleep(1)
+    soup = BeautifulSoup(html, 'html.parser')
+    time.sleep(1)
+    popup = soup.select('div[class *="popup"]')
 
 #현재 주문리스트 만들기
 # cafe24 열기
@@ -223,17 +227,20 @@ time.sleep(.5)
 print("딜리버드 진입 - 사입현황 다운로드")
 
 #사입현황으로 가기
-driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[2]/a').send_keys(Keys.ENTER) #사입현황 탭
+driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[3]/a').send_keys(Keys.ENTER) #사입현황 탭
 time.sleep(1.5)
 
 action.send_keys(Keys.PAGE_DOWN)
 time.sleep(.5)
 order_ = []
-for i in range(5):
-    date_ = driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[1]').text[:10]
-    status_ = driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[3]').text
-    if date_ == timestr_y_ and (status_ == "사입 완료함" or status_ == "사입 시작함"):
-        order_.append(i)
+for i in range(4):
+    try:
+        date_ = driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[1]').text[:10]
+        status_ = driver.find_element_by_xpath(f'//*[@id="purchasesList"]/tbody/tr[{i+1}]/td[3]').text
+        if date_ == timestr_y_ and (status_ == "사입 완료함" or status_ == "사입 시작함"):
+            order_.append(i)
+    except:
+        pass
 try:
     for i in range(2):
         action.send_keys(Keys.DOWN).perform()
@@ -361,7 +368,7 @@ print("deliverd 배송 요청 시작")
 # 딜리버드에 등록
 driver.switch_to.window(driver.window_handles[0])
 time.sleep(.5)
-driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[4]/a').click()  # 배송요청 탭
+driver.find_element_by_xpath('//*[@id="navbarSupportedContent"]/ul/li[5]/a').click()  # 배송요청 탭
 time.sleep(1)
 
 element = driver.find_element_by_xpath(

@@ -20,7 +20,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 # 기본세팅
-start = 3 # 샵 중간부터 시작 시 (처음은 0 ~)
+start = 5 # 샵 중간부터 시작 시 (처음은 0 ~)
 number_d = 200 # 0일 경우 모든 상품, 스크린 하려는 상품 개수
 down_path = '/Users/seoyulejo/Downloads/imgs/'
 error = []
@@ -40,13 +40,13 @@ action = ActionChains(driver)
 wait = WebDriverWait(driver, 15)
 
 category_list = back_data_mine.category_list # 분류설정
-
-urls = [("https://sinsangmarket.kr/store/1688?isPublic=1","카라멜",'(.*)\n\n[0-9]+.*'),
-        ("https://sinsangmarket.kr/store/21781?isPublic=1","CC하니",'(.*)'),
-        ("https://sinsangmarket.kr/store/7548?isPublic=1","Ami 아미",''),#comment 없이
-        ("https://sinsangmarket.kr/store/2729?isPublic=1","헤르츠",''),#comment 없이
-        ("https://sinsangmarket.kr/store/8984?isPublic=1","오블리",''),#comment 없이
-
+#urls ("url","이름","comment rule","비중")
+urls = [("https://sinsangmarket.kr/store/1688?isPublic=1","카라멜",'(.*)\n\n[0-9]+.*',1),
+        ("https://sinsangmarket.kr/store/21781?isPublic=1","CC하니",'(.*)',1),
+        ("https://sinsangmarket.kr/store/7548?isPublic=1","Ami 아미",'',.3),
+        ("https://sinsangmarket.kr/store/2729?isPublic=1","헤르츠",'',.3),
+        ("https://sinsangmarket.kr/store/8984?isPublic=1","오블리",'',.3),
+        ("https://sinsangmarket.kr/store/18361?isPublic=1","헨델(HENDEL)_남",'(.*)피팅사진 외 모든 사진은 ',1),
         ]
 #콜라컴퍼니
 # 기본-신상: 신상마켓 로그인
@@ -114,9 +114,11 @@ popup = soup.select('div[class *="popup"]')
 
 while popup:
     driver.find_element_by_class_name("btnClose.eClose").click()
-    time.sleep(.3)
+    time.sleep(1)
     html = driver.page_source
+    time.sleep(1)
     soup = BeautifulSoup(html, 'html.parser')
+    time.sleep(1)
     popup = soup.select('div[class *="popup"]')
 
 print("cafe24 진입")
@@ -163,6 +165,7 @@ for k in range(len(urls)): #len(urls)로 변경
     # 수행 횟수 구하기
     number_ = driver.find_element_by_xpath(f'//*[@id="{id}"]/div/div[{location}]/div/div[1]/div[1]').text
     number_ = int(number_.split(" ")[1].split("개")[0].replace(",",""))
+    number_d = math.ceil(number_d*urls[k][3])
     if number_d == 0:
         number = number_
     elif number_d >= number_:
@@ -560,6 +563,8 @@ for k in range(len(urls)): #len(urls)로 변경
             action.send_keys(html_template_).perform()
             driver.find_element_by_xpath('//*[@id="html-1"]').click()
             driver.find_element_by_xpath('//*[@id="tabCont1_2"]/div/div/div[2]').click()
+            if urls[k][1] == "헨델(HENDEL)_남":
+                time.sleep(4)
             for i in range(30):
                 action.send_keys(Keys.ARROW_DOWN).perform()
             driver.find_element_by_xpath('//*[@id="insertFiles-1"]').click()  # 다중이미지 클릭

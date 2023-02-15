@@ -298,6 +298,7 @@ for i in range(len(df)):
         driver.close()
         driver.switch_to.window(driver.window_handles[1])
         time.sleep(.5)
+        print(i + 1, "완료")
         continue
 
     #가게 화면 진입
